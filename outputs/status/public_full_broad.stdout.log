@@ -1,0 +1,68 @@
+PyTorch version: 2.5.1+cu121
+CUDA version: 12.1
+GPU name: NVIDIA GeForce RTX 4060 Laptop GPU
+
+[1/7] Validate public_full_broad manifest
+$ C:\Users\24953\.conda\envs\dl\python.exe -u scripts/preflight.py --preset configs/presets/public_full_broad.yaml
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26100-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "numpy": "1.26.4",
+  "scipy": "1.15.3",
+  "scikit_learn": "1.7.2",
+  "pandas": "2.3.3",
+  "pyyaml": "6.0.3",
+  "git_commit": "f672164995387cbb5d971d4d993a9513b3d5b3a7",
+  "preset": "public_full_broad",
+  "manifest_runs": 45,
+  "manifest_datasets": [
+    "actor",
+    "amazon_ratings",
+    "chameleon_filtered",
+    "citeseer",
+    "cora",
+    "cornell",
+    "minesweeper",
+    "pubmed",
+    "questions",
+    "roman_empire",
+    "squirrel_filtered",
+    "texas",
+    "tolokers",
+    "wikics",
+    "wisconsin"
+  ],
+  "manifest_tasks": [
+    "node_classification"
+  ],
+  "manifest_models": [
+    "graphatlas"
+  ],
+  "optional_empty_manifest": false,
+  "tests_exit_code": null,
+  "status": "passed"
+}
+
+[2/7] Download public_full_broad datasets
+$ C:\Users\24953\.conda\envs\dl\python.exe -u scripts/download_data.py --preset configs/presets/public_full_broad.yaml
+roman_empire: {'num_nodes': 22662, 'num_features': 300, 'num_classes': 18, 'multilabel': False, 'num_edges_raw': 32927, 'num_splits': 10, 'sha256': 'a58ba741d123bf892fe5c872138d07463d75a2e9012360b8dd78ac2d4766d428'}
+amazon_ratings: {'num_nodes': 24492, 'num_features': 300, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 93050, 'num_splits': 10, 'sha256': '4c3a3e3b9d9f6cba0fede4625a00aad8c5721c1a36ed771367f446763241c7dd'}
+minesweeper: {'num_nodes': 10000, 'num_features': 7, 'num_classes': 2, 'multilabel': False, 'num_edges_raw': 39402, 'num_splits': 10, 'sha256': 'e664c8dacf1e8ac466c2c09ed4b237bd2c5541f47a6eae9c6092cb87f16412b3'}
+tolokers: {'num_nodes': 11758, 'num_features': 10, 'num_classes': 2, 'multilabel': False, 'num_edges_raw': 519000, 'num_splits': 10, 'sha256': 'dacf3ac94cec53d03cd2adb5255c08b33dee1656c33ca8164a464bd9450a1667'}
+questions: {'num_nodes': 48921, 'num_features': 301, 'num_classes': 2, 'multilabel': False, 'num_edges_raw': 153540, 'num_splits': 10, 'sha256': '757ebd772bab1475c4dd951ca9e364400c6db161656cff9d21780ee874cf3074'}
+actor: {'num_nodes': 7600, 'num_features': 932, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 33391, 'num_splits': 10, 'sha256': '6ebb79a417036a13d31ffc13b21ed59929f3b627ed58a46bf1e69d36879c9a9d'}
+chameleon_filtered: {'num_nodes': 890, 'num_features': 2325, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 8854, 'num_splits': 10, 'sha256': 'bf46f07e1fb5249280447e5fe3100f3e82fc4b93ad1e13ffcfdec924b6ac0bb5'}
+squirrel_filtered: {'num_nodes': 2223, 'num_features': 2089, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 46998, 'num_splits': 10, 'sha256': 'f06370ffb3116c5de8b7a600005400b2293c025e0ce2f6916d8201a825505ac7'}
+cora: {'num_nodes': 2708, 'num_features': 1433, 'num_classes': 7, 'multilabel': False, 'num_edges_raw': 10556, 'num_splits': 1, 'sha256': '55633206c27cee4a321bdba1e813085e561016641026a454c6b412c75b5e1882'}
+citeseer: {'num_nodes': 3327, 'num_features': 3703, 'num_classes': 6, 'multilabel': False, 'num_edges_raw': 9104, 'num_splits': 1, 'sha256': '90979673e9788b726c28660cd045af0e821dd70c8b359cbacd533088f28dd9eb'}
+pubmed: {'num_nodes': 19717, 'num_features': 500, 'num_classes': 3, 'multilabel': False, 'num_edges_raw': 88648, 'num_splits': 1, 'sha256': 'fa94685616be89ba919357c758e9fd2a1c7968682ea03eaccdbf878cff34bfae'}
+wikics: {'num_nodes': 11701, 'num_features': 300, 'num_classes': 10, 'multilabel': False, 'num_edges_raw': 431726, 'num_splits': 20, 'sha256': '0894d77f4ec610fd988037f41ff85d64f714b02d6a10c098e07e5e353dd65b3f'}
+cornell: {'num_nodes': 183, 'num_features': 1703, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 298, 'num_splits': 1, 'sha256': 'c7d8b8c995b37b4ffc092c833908cac67c7121239e2f3e3aeef2672b08bbd674'}
+texas: {'num_nodes': 183, 'num_features': 1703, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 325, 'num_splits': 1, 'sha256': '0ed25510a7d103296065034767f1ae9703145921ffda557c065f8550a3c8743c'}
+wisconsin: {'num_nodes': 251, 'num_features': 1703, 'num_classes': 5, 'multilabel': False, 'num_edges_raw': 515, 'num_splits': 1, 'sha256': '6bbdf0787275178c868d17f4378f9eda2d676b05b26ba8b44d072c18bc154e71'}
+
+[3/7] Run public_full_broad matrix
+$ C:\Users\24953\.conda\envs\dl\python.exe -u scripts/run_all.py --preset configs/presets/public_full_broad.yaml

@@ -3,9 +3,38 @@
 Only rows with matching dataset version, split protocol, features and metric appear below.
 Published aggregates are not used for paired tests.
 
-| dataset              | metric   | model_graphatlas   |   graphatlas_mean |   graphatlas_std |   model_published |   mean_fraction |   std_fraction |   delta_vs_published_mean |   source_id |   table_id |
-|:---------------------|:---------|:-------------------|------------------:|-----------------:|------------------:|----------------:|---------------:|--------------------------:|------------:|-----------:|
-| atlas_het_coordinate | accuracy | ambient_vector_gnn |          0.846626 |              nan |               nan |             nan |            nan |                       nan |         nan |        nan |
+| dataset                   | metric   | model_graphatlas           |   graphatlas_mean |   graphatlas_std |   model_published |   mean_fraction |   std_fraction |   delta_vs_published_mean |   source_id |   table_id |
+|:--------------------------|:---------|:---------------------------|------------------:|-----------------:|------------------:|----------------:|---------------:|--------------------------:|------------:|-----------:|
+| atlas_het_boundary_stress | accuracy | ambient_vector_gnn         |          0.763439 |      0.0161643   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | geometry_moe               |          0.714483 |      0.0371703   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas                 |          0.773266 |      0.0144712   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_free_transition |          0.763431 |      0.0245495   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_no_cocycle      |          0.750407 |      0.000704085 |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_no_metric       |          0.732433 |      0.0274099   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_no_overlap      |          0.758561 |      0.0515131   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_no_rank         |          0.778144 |      0.0100467   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | graphatlas_no_transport    |          0.725897 |      0.025122    |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_boundary_stress | accuracy | signature_gnn              |          0.729125 |      0.0447784   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | ambient_vector_gnn         |          0.842233 |      0.0124129   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | geometry_moe               |          0.827893 |      0.0322816   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas                 |          0.819738 |      0.0370902   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_free_transition |          0.848393 |      0.0229364   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_no_cocycle      |          0.823815 |      0.0441443   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_no_metric       |          0.834078 |      0.0337854   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_no_overlap      |          0.832021 |      0.024328    |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_no_rank         |          0.823828 |      0.0391146   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | graphatlas_no_transport    |          0.844328 |      0.0278989   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_coordinate      | accuracy | signature_gnn              |          0.832046 |      0.0395303   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | ambient_vector_gnn         |          0.655319 |      0.026092    |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | geometry_moe               |          0.663425 |      0.00323628  |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas                 |          0.702442 |      0.00434388  |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_free_transition |          0.676528 |      0.0394982   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_no_cocycle      |          0.681264 |      0.0226737   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_no_metric       |          0.72673  |      0.0306017   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_no_overlap      |          0.702442 |      0.00433301  |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_no_rank         |          0.705694 |      0.00172447  |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | graphatlas_no_transport    |          0.681296 |      0.0225933   |               nan |             nan |            nan |                       nan |         nan |        nan |
+| atlas_het_mixed_metric    | accuracy | signature_gnn              |          0.702411 |      0.0153709   |               nan |             nan |            nan |                       nan |         nan |        nan |
 
 ## Contextual references
 

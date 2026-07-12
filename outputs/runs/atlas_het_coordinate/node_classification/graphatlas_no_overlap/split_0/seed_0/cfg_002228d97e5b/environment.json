@@ -1,0 +1,17 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "atlas_het_coordinate",
+    "atlas_variant": "coordinate_only",
+    "has_mixed_curvature": false,
+    "heterophily": 0.7,
+    "overlap": 0.28,
+    "coordinate_shift_strength": 0.8,
+    "task": "node_classification"
+  }
+}

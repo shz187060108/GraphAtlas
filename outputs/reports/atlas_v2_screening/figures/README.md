@@ -6,12 +6,13 @@ This report is generated from the same result table as the figures.
 
 | Gate | Status | Value | Criterion |
 |---|---:|---:|---|
-| full_model_present | FAIL | None | At least one Atlas-Het GraphAtlas run exists with intervention metrics |
-| invariance_separates_graphatlas_no_transport | N/A | None | both models must be present |
-| invariance_separates_graphatlas_free_transition | N/A | None | both models must be present |
-| boundary_node_gain | N/A | None | full and no-transport boundary metrics must exist |
-| induced_transition_gain | N/A | None | full and free-transition runs must exist |
+| nonlinear_coordinate_invariance | PASS | 8.72079e-08 | maximum nonlinear intervention error < 1e-6 |
+| invariance_separates_graphatlas_no_transport | PASS | 1.88464e+06 | ablation error / full error >= 10 |
+| invariance_separates_graphatlas_free_transition | PASS | 2.27466e+06 | ablation error / full error >= 10 |
+| boundary_node_gain | PASS | 0.0262791 | mean paired gain >= 0.020 |
+| induced_transition_gain | PASS | 0.00236483 | mean paired test-metric gain > 0 |
 
 ## Interpretation
 
-Unsupported claims in the current result table: full_model_present.
+The coordinate-intervention figure validates a mechanism. It does not by itself establish superior predictive performance.
+No evaluated scientific gate failed in the current result table.

@@ -1,0 +1,50 @@
+{
+  "mode": "public_full_broad",
+  "total_stages": 7,
+  "completed_stages": 3,
+  "failed_stages": 1,
+  "elapsed_seconds": 54.060128688812256,
+  "current_stage": "Run public_full_broad matrix",
+  "complete": false,
+  "stages": [
+    {
+      "index": 1,
+      "name": "Validate public_full_broad manifest",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/preflight.py",
+        "--preset",
+        "configs/presets/public_full_broad.yaml"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.6048192977905273
+    },
+    {
+      "index": 2,
+      "name": "Download public_full_broad datasets",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/download_data.py",
+        "--preset",
+        "configs/presets/public_full_broad.yaml"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 51.34517025947571
+    },
+    {
+      "index": 3,
+      "name": "Run public_full_broad matrix",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/run_all.py",
+        "--preset",
+        "configs/presets/public_full_broad.yaml"
+      ],
+      "returncode": 75,
+      "elapsed_seconds": 0.07082009315490723
+    }
+  ]
+}

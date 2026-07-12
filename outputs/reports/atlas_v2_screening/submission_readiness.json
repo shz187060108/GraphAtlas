@@ -10,10 +10,30 @@
         "passing_datasets": [],
         "comparisons": [
           {
+            "dataset": "atlas_het_boundary_stress",
+            "baseline": "ambient_vector_gnn",
+            "n_pairs": 3,
+            "mean_delta": 0.009827852249145508,
+            "paired_t_p": NaN,
+            "wilcoxon_p": NaN,
+            "wilcoxon_holm_p": NaN,
+            "passed": false
+          },
+          {
+            "dataset": "atlas_het_boundary_stress",
+            "baseline": "geometry_moe",
+            "n_pairs": 3,
+            "mean_delta": 0.05878367026646932,
+            "paired_t_p": NaN,
+            "wilcoxon_p": NaN,
+            "wilcoxon_holm_p": NaN,
+            "passed": false
+          },
+          {
             "dataset": "atlas_het_coordinate",
             "baseline": "ambient_vector_gnn",
-            "n_pairs": 0,
-            "mean_delta": NaN,
+            "n_pairs": 3,
+            "mean_delta": -0.02249489227930705,
             "paired_t_p": NaN,
             "wilcoxon_p": NaN,
             "wilcoxon_holm_p": NaN,
@@ -22,8 +42,28 @@
           {
             "dataset": "atlas_het_coordinate",
             "baseline": "geometry_moe",
-            "n_pairs": 0,
-            "mean_delta": NaN,
+            "n_pairs": 3,
+            "mean_delta": -0.008154710133870443,
+            "paired_t_p": NaN,
+            "wilcoxon_p": NaN,
+            "wilcoxon_holm_p": NaN,
+            "passed": false
+          },
+          {
+            "dataset": "atlas_het_mixed_metric",
+            "baseline": "ambient_vector_gnn",
+            "n_pairs": 3,
+            "mean_delta": 0.04712375005086263,
+            "paired_t_p": NaN,
+            "wilcoxon_p": NaN,
+            "wilcoxon_holm_p": NaN,
+            "passed": false
+          },
+          {
+            "dataset": "atlas_het_mixed_metric",
+            "baseline": "geometry_moe",
+            "n_pairs": 3,
+            "mean_delta": 0.039017120997111,
             "paired_t_p": NaN,
             "wilcoxon_p": NaN,
             "wilcoxon_holm_p": NaN,
@@ -43,8 +83,8 @@
       "name": "interior_preservation",
       "passed": false,
       "value": {
-        "minimum_delta": null,
-        "n_pairs": 0
+        "minimum_delta": -0.10000002384185791,
+        "n_pairs": 9
       },
       "criterion": "full interior accuracy is no more than 0.01 below the best matched baseline"
     },
@@ -57,7 +97,11 @@
     {
       "name": "chart_recovery",
       "passed": false,
-      "value": {},
+      "value": {
+        "atlas_het_boundary_stress": 0.06142737792932893,
+        "atlas_het_coordinate": 0.10973065636918056,
+        "atlas_het_mixed_metric": 0.045574929248521696
+      },
       "criterion": "at least one Atlas-Het v2 dataset has mean chart ARI >= 0.50",
       "claim_policy": "If this gate fails, remove chart identifiability and chart recovery claims from the paper."
     },

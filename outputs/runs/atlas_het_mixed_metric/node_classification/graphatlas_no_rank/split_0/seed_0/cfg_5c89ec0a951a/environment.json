@@ -1,0 +1,30 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "atlas_het_mixed_metric",
+    "atlas_variant": "mixed_metric",
+    "has_mixed_curvature": true,
+    "geometry_region_counts": {
+      "0": 317,
+      "1": 211,
+      "2": 472
+    },
+    "curvature_mean": -0.09268758445978165,
+    "curvature_min": -0.9407519102096558,
+    "curvature_max": 0.4522927701473236,
+    "geometry_region_curvature_mean": {
+      "0": 0.00020938069792464375,
+      "1": 0.19667817652225494,
+      "2": -0.28443443775177
+    },
+    "overlap_ratio": 0.26100000739097595,
+    "cross_chart_edge_fraction": 0.201,
+    "metric": "accuracy",
+    "task": "node_classification"
+  }
+}
