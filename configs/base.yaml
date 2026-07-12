@@ -32,11 +32,19 @@ loss:
   task: 1.0
   reconstruction: 0.05
   cocycle: 0.01
-  metric: 0.01
+  inverse_cycle: 0.01
+  path_consistency: 0.02
+  metric: 0.02
+  metric_probes: 4
+  metric_scale_weight: 0.10
+  chart_rank: 0.01
+  rank_margin: 0.20
+  rank_max_condition: 20.0
+  rank_condition_weight: 0.05
   cover: 0.01
   balance: 0.005
   sparsity: 0.005
-  geometry: 0.01
+  geometry: 0.0
   sample_nodes: 128
 
 train:
@@ -50,5 +58,7 @@ train:
   progress: true
   eval_every: 5
   regularization_every: 10
+  light_regularization_nodes: 32
+  light_metric_probes: 2
   output_dir: outputs/runs
   num_threads: 1

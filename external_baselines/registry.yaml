@@ -1,0 +1,21 @@
+methods:
+  graphmore_official:
+    family: GraphMoRE
+    repository_url: null
+    pinned_commit: null
+    status: unconfigured
+  geomoe_official:
+    family: GeoMoE
+    repository_url: null
+    pinned_commit: null
+    status: unconfigured
+  argnn_official:
+    family: ARGNN
+    repository_url: null
+    pinned_commit: null
+    status: unconfigured
+  neural_sheaf_diffusion_official:
+    family: Neural Sheaf Diffusion
+    repository_url: null
+    pinned_commit: null
+    status: unconfigured

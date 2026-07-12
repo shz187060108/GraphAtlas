@@ -1,0 +1,5 @@
+model,parameters,forward_cpu_ms,logits_shape,embedding_shape,relative_to_graphatlas
+graphatlas,64834,5.518699996173382,"[96, 3]","[96, 84]",1.0
+ambient_vector_gnn,65187,1.2883999734185636,"[96, 3]","[96, 84]",1.0054446740907548
+signature_gnn,34627,0.5782999796792865,"[96, 3]","[96, 64]",0.5340870530894284
+geometry_moe,5132,0.7466999813914299,"[96, 3]","[96, 64]",0.07915599839590338

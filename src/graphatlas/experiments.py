@@ -17,6 +17,7 @@ from tqdm.auto import tqdm
 from threadpoolctl import threadpool_limits
 
 from graphatlas.config import ExperimentConfig
+from graphatlas.datasets.names import is_atlas_het_name
 from graphatlas.utils import deep_update, load_yaml, save_json, save_yaml, stable_hash
 
 
@@ -69,14 +70,18 @@ def _job_config(
     dataset_name = config_dict["dataset"]["name"].lower().replace("-", "_")
     # The benchmark supplies ten fixed splits. The paper preset pairs split s
     # with initialization seed s, matching the standard ten-run protocol.
-    if dataset_name != "atlas_het" and "split" not in dataset_override:
+    if not is_atlas_het_name(dataset_name) and "split" not in dataset_override:
         config_dict["dataset"]["split"] = seed
     model_name = config_dict["model"]["name"]
     if model_name == "graphatlas_no_metric":
         config_dict["loss"]["metric"] = 0.0
     if model_name == "graphatlas_no_cocycle":
         config_dict["loss"]["cocycle"] = 0.0
-    if dataset_name != "atlas_het":
+        config_dict["loss"]["inverse_cycle"] = 0.0
+        config_dict["loss"]["path_consistency"] = 0.0
+    if model_name == "graphatlas_no_rank":
+        config_dict["loss"]["chart_rank"] = 0.0
+    if not is_atlas_het_name(dataset_name):
         config_dict["loss"]["geometry"] = 0.0
     return ExperimentConfig.from_dict(config_dict)
 

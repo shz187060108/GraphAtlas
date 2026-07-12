@@ -4,6 +4,7 @@ from _bootstrap import PROJECT_ROOT
 import argparse, subprocess, sys
 from pathlib import Path
 from graphatlas.utils import load_yaml, save_yaml
+from graphatlas.datasets.names import is_atlas_het_name
 
 
 def main() -> None:
@@ -19,7 +20,7 @@ def main() -> None:
     payload=load_yaml(source); active=0
     for entry in payload.get("datasets",[]):
         name=entry["name"].lower().replace("-","_")
-        if name=="atlas_het":
+        if is_atlas_het_name(name):
             entry["enabled"]=True; active+=1; continue
         available=(root/args.data_root/name/"raw"/f"{name}.npz").exists()
         entry["enabled"]=available; active+=int(available)

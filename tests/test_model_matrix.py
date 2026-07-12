@@ -15,6 +15,7 @@ from graphatlas.nn.model import build_model
         "linkx", "geometry_moe", "graphatlas", "graphatlas_no_transport",
         "graphatlas_free_transition", "graphatlas_no_metric", "graphatlas_no_cocycle",
         "graphatlas_no_overlap",
+        "graphatlas_no_rank",
     ],
 )
 def test_every_configured_model_builds_and_runs(name: str):

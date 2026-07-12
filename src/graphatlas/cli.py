@@ -3,10 +3,12 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import pandas as pd
+
 from graphatlas.config import ExperimentConfig
 from graphatlas.datasets import load_dataset
 from graphatlas.experiments import run_preset
-from graphatlas.reporting import summarize_results
+from graphatlas.reporting import submission_readiness_gates, summarize_results
 from graphatlas.trainer import Trainer
 
 
@@ -54,8 +56,12 @@ def summarize_main() -> None:
     parser.add_argument("--results", default="outputs/results/all.csv")
     parser.add_argument("--no-plots", action="store_true")
     parser.add_argument("--strict-gates", action="store_true")
+    parser.add_argument("--strict-submission-gates", action="store_true")
     args = parser.parse_args()
     summary, _, gates = summarize_results(args.results, plots=not args.no_plots)
     print(summary.to_string(index=False))
     if args.strict_gates and not gates["all_decisive_gates_pass"]:
         raise SystemExit(2)
+    submission = submission_readiness_gates(pd.read_csv(args.results))
+    if args.strict_submission_gates and not submission["all_submission_gates_pass"]:
+        raise SystemExit(3)

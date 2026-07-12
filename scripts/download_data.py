@@ -13,6 +13,7 @@ from tqdm.auto import tqdm
 
 from graphatlas.datasets.real import SUPPORTED_NAMES, download_dataset, validate_dataset_file
 from graphatlas.utils import load_yaml
+from graphatlas.datasets.names import is_atlas_het_name
 
 
 MAIN_DATASETS = [
@@ -43,7 +44,7 @@ def _preset_path(value: str, root: Path) -> Path:
 def _datasets_from_preset(value: str, root: Path) -> list[str]:
     preset = load_yaml(_preset_path(value, root))
     names = [_normalize(entry["name"]) for entry in preset.get("datasets", []) if entry.get("enabled", True)]
-    return [name for name in names if name != "atlas_het"]
+    return [name for name in names if not is_atlas_het_name(name)]
 
 
 def main() -> None:

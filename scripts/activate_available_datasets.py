@@ -10,6 +10,7 @@ import argparse
 from pathlib import Path
 
 from graphatlas.utils import load_yaml, save_yaml
+from graphatlas.datasets.names import is_atlas_het_name
 
 
 def main() -> None:
@@ -27,7 +28,7 @@ def main() -> None:
     active = 0
     for entry in payload.get("datasets", []):
         name = entry["name"].lower().replace("-", "_")
-        if name == "atlas_het":
+        if is_atlas_het_name(name):
             entry["enabled"] = True
             active += 1
             continue

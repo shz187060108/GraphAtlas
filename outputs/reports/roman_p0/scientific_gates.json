@@ -1,0 +1,38 @@
+{
+  "all_decisive_gates_pass": false,
+  "passed": 0,
+  "failed": 1,
+  "not_evaluated": 4,
+  "gates": [
+    {
+      "name": "full_model_present",
+      "passed": false,
+      "value": null,
+      "criterion": "At least one Atlas-Het GraphAtlas run exists with intervention metrics"
+    },
+    {
+      "name": "invariance_separates_graphatlas_no_transport",
+      "passed": null,
+      "value": null,
+      "criterion": "both models must be present"
+    },
+    {
+      "name": "invariance_separates_graphatlas_free_transition",
+      "passed": null,
+      "value": null,
+      "criterion": "both models must be present"
+    },
+    {
+      "name": "boundary_node_gain",
+      "passed": null,
+      "value": null,
+      "criterion": "full and no-transport boundary metrics must exist"
+    },
+    {
+      "name": "induced_transition_gain",
+      "passed": null,
+      "value": null,
+      "criterion": "full and free-transition runs must exist"
+    }
+  ]
+}

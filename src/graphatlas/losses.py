@@ -45,7 +45,9 @@ def atlas_regularization_terms(
     triple_cocycle_numerator = zero
     triple_cocycle_denominator = zero
     k_count = model.config.num_charts
-    if config.cocycle > 0 and k_count >= 2:
+    inverse_weight = config.resolved_inverse_cycle()
+    path_weight = config.resolved_path_consistency()
+    if (inverse_weight > 0 or path_weight > 0) and k_count >= 2:
         # Soft chart occupancy defines a differentiable chart-overlap graph.
         # Propagation still uses sparse top-k membership, while this graph keeps
         # route consistency trainable when membership_topk=2 and no node belongs
@@ -56,22 +58,23 @@ def atlas_regularization_terms(
 
         # Pairwise inverse-cycle consistency checks that chart transitions retain
         # the same decoded observation when transported out and back.
-        for source in range(k_count):
-            phi_source, psi_source = model.chart_functions(source)
-            source_coordinate = coordinates[indices, source]
-            source_observation = psi_source(source_coordinate)
-            for target in range(k_count):
-                if target == source:
-                    continue
-                phi_target, psi_target = model.chart_functions(target)
-                target_observation = psi_target(phi_target(source_observation))
-                roundtrip_observation = psi_source(phi_source(target_observation))
-                weight = membership_soft[indices, source] * membership_soft[indices, target]
-                error = (source_observation - roundtrip_observation).square().mean(dim=-1)
-                pair_cycle_numerator = pair_cycle_numerator + (weight * error).sum()
-                pair_cycle_denominator = pair_cycle_denominator + weight.sum()
+        if inverse_weight > 0:
+            for source in range(k_count):
+                phi_source, psi_source = model.chart_functions(source)
+                source_coordinate = coordinates[indices, source]
+                source_observation = psi_source(source_coordinate)
+                for target in range(k_count):
+                    if target == source:
+                        continue
+                    phi_target, psi_target = model.chart_functions(target)
+                    target_observation = psi_target(phi_target(source_observation))
+                    roundtrip_observation = psi_source(phi_source(target_observation))
+                    weight = membership_soft[indices, source] * membership_soft[indices, target]
+                    error = (source_observation - roundtrip_observation).square().mean(dim=-1)
+                    pair_cycle_numerator = pair_cycle_numerator + (weight * error).sum()
+                    pair_cycle_denominator = pair_cycle_denominator + weight.sum()
 
-        if k_count >= 3:
+        if path_weight > 0 and k_count >= 3:
             for source, middle, target in itertools.permutations(range(k_count), 3):
                 phi_middle, psi_middle = model.chart_functions(middle)
                 phi_target, psi_target = model.chart_functions(target)
@@ -123,26 +126,81 @@ def atlas_regularization_terms(
 
     metric_numerator = zero
     metric_denominator = zero
+    metric_direction_numerator = zero
+    metric_scale_numerator = zero
     if config.metric > 0 and k_count >= 2:
         for source in range(k_count):
             _, psi_source = model.chart_functions(source)
             source_coordinate = coordinates[indices, source]
             source_observation = psi_source(source_coordinate)
-            probe = torch.randn(indices.shape[0], model.config.chart_dim, device=device, dtype=h.dtype)
-            probe = probe / torch.linalg.vector_norm(probe, dim=-1, keepdim=True).clamp_min(1e-8)
-            pushed_probe = model.push_vectors(source, source_coordinate, probe.unsqueeze(-1)).squeeze(-1)
+            probe = torch.randn(
+                indices.shape[0],
+                model.config.chart_dim,
+                config.metric_probes,
+                device=device,
+                dtype=h.dtype,
+            )
+            probe = probe / torch.linalg.vector_norm(probe, dim=1, keepdim=True).clamp_min(1e-8)
+            source_pushed = model.push_vectors(source, source_coordinate, probe)
             for target in range(k_count):
                 if target == source:
                     continue
                 phi_target, _ = model.chart_functions(target)
                 target_coordinate = phi_target(source_observation)
-                target_tangent = model.pull_vectors(target, source_observation, pushed_probe.unsqueeze(-1))
-                reconstructed_probe = model.push_vectors(target, target_coordinate, target_tangent).squeeze(-1)
+                target_tangent = model.pull_vectors(target, source_observation, source_pushed)
+                reconstructed = model.push_vectors(target, target_coordinate, target_tangent)
+
+                source_norm = torch.linalg.vector_norm(source_pushed, dim=1).clamp_min(1e-8)
+                reconstructed_norm = torch.linalg.vector_norm(reconstructed, dim=1).clamp_min(1e-8)
+                source_direction = source_pushed / source_norm[:, None, :]
+                reconstructed_direction = reconstructed / reconstructed_norm[:, None, :]
+                direction_error = (source_direction - reconstructed_direction).square().sum(dim=1)
+                scale_error = (torch.log(source_norm) - torch.log(reconstructed_norm)).square()
+                per_node_direction = direction_error.mean(dim=-1)
+                per_node_scale = scale_error.mean(dim=-1)
+                probe_error = per_node_direction + config.metric_scale_weight * per_node_scale
                 weight = membership_soft[indices, source] * membership_soft[indices, target]
-                error = (pushed_probe - reconstructed_probe).square().mean(dim=-1)
-                metric_numerator = metric_numerator + (weight * error).sum()
+                metric_numerator = metric_numerator + (weight * probe_error).sum()
+                metric_direction_numerator = metric_direction_numerator + (weight * per_node_direction).sum()
+                metric_scale_numerator = metric_scale_numerator + (weight * per_node_scale).sum()
                 metric_denominator = metric_denominator + weight.sum()
     metric_loss = metric_numerator / metric_denominator.clamp_min(1.0)
+    metric_direction_error = metric_direction_numerator / metric_denominator.clamp_min(1.0)
+    metric_scale_error = metric_scale_numerator / metric_denominator.clamp_min(1.0)
+
+    chart_rank_numerator = zero
+    chart_rank_denominator = zero
+    relative_min_numerator = zero
+    condition_numerator = zero
+    if config.chart_rank > 0:
+        basis = torch.eye(model.config.chart_dim, device=device, dtype=h.dtype).expand(
+            indices.shape[0], -1, -1
+        )
+        for chart in range(k_count):
+            jacobian_columns = model.push_vectors(
+                chart,
+                coordinates[indices, chart],
+                basis,
+            )
+            singular_values = torch.linalg.svdvals(jacobian_columns)
+            if not bool(torch.isfinite(singular_values).all()):
+                raise FloatingPointError(f"Non-finite decoder singular values in chart {chart}")
+            s_min = singular_values.min(dim=-1).values
+            s_max = singular_values.max(dim=-1).values
+            rms = torch.sqrt(singular_values.square().mean(dim=-1)).clamp_min(1e-8)
+            relative_min = s_min / rms
+            condition = s_max / s_min.clamp_min(1e-8)
+            margin_defect = torch.relu(config.rank_margin - relative_min).square()
+            condition_defect = torch.relu(torch.log(condition / config.rank_max_condition)).square()
+            per_node_rank_loss = margin_defect + config.rank_condition_weight * condition_defect
+            weight = membership_soft[indices, chart]
+            chart_rank_numerator = chart_rank_numerator + (weight * per_node_rank_loss).sum()
+            relative_min_numerator = relative_min_numerator + (weight * relative_min).sum()
+            condition_numerator = condition_numerator + (weight * condition).sum()
+            chart_rank_denominator = chart_rank_denominator + weight.sum()
+    chart_rank_loss = chart_rank_numerator / chart_rank_denominator.clamp_min(1.0)
+    chart_min_relative_singular_value = relative_min_numerator / chart_rank_denominator.clamp_min(1.0)
+    chart_condition_number = condition_numerator / chart_rank_denominator.clamp_min(1.0)
 
     geometry_loss = zero
     if config.geometry > 0 and data.latent_positions is not None:
@@ -173,6 +231,11 @@ def atlas_regularization_terms(
         "path_consistency": path_consistency_loss,
         "triple_cocycle": triple_cocycle_loss,
         "metric": metric_loss,
+        "metric_direction_error": metric_direction_error,
+        "metric_scale_error": metric_scale_error,
+        "chart_rank": chart_rank_loss,
+        "chart_min_relative_singular_value": chart_min_relative_singular_value,
+        "chart_condition_number": chart_condition_number,
         "geometry": geometry_loss,
     }
 
@@ -213,6 +276,11 @@ def compute_loss(
         "path_consistency": task.new_zeros(()),
         "triple_cocycle": task.new_zeros(()),
         "metric": task.new_zeros(()),
+        "metric_direction_error": task.new_zeros(()),
+        "metric_scale_error": task.new_zeros(()),
+        "chart_rank": task.new_zeros(()),
+        "chart_min_relative_singular_value": task.new_zeros(()),
+        "chart_condition_number": task.new_zeros(()),
         "cover": task.new_zeros(()),
         "balance": task.new_zeros(()),
         "sparsity": task.new_zeros(()),
@@ -223,8 +291,10 @@ def compute_loss(
     total = (
         config.task * terms["task"]
         + config.reconstruction * terms["reconstruction"]
-        + config.cocycle * terms["cocycle"]
+        + config.resolved_inverse_cycle() * terms["inverse_cycle"]
+        + config.resolved_path_consistency() * terms["path_consistency"]
         + config.metric * terms["metric"]
+        + config.chart_rank * terms["chart_rank"]
         + config.cover * terms["cover"]
         + config.balance * terms["balance"]
         + config.sparsity * terms["sparsity"]

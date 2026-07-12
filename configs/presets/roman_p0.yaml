@@ -1,0 +1,47 @@
+base_config: configs/base.yaml
+
+seeds:
+  - 0
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+
+train:
+  epochs: 500
+  patience: 80
+  eval_every: 5
+  regularization_every: 10
+  light_regularization_nodes: 48
+  light_metric_probes: 2
+  progress: true
+  num_threads: 1
+
+loss:
+  inverse_cycle: 0.01
+  path_consistency: 0.02
+  metric: 0.02
+  chart_rank: 0.01
+  metric_probes: 4
+  sample_nodes: 256
+
+datasets:
+  - name: roman_empire
+    num_charts: 4
+
+models:
+  - name: ambient_vector_gnn
+  - name: signature_gnn
+  - name: geometry_moe
+  - name: graphatlas_no_transport
+  - name: graphatlas_free_transition
+  - name: graphatlas_no_metric
+  - name: graphatlas_no_cocycle
+  - name: graphatlas_no_overlap
+  - name: graphatlas_no_rank
+  - name: graphatlas

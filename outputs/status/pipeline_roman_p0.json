@@ -1,0 +1,138 @@
+{
+  "mode": "roman_p0",
+  "total_stages": 9,
+  "completed_stages": 9,
+  "failed_stages": 0,
+  "elapsed_seconds": 238.28848242759705,
+  "current_stage": "Run visualization subprocess test",
+  "complete": true,
+  "stages": [
+    {
+      "index": 1,
+      "name": "Validate roman_p0 manifest",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/preflight.py",
+        "--preset",
+        "configs/presets/roman_p0.yaml"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.392547369003296
+    },
+    {
+      "index": 2,
+      "name": "Download roman_p0 datasets",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/download_data.py",
+        "--preset",
+        "configs/presets/roman_p0.yaml"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.43532395362854
+    },
+    {
+      "index": 3,
+      "name": "Run roman_p0 matrix",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/run_all.py",
+        "--preset",
+        "configs/presets/roman_p0.yaml",
+        "--limit",
+        "1"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 218.69198083877563
+    },
+    {
+      "index": 4,
+      "name": "Compute statistics and claim gates",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/summarize.py",
+        "--results",
+        "outputs/results/roman_p0.csv",
+        "--output-dir",
+        "outputs/reports/roman_p0",
+        "--no-plots"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.8412008285522461
+    },
+    {
+      "index": 5,
+      "name": "Generate publication figures",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/visualize.py",
+        "--results",
+        "outputs/results/roman_p0.csv",
+        "--output-dir",
+        "outputs/reports/roman_p0/figures"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.377051830291748
+    },
+    {
+      "index": 6,
+      "name": "Validate curated published results",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/validate_published_results.py"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.3693575859069824
+    },
+    {
+      "index": 7,
+      "name": "Build provenance-aware published comparison tables",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/build_comparison_tables.py",
+        "--results",
+        "outputs/results/roman_p0.csv",
+        "--output-dir",
+        "outputs/reports/roman_p0/published_comparison"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.40970420837402344
+    },
+    {
+      "index": 8,
+      "name": "Run unit and integration tests",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "-m",
+        "pytest",
+        "-q"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 6.918332815170288
+    },
+    {
+      "index": 9,
+      "name": "Run visualization subprocess test",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/test_visualization.py",
+        "-m",
+        "visualization"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 4.828327894210815
+    }
+  ]
+}

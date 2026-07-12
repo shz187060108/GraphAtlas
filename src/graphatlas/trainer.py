@@ -66,6 +66,17 @@ def _restore_rng_state(state: dict[str, Any]) -> None:
         torch.cuda.set_rng_state_all(cuda_states)
 
 
+def _loss_config_for_epoch(config: ExperimentConfig, epoch: int):
+    if epoch % config.train.regularization_every == 0:
+        return config.loss
+    return replace(
+        config.loss,
+        sample_nodes=min(config.loss.sample_nodes, config.train.light_regularization_nodes),
+        metric_probes=min(config.loss.metric_probes, config.train.light_metric_probes),
+        geometry=0.0,
+    )
+
+
 class Trainer:
     def __init__(self, config: ExperimentConfig):
         config.validate()
@@ -150,9 +161,7 @@ class Trainer:
             model.train()
             optimizer.zero_grad(set_to_none=True)
             output = model(data)
-            loss_config = self.config.loss
-            if epoch % self.config.train.regularization_every != 0:
-                loss_config = replace(loss_config, cocycle=0.0, metric=0.0, geometry=0.0)
+            loss_config = _loss_config_for_epoch(self.config, epoch)
             loss, loss_values = compute_loss(
                 model, output, data, loss_config, task_name=self.config.dataset.task
             )
@@ -225,7 +234,10 @@ class Trainer:
             diagnostic_loss = replace(
                 self.config.loss,
                 cocycle=1.0,
+                inverse_cycle=1.0,
+                path_consistency=1.0,
                 metric=1.0,
+                chart_rank=1.0,
                 geometry=1.0 if data.latent_positions is not None else 0.0,
                 sample_nodes=min(max(self.config.loss.sample_nodes, 64), data.num_nodes),
             )
@@ -236,6 +248,13 @@ class Trainer:
             metrics["triple_cocycle_error"] = float(diagnostics["triple_cocycle"].detach().cpu())
             metrics["path_consistency_error"] = float(diagnostics["path_consistency"].detach().cpu())
             metrics["metric_compatibility_error"] = float(diagnostics["metric"].detach().cpu())
+            metrics["metric_direction_error"] = float(diagnostics["metric_direction_error"].detach().cpu())
+            metrics["metric_scale_error"] = float(diagnostics["metric_scale_error"].detach().cpu())
+            metrics["chart_rank_error"] = float(diagnostics["chart_rank"].detach().cpu())
+            metrics["chart_min_relative_singular_value"] = float(
+                diagnostics["chart_min_relative_singular_value"].detach().cpu()
+            )
+            metrics["chart_condition_number"] = float(diagnostics["chart_condition_number"].detach().cpu())
             metrics["geometry_error"] = float(diagnostics["geometry"].detach().cpu())
         else:
             metrics["cocycle_error"] = float("nan")
@@ -243,6 +262,11 @@ class Trainer:
             metrics["triple_cocycle_error"] = float("nan")
             metrics["path_consistency_error"] = float("nan")
             metrics["metric_compatibility_error"] = float("nan")
+            metrics["metric_direction_error"] = float("nan")
+            metrics["metric_scale_error"] = float("nan")
+            metrics["chart_rank_error"] = float("nan")
+            metrics["chart_min_relative_singular_value"] = float("nan")
+            metrics["chart_condition_number"] = float("nan")
             metrics["geometry_error"] = float("nan")
         metrics.update(
             {

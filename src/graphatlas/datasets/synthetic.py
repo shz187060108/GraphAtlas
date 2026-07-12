@@ -51,7 +51,7 @@ def _chart_memberships(t: np.ndarray, num_charts: int, overlap: float) -> np.nda
     return weights
 
 
-def generate_atlas_het(config: DatasetConfig, seed: int) -> GraphData:
+def generate_coordinate_only_atlas_het(config: DatasetConfig, seed: int) -> GraphData:
     rng = np.random.default_rng(seed)
     n = config.num_nodes
     d = config.latent_dim
@@ -172,9 +172,27 @@ def generate_atlas_het(config: DatasetConfig, seed: int) -> GraphData:
         true_chart_coordinates=torch.tensor(true_coords_np, dtype=torch.float32),
         latent_positions=torch.tensor(z, dtype=torch.float32),
         metadata={
-            "name": "atlas_het",
+            "name": config.name,
+            "atlas_variant": "coordinate_only",
+            "has_mixed_curvature": False,
             "heterophily": float(config.heterophily),
             "overlap": float(config.overlap),
             "coordinate_shift_strength": float(config.coordinate_shift_strength),
         },
     )
+
+
+def generate_atlas_het(config: DatasetConfig, seed: int) -> GraphData:
+    normalized = config.name.lower().replace("-", "_")
+    variant = config.atlas_variant
+    if normalized == "atlas_het_mixed_metric":
+        variant = "mixed_metric"
+    elif normalized == "atlas_het_boundary_stress":
+        variant = "boundary_stress"
+    elif normalized in {"atlas_het", "atlas_het_coordinate"}:
+        variant = "coordinate_only"
+    if variant == "coordinate_only":
+        return generate_coordinate_only_atlas_het(config, seed)
+    from .synthetic_v2 import generate_mixed_metric_atlas_het
+
+    return generate_mixed_metric_atlas_het(config, seed, boundary_stress=variant == "boundary_stress")

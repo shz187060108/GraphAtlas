@@ -12,6 +12,149 @@ from graphatlas.nn.functional import edge_dot_scores
 from graphatlas.nn.model import GraphAtlas
 
 
+OVERLAP_THRESHOLD = 0.05
+
+
+def predicted_edge_lengths(
+    model: GraphAtlas,
+    output: dict[str, Any],
+    data: GraphData,
+) -> torch.Tensor:
+    coordinates = output["coordinates"]
+    membership = output["membership"]
+    source, target = data.edge_index
+    reparameterizations = output.get("chart_reparameterizations", [None] * model.config.num_charts)
+    per_chart = []
+    weights = []
+    for chart in range(model.config.num_charts):
+        reparameterization = reparameterizations[chart]
+        if reparameterization is None:
+            source_coordinate = coordinates[source, chart]
+            target_coordinate = coordinates[target, chart]
+        else:
+            # Express a finite displacement in the chart's base coordinates.
+            # This makes the diagnostic independent of the displayed chart
+            # parameterization while still measuring its pushed tangent.
+            source_coordinate = reparameterization.inverse(coordinates[source, chart])
+            target_coordinate = reparameterization.inverse(coordinates[target, chart])
+        delta = target_coordinate - source_coordinate
+        pushed = model.push_vectors(
+            chart,
+            source_coordinate,
+            delta.unsqueeze(-1),
+            None,
+        ).squeeze(-1)
+        per_chart.append(torch.linalg.vector_norm(pushed, dim=-1))
+        weights.append(membership[source, chart] * membership[target, chart])
+    lengths = torch.stack(per_chart, dim=-1)
+    weight = torch.stack(weights, dim=-1)
+    denominator = weight.sum(dim=-1)
+    shared = (lengths * weight).sum(dim=-1) / denominator.clamp_min(1e-12)
+    # Observation-space differences are invariant to chart reparameterization
+    # and provide a fixed fallback when an edge has no shared active chart.
+    observation = output["observation"]
+    fallback = torch.linalg.vector_norm(observation[target] - observation[source], dim=-1)
+    return torch.where(denominator > 0, shared, fallback).clamp_min(1e-8)
+
+
+def transition_error(
+    model: GraphAtlas,
+    output: dict[str, Any],
+    data: GraphData,
+    seed: int = 0,
+    probes: int = 4,
+) -> torch.Tensor:
+    membership = output["membership"]
+    h = output["observation"]
+    coordinates = output["coordinates"]
+    reps = output.get("chart_reparameterizations", [None] * model.config.num_charts)
+    overlap = (membership > OVERLAP_THRESHOLD).sum(dim=-1) > 1
+    indices = torch.nonzero(overlap, as_tuple=False).flatten()[:128]
+    if not len(indices):
+        return h.new_tensor(float("nan"))
+    generator = torch.Generator(device="cpu").manual_seed(seed)
+    random_probe = torch.randn(
+        len(indices), model.config.observation_dim, probes, generator=generator, dtype=h.dtype
+    ).to(h.device)
+    random_probe = random_probe / torch.linalg.vector_norm(random_probe, dim=1, keepdim=True).clamp_min(1e-8)
+    numerator = h.new_zeros(())
+    denominator = h.new_zeros(())
+    for source_chart in range(model.config.num_charts):
+        source_tangent = model.pull_vectors(
+            source_chart, h[indices], random_probe, reps[source_chart]
+        )
+        source_observation = model.push_vectors(
+            source_chart, coordinates[indices, source_chart], source_tangent, reps[source_chart]
+        )
+        for target_chart in range(model.config.num_charts):
+            if target_chart == source_chart:
+                continue
+            target_tangent = model.pull_vectors(
+                target_chart, h[indices], source_observation, reps[target_chart]
+            )
+            reconstructed = model.push_vectors(
+                target_chart, coordinates[indices, target_chart], target_tangent, reps[target_chart]
+            )
+            source_norm = torch.linalg.vector_norm(source_observation, dim=1).clamp_min(1e-8)
+            target_norm = torch.linalg.vector_norm(reconstructed, dim=1).clamp_min(1e-8)
+            direction = (
+                source_observation / source_norm[:, None]
+                - reconstructed / target_norm[:, None]
+            ).square().sum(dim=1)
+            scale = (torch.log(source_norm) - torch.log(target_norm)).square()
+            error = (direction + 0.1 * scale).mean(dim=-1)
+            weight = membership[indices, source_chart] * membership[indices, target_chart]
+            numerator = numerator + (weight * error).sum()
+            denominator = denominator + weight.sum()
+    return numerator / denominator.clamp_min(1e-12)
+
+
+def intrinsic_geometry_diagnostics(
+    model: GraphAtlas,
+    output: dict[str, Any],
+    data: GraphData,
+    seed: int,
+) -> dict[str, float]:
+    result = {
+        "metric_recovery_error": float("nan"),
+        "metric_recovery_mean_error": float("nan"),
+        "transition_error": float("nan"),
+        "local_distortion": float("nan"),
+        "cross_chart_distortion": float("nan"),
+    }
+    predicted = predicted_edge_lengths(model, output, data)
+    if data.true_edge_lengths is not None:
+        relative = (predicted - data.true_edge_lengths).abs() / data.true_edge_lengths.clamp_min(1e-6)
+        result["metric_recovery_error"] = float(relative.median().detach().cpu())
+        result["metric_recovery_mean_error"] = float(relative.mean().detach().cpu())
+    result["transition_error"] = float(transition_error(model, output, data, seed).detach().cpu())
+    if data.geodesic_pairs is not None and data.geodesic_distances is not None:
+        from scipy.sparse import csr_matrix
+        from scipy.sparse.csgraph import dijkstra
+
+        source, target = data.edge_index.detach().cpu().numpy()
+        graph = csr_matrix(
+            (predicted.detach().cpu().numpy(), (source, target)),
+            shape=(data.num_nodes, data.num_nodes),
+        )
+        pairs = data.geodesic_pairs.detach().cpu().numpy()
+        unique_sources = sorted(set(map(int, pairs[0])))
+        distances = dijkstra(graph, directed=False, indices=unique_sources)
+        lookup = {node: row for row, node in enumerate(unique_sources)}
+        predicted_distance = np.asarray([distances[lookup[int(i)], int(j)] for i, j in pairs.T])
+        true_distance = data.geodesic_distances.detach().cpu().numpy()
+        finite = np.isfinite(predicted_distance) & (predicted_distance > 0)
+        distortion = np.full(len(true_distance), np.nan)
+        distortion[finite] = np.abs(np.log(predicted_distance[finite] / true_distance[finite]))
+        dominant = data.chart_membership.argmax(dim=-1).detach().cpu().numpy()
+        same = dominant[pairs[0]] == dominant[pairs[1]]
+        if np.any(finite & same):
+            result["local_distortion"] = float(np.nanmean(distortion[finite & same]))
+        if np.any(finite & ~same):
+            result["cross_chart_distortion"] = float(np.nanmean(distortion[finite & ~same]))
+    return result
+
+
 
 def _safe_numpy(tensor: torch.Tensor) -> np.ndarray:
     return tensor.detach().cpu().numpy()
@@ -320,8 +463,8 @@ def evaluate_output(
         predicted_chart = membership.argmax(dim=-1).detach().cpu().numpy()
         true_chart = data.chart_membership.argmax(dim=-1).detach().cpu().numpy()
         metrics["chart_ari"] = float(adjusted_rand_score(true_chart, predicted_chart))
-        predicted_overlap = ((membership > 0.05).sum(dim=-1) > 1).detach().cpu().numpy()
-        true_overlap = data.boundary_mask.detach().cpu().numpy()
+        predicted_overlap = ((membership > OVERLAP_THRESHOLD).sum(dim=-1) > 1).detach().cpu().numpy()
+        true_overlap = ((data.chart_membership > OVERLAP_THRESHOLD).sum(dim=-1) > 1).detach().cpu().numpy()
         metrics["overlap_f1"] = float(f1_score(true_overlap, predicted_overlap, zero_division=0))
     else:
         metrics["chart_ari"] = float("nan")
@@ -351,6 +494,14 @@ def evaluate_output(
                 "intervention_test_metric_nonlinear",
             ):
                 metrics[name] = float("nan")
+        if data.true_edge_lengths is not None:
+            metrics.update(intrinsic_geometry_diagnostics(model, output, data, seed))
+        else:
+            for name in (
+                "metric_recovery_error", "metric_recovery_mean_error", "transition_error",
+                "local_distortion", "cross_chart_distortion",
+            ):
+                metrics[name] = float("nan")
     else:
         metrics["reconstruction_error"] = float("nan")
         for name in (
@@ -361,4 +512,17 @@ def evaluate_output(
             "intervention_test_metric_nonlinear",
         ):
             metrics[name] = float("nan")
+        for name in (
+            "metric_recovery_error", "metric_recovery_mean_error", "transition_error",
+            "local_distortion", "cross_chart_distortion",
+        ):
+            metrics[name] = float("nan")
+    if data.geometry_region is not None:
+        metrics["curvature_flat_fraction"] = float((data.geometry_region == 0).float().mean().cpu())
+        metrics["curvature_positive_fraction"] = float((data.geometry_region == 1).float().mean().cpu())
+        metrics["curvature_negative_fraction"] = float((data.geometry_region == 2).float().mean().cpu())
+    else:
+        metrics["curvature_flat_fraction"] = float("nan")
+        metrics["curvature_positive_fraction"] = float("nan")
+        metrics["curvature_negative_fraction"] = float("nan")
     return metrics

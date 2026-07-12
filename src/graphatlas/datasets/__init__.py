@@ -4,6 +4,7 @@ from graphatlas.config import DatasetConfig
 from graphatlas.data import GraphData, prepare_link_prediction_data
 from .real import download_dataset, load_real_dataset
 from .synthetic import generate_atlas_het
+from .names import is_atlas_het_name
 
 
 def _append_type_relation_features(data: GraphData, include_relation: bool) -> GraphData:
@@ -41,7 +42,7 @@ def _append_type_relation_features(data: GraphData, include_relation: bool) -> G
 
 def load_dataset(config: DatasetConfig, seed: int) -> GraphData:
     name = config.name.lower().replace("-", "_")
-    if name == "atlas_het":
+    if is_atlas_het_name(name):
         data = generate_atlas_het(config, seed)
     else:
         if config.local_path:
@@ -86,4 +87,4 @@ def load_dataset(config: DatasetConfig, seed: int) -> GraphData:
     return data
 
 
-__all__ = ["GraphData", "load_dataset", "download_dataset", "generate_atlas_het"]
+__all__ = ["GraphData", "load_dataset", "download_dataset", "generate_atlas_het", "is_atlas_het_name"]

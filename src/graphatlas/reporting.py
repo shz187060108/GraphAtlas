@@ -124,7 +124,11 @@ def model_ranks(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02) -> dict[str, Any]:
-    synthetic = frame[frame["dataset"] == "atlas_het"].copy() if "dataset" in frame else pd.DataFrame()
+    synthetic = (
+        frame[frame["dataset"].astype(str).str.startswith("atlas_het")].copy()
+        if "dataset" in frame
+        else pd.DataFrame()
+    )
     if "task" in synthetic:
         synthetic = synthetic[synthetic["task"] == "node_classification"]
     gates: list[dict[str, Any]] = []
@@ -194,6 +198,178 @@ def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02) -> dict
     }
 
 
+def submission_readiness_gates(frame: pd.DataFrame) -> dict[str, Any]:
+    gates: list[dict[str, Any]] = []
+
+    def add(name: str, passed: bool, value: Any, criterion: str, **extra: Any) -> None:
+        gates.append({"name": name, "passed": bool(passed), "value": value, "criterion": criterion, **extra})
+
+    if "dataset" not in frame or "model" not in frame:
+        synthetic_v2 = pd.DataFrame()
+        real = pd.DataFrame()
+    else:
+        names = frame["dataset"].astype(str)
+        synthetic_v2 = frame[names.str.startswith("atlas_het_")].copy()
+        real = frame[~names.str.startswith("atlas_het")].copy()
+    keys = [column for column in ("dataset", "task", "seed", "split") if column in frame]
+
+    significance_rows: list[dict[str, Any]] = []
+    for dataset, dataset_frame in synthetic_v2.groupby("dataset") if not synthetic_v2.empty else []:
+        full = dataset_frame[dataset_frame["model"] == "graphatlas"]
+        pair_keys = [column for column in ("task", "seed", "split") if column in dataset_frame]
+        for baseline_name in ("ambient_vector_gnn", "geometry_moe"):
+            baseline = dataset_frame[dataset_frame["model"] == baseline_name]
+            paired = full[pair_keys + ["test_metric"]].merge(
+                baseline[pair_keys + ["test_metric"]],
+                on=pair_keys,
+                suffixes=("_full", "_baseline"),
+            ).dropna()
+            delta = paired["test_metric_full"] - paired["test_metric_baseline"]
+            t_p = float(stats.ttest_rel(paired["test_metric_full"], paired["test_metric_baseline"]).pvalue) if len(paired) >= 10 else float("nan")
+            try:
+                w_p = float(stats.wilcoxon(delta).pvalue) if len(paired) >= 10 and np.any(delta != 0) else float("nan")
+            except ValueError:
+                w_p = float("nan")
+            significance_rows.append({
+                "dataset": dataset,
+                "baseline": baseline_name,
+                "n_pairs": len(paired),
+                "mean_delta": float(delta.mean()) if len(delta) else float("nan"),
+                "paired_t_p": t_p,
+                "wilcoxon_p": w_p,
+            })
+    adjusted = _holm_adjust([row["wilcoxon_p"] for row in significance_rows])
+    for row, adjusted_p in zip(significance_rows, adjusted, strict=True):
+        row["wilcoxon_holm_p"] = adjusted_p
+        row["passed"] = bool(
+            row["n_pairs"] >= 10
+            and row["mean_delta"] > 0
+            and row["paired_t_p"] < 0.05
+            and adjusted_p < 0.05
+        )
+    significant_datasets = [
+        dataset
+        for dataset in sorted({row["dataset"] for row in significance_rows})
+        if len([row for row in significance_rows if row["dataset"] == dataset and row["passed"]]) == 2
+    ]
+    add(
+        "synthetic_significant_gain",
+        len(significant_datasets) >= 2,
+        {"passing_datasets": significant_datasets, "comparisons": significance_rows},
+        "at least two Atlas-Het v2 datasets beat Ambient and GeometryMoE with paired significance",
+    )
+
+    boundary_passing: list[str] = []
+    for dataset, dataset_frame in synthetic_v2.groupby("dataset") if not synthetic_v2.empty else []:
+        if "boundary" not in str(dataset).lower() or "boundary_accuracy" not in dataset_frame:
+            continue
+        full = dataset_frame[dataset_frame["model"] == "graphatlas"]
+        pair_keys = [column for column in ("task", "seed", "split") if column in dataset_frame]
+        gains = []
+        for baseline_name in ("ambient_vector_gnn", "geometry_moe"):
+            baseline = dataset_frame[dataset_frame["model"] == baseline_name]
+            paired = full[pair_keys + ["boundary_accuracy"]].merge(
+                baseline[pair_keys + ["boundary_accuracy"]], on=pair_keys, suffixes=("_full", "_baseline")
+            ).dropna()
+            gains.append(float((paired["boundary_accuracy_full"] - paired["boundary_accuracy_baseline"]).mean()) if len(paired) else float("nan"))
+        if all(np.isfinite(gain) and gain >= 0.03 for gain in gains):
+            boundary_passing.append(str(dataset))
+    add("boundary_gain", bool(boundary_passing), boundary_passing, "at least one boundary-stress dataset gains >= 0.03 over both matched baselines")
+
+    interior_deltas: list[float] = []
+    if "interior_accuracy" in synthetic_v2:
+        full = synthetic_v2[synthetic_v2["model"] == "graphatlas"][keys + ["interior_accuracy"]]
+        ambient = synthetic_v2[synthetic_v2["model"] == "ambient_vector_gnn"][keys + ["interior_accuracy"]]
+        geometry = synthetic_v2[synthetic_v2["model"] == "geometry_moe"][keys + ["interior_accuracy"]]
+        paired = full.merge(ambient, on=keys, suffixes=("_full", "_ambient")).merge(
+            geometry, on=keys
+        ).rename(columns={"interior_accuracy": "interior_accuracy_geometry"}).dropna()
+        interior_deltas = (
+            paired["interior_accuracy_full"]
+            - paired[["interior_accuracy_ambient", "interior_accuracy_geometry"]].max(axis=1)
+        ).tolist()
+    add(
+        "interior_preservation",
+        bool(interior_deltas) and min(interior_deltas) >= -0.01,
+        {"minimum_delta": min(interior_deltas) if interior_deltas else None, "n_pairs": len(interior_deltas)},
+        "full interior accuracy is no more than 0.01 below the best matched baseline",
+    )
+
+    consistency_passing: list[str] = []
+    required_consistency = (
+        ("path_consistency_error", "graphatlas_no_cocycle"),
+        ("path_consistency_error", "graphatlas_free_transition"),
+        ("metric_compatibility_error", "graphatlas_no_metric"),
+        ("metric_compatibility_error", "graphatlas_free_transition"),
+    )
+    for dataset, dataset_frame in synthetic_v2.groupby("dataset") if not synthetic_v2.empty else []:
+        full = dataset_frame[dataset_frame["model"] == "graphatlas"]
+        decisions = []
+        for metric, baseline_name in required_consistency:
+            baseline = dataset_frame[dataset_frame["model"] == baseline_name]
+            decisions.append(
+                metric in dataset_frame
+                and len(full[metric].dropna()) >= 10
+                and len(baseline[metric].dropna()) >= 10
+                and float(full[metric].mean()) < float(baseline[metric].mean())
+            )
+        if all(decisions):
+            consistency_passing.append(str(dataset))
+    add("consistency_superiority", bool(consistency_passing), consistency_passing, "full improves path and metric consistency against corresponding ablations")
+
+    chart_recovery: dict[str, float] = {}
+    if "chart_ari" in synthetic_v2:
+        full = synthetic_v2[synthetic_v2["model"] == "graphatlas"]
+        chart_recovery = full.groupby("dataset")["chart_ari"].mean().dropna().to_dict()
+    add(
+        "chart_recovery",
+        any(value >= 0.50 for value in chart_recovery.values()),
+        chart_recovery,
+        "at least one Atlas-Het v2 dataset has mean chart ARI >= 0.50",
+        claim_policy="If this gate fails, remove chart identifiability and chart recovery claims from the paper.",
+    )
+
+    real_dataset_count = int(real["dataset"].nunique()) if not real.empty else 0
+    average_rank = float("nan")
+    wins = {"graphatlas_no_metric": 0, "graphatlas_no_cocycle": 0}
+    if real_dataset_count:
+        means = real.groupby(["dataset", "model"], as_index=False)["test_metric"].mean()
+        means["rank"] = means.groupby("dataset")["test_metric"].rank(method="average", ascending=False)
+        full_ranks = means[means["model"] == "graphatlas"]["rank"]
+        average_rank = float(full_ranks.mean()) if len(full_ranks) else float("nan")
+        for baseline_name in wins:
+            full_means = means[means["model"] == "graphatlas"][["dataset", "test_metric"]]
+            baseline_means = means[means["model"] == baseline_name][["dataset", "test_metric"]]
+            paired = full_means.merge(baseline_means, on="dataset", suffixes=("_full", "_baseline"))
+            wins[baseline_name] = int((paired["test_metric_full"] > paired["test_metric_baseline"]).sum())
+    real_pass = (
+        real_dataset_count >= 4
+        and np.isfinite(average_rank)
+        and average_rank <= 2.0
+        and all(count > real_dataset_count / 2 for count in wins.values())
+    )
+    add("four_real_datasets", real_pass, {"datasets": real_dataset_count, "mean_rank": average_rank, "wins": wins}, "four real datasets, mean rank <= 2.0, and majority wins over both regularizer ablations")
+
+    external_names = {
+        "graphmore_official", "geomoe_official", "argnn_official", "neural_sheaf_diffusion_official"
+    }
+    matched_external: list[str] = []
+    if keys and not frame.empty:
+        full_keys = frame[frame["model"] == "graphatlas"][keys].drop_duplicates()
+        for name in sorted(external_names):
+            external_keys = frame[frame["model"] == name][keys].drop_duplicates()
+            if not full_keys.merge(external_keys, on=keys).empty:
+                matched_external.append(name)
+    add("direct_external_comparisons", len(matched_external) >= 3, matched_external, "at least three official external models share exact dataset/seed/split combinations")
+
+    return {
+        "all_submission_gates_pass": all(gate["passed"] for gate in gates),
+        "passed": sum(gate["passed"] for gate in gates),
+        "failed": sum(not gate["passed"] for gate in gates),
+        "gates": gates,
+    }
+
+
 def summarize_results(
     results_path: str | Path,
     plots: bool = True,
@@ -246,9 +422,19 @@ def summarize_results(
             "chart_utilization_min",
             "chart_utilization_max",
             "cocycle_error",
+            "inverse_cycle_error",
             "path_consistency_error",
             "triple_cocycle_error",
             "metric_compatibility_error",
+            "metric_direction_error",
+            "metric_scale_error",
+            "chart_rank_error",
+            "chart_min_relative_singular_value",
+            "chart_condition_number",
+            "metric_recovery_error",
+            "transition_error",
+            "local_distortion",
+            "cross_chart_distortion",
             "geometry_error",
             "runtime_seconds",
             "parameters",
@@ -274,6 +460,15 @@ def summarize_results(
     (report_dir / "scientific_gates.json").write_text(
         json.dumps(gates, indent=2, ensure_ascii=False), encoding="utf-8"
     )
+    submission = submission_readiness_gates(frame)
+    (report_dir / "submission_readiness.json").write_text(
+        json.dumps(submission, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    submission_frame = pd.DataFrame(submission["gates"])
+    submission_markdown = "# Submission readiness gates\n\n" + markdown_table(
+        submission_frame, list(submission_frame.columns)
+    )
+    (report_dir / "submission_readiness.md").write_text(submission_markdown + "\n", encoding="utf-8")
 
     display_columns = [
         column

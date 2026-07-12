@@ -6,6 +6,8 @@ from graphatlas.config import ExperimentConfig
 
 
 SUPPORTED_MODELS = {
+    "ambient_vector_gnn",
+    "signature_gnn",
     "linear",
     "link",
     "gat",
@@ -28,6 +30,7 @@ SUPPORTED_MODELS = {
     "graphatlas_no_metric",
     "graphatlas_no_cocycle",
     "graphatlas_no_overlap",
+    "graphatlas_no_rank",
 }
 
 
@@ -38,6 +41,18 @@ def validate_config(config: ExperimentConfig) -> None:
         errors.append("dataset.num_nodes must be at least 4")
     if d.num_charts < 1:
         errors.append("dataset.num_charts must be positive")
+    if d.atlas_variant not in {"coordinate_only", "mixed_metric", "boundary_stress"}:
+        errors.append("dataset.atlas_variant must be coordinate_only, mixed_metric, or boundary_stress")
+    if d.surface_positive_amplitude <= 0 or d.surface_negative_amplitude <= 0:
+        errors.append("surface amplitudes must be positive")
+    if d.surface_region_width <= 0:
+        errors.append("surface_region_width must be positive")
+    if not 0 <= d.cross_chart_edge_fraction <= 1:
+        errors.append("cross_chart_edge_fraction must be in [0, 1]")
+    if d.geodesic_pair_count < 1:
+        errors.append("geodesic_pair_count must be positive")
+    if d.intrinsic_candidate_neighbors < d.knn:
+        errors.append("intrinsic_candidate_neighbors must be at least dataset.knn")
     if not 0.0 <= d.overlap <= 1.0:
         errors.append("dataset.overlap must be in [0, 1]")
     if not 0.0 <= d.heterophily <= 1.0:
@@ -76,13 +91,31 @@ def validate_config(config: ExperimentConfig) -> None:
     if not 0.0 < m.teleport <= 1.0:
         errors.append("model.teleport must be in (0, 1]")
     for name, value in asdict(loss).items():
-        if name != "sample_nodes" and value < 0:
+        if value is not None and name not in {
+            "sample_nodes", "metric_probes", "rank_margin", "rank_max_condition"
+        } and value < 0:
             errors.append(f"loss.{name} must be non-negative")
     if loss.sample_nodes < 1:
         errors.append("loss.sample_nodes must be positive")
+    if loss.metric_probes < 1:
+        errors.append("loss.metric_probes must be positive")
+    if loss.metric_scale_weight < 0:
+        errors.append("loss.metric_scale_weight must be non-negative")
+    if loss.chart_rank < 0:
+        errors.append("loss.chart_rank must be non-negative")
+    if not 0 < loss.rank_margin <= 1:
+        errors.append("loss.rank_margin must be in (0, 1]")
+    if loss.rank_max_condition <= 1:
+        errors.append("loss.rank_max_condition must be greater than one")
+    if loss.rank_condition_weight < 0:
+        errors.append("loss.rank_condition_weight must be non-negative")
     if train.epochs < 1 or train.patience < 1 or train.eval_every < 1 or train.regularization_every < 1:
         errors.append("training epoch and cadence values must be positive")
     if train.learning_rate <= 0 or train.weight_decay < 0 or train.grad_clip <= 0:
         errors.append("optimizer values are invalid")
+    if train.light_regularization_nodes < 1:
+        errors.append("train.light_regularization_nodes must be positive")
+    if train.light_metric_probes < 1:
+        errors.append("train.light_metric_probes must be positive")
     if errors:
         raise ValueError("Invalid GraphAtlas configuration:\n- " + "\n- ".join(errors))

@@ -37,6 +37,14 @@ class GraphData:
     edge_attr: torch.Tensor | None = None
     node_type: torch.Tensor | None = None
     edge_type: torch.Tensor | None = None
+    geometry_region: torch.Tensor | None = None
+    true_metric_tensors: torch.Tensor | None = None
+    true_curvature: torch.Tensor | None = None
+    true_chart_jacobians: torch.Tensor | None = None
+    true_chart_metrics: torch.Tensor | None = None
+    true_edge_lengths: torch.Tensor | None = None
+    geodesic_pairs: torch.Tensor | None = None
+    geodesic_distances: torch.Tensor | None = None
 
     @property
     def num_nodes(self) -> int:
@@ -81,6 +89,60 @@ class GraphData:
             errors.append("node_type must have length N")
         if self.edge_type is not None and self.edge_type.shape[0] != self.edge_index.shape[1]:
             errors.append("edge_type must have length E")
+        n = self.num_nodes
+        if self.geometry_region is not None and self.geometry_region.shape != (n,):
+            errors.append("geometry_region must have shape [N]")
+        if self.true_curvature is not None and self.true_curvature.shape != (n,):
+            errors.append("true_curvature must have shape [N]")
+        if self.true_metric_tensors is not None:
+            metric = self.true_metric_tensors
+            if metric.ndim != 3 or metric.shape[0] != n or metric.shape[1] != metric.shape[2]:
+                errors.append("true_metric_tensors must have shape [N,d,d]")
+            elif not torch.isfinite(metric).all():
+                errors.append("true_metric_tensors must be finite")
+            elif not torch.allclose(metric, metric.transpose(-1, -2), atol=1e-5, rtol=1e-5):
+                errors.append("true_metric_tensors must be symmetric")
+            elif bool((torch.linalg.eigvalsh(metric).amin(dim=-1) <= 0).any()):
+                errors.append("true_metric_tensors must be positive definite")
+        for name in ("true_chart_jacobians", "true_chart_metrics"):
+            value = getattr(self, name)
+            if value is None:
+                continue
+            if value.ndim != 4 or value.shape[0] != n or value.shape[2] != value.shape[3]:
+                errors.append(f"{name} must have shape [N,K,d,d]")
+                continue
+            if self.chart_membership is None or value.shape[1] != self.chart_membership.shape[1]:
+                errors.append(f"{name} chart count must match chart_membership")
+                continue
+            active = self.chart_membership > 0
+            if not torch.isfinite(value[active]).all():
+                errors.append(f"{name} must be finite on active chart domains")
+            if name == "true_chart_metrics" and bool(active.any()):
+                valid = value[active]
+                if not torch.allclose(valid, valid.transpose(-1, -2), atol=1e-5, rtol=1e-5):
+                    errors.append("true_chart_metrics must be symmetric on active domains")
+                elif bool((torch.linalg.eigvalsh(valid).amin(dim=-1) <= 0).any()):
+                    errors.append("true_chart_metrics must be positive definite on active domains")
+        if self.true_chart_coordinates is not None and self.chart_membership is not None:
+            active = self.chart_membership > 0
+            if self.true_chart_coordinates.shape[:2] != active.shape:
+                errors.append("true_chart_coordinates must have shape [N,K,d]")
+            elif not torch.isfinite(self.true_chart_coordinates[active]).all():
+                errors.append("true_chart_coordinates must be finite on active chart domains")
+        if self.true_edge_lengths is not None:
+            if self.true_edge_lengths.shape != (self.edge_index.shape[1],):
+                errors.append("true_edge_lengths must have shape [E]")
+            elif not torch.isfinite(self.true_edge_lengths).all() or bool((self.true_edge_lengths <= 0).any()):
+                errors.append("true_edge_lengths must be finite and positive")
+        if (self.geodesic_pairs is None) != (self.geodesic_distances is None):
+            errors.append("geodesic_pairs and geodesic_distances must be provided together")
+        elif self.geodesic_pairs is not None and self.geodesic_distances is not None:
+            if self.geodesic_pairs.ndim != 2 or self.geodesic_pairs.shape[0] != 2:
+                errors.append("geodesic_pairs must have shape [2,P]")
+            elif self.geodesic_distances.shape != (self.geodesic_pairs.shape[1],):
+                errors.append("geodesic_distances must have shape [P]")
+            elif not torch.isfinite(self.geodesic_distances).all() or bool((self.geodesic_distances <= 0).any()):
+                errors.append("geodesic_distances must be finite and positive")
         overlap = self.train_mask.int() + self.val_mask.int() + self.test_mask.int()
         if bool((overlap > 1).any()):
             errors.append("train, validation, and test masks must be disjoint")

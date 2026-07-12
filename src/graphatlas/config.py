@@ -35,6 +35,13 @@ class DatasetConfig:
     directed: bool = False
     max_nodes: int | None = None
     enabled: bool = True
+    atlas_variant: str = "coordinate_only"
+    surface_positive_amplitude: float = 0.55
+    surface_negative_amplitude: float = 0.55
+    surface_region_width: float = 0.85
+    cross_chart_edge_fraction: float = 0.15
+    geodesic_pair_count: int = 512
+    intrinsic_candidate_neighbors: int = 24
 
 
 @dataclass
@@ -62,12 +69,26 @@ class LossConfig:
     task: float = 1.0
     reconstruction: float = 0.2
     cocycle: float = 0.05
+    inverse_cycle: float | None = None
+    path_consistency: float | None = None
     metric: float = 0.05
+    metric_probes: int = 4
+    metric_scale_weight: float = 0.10
+    chart_rank: float = 0.0
+    rank_margin: float = 0.20
+    rank_max_condition: float = 20.0
+    rank_condition_weight: float = 0.05
     cover: float = 0.02
     balance: float = 0.01
     sparsity: float = 0.01
     geometry: float = 0.0
     sample_nodes: int = 128
+
+    def resolved_inverse_cycle(self) -> float:
+        return self.cocycle if self.inverse_cycle is None else self.inverse_cycle
+
+    def resolved_path_consistency(self) -> float:
+        return self.cocycle if self.path_consistency is None else self.path_consistency
 
 
 @dataclass
@@ -82,6 +103,8 @@ class TrainConfig:
     progress: bool = True
     eval_every: int = 5
     regularization_every: int = 10
+    light_regularization_nodes: int = 32
+    light_metric_probes: int = 2
     output_dir: str = "outputs/runs"
     num_threads: int = 1
     resume: bool = True

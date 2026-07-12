@@ -7,6 +7,7 @@ from torch import nn
 
 from graphatlas.config import ModelConfig
 from graphatlas.data import GraphData
+from .ambient import AmbientVectorGNN, SignatureGNN
 from .baselines import (
     ACMGCNBaseline,
     APPNPBaseline,
@@ -208,11 +209,20 @@ class GraphAtlas(nn.Module):
             "tangent": tangent,
             "observation_vectors": observation_vectors,
             "layer_diagnostics": layer_diagnostics,
+            "chart_reparameterizations": (
+                list(reparameterizations)
+                if reparameterizations is not None
+                else [None] * self.config.num_charts
+            ),
         }
 
 
 def build_model(input_dim: int, num_classes: int, config: ModelConfig, num_nodes: int | None = None) -> nn.Module:
     name = config.name
+    if name == "ambient_vector_gnn":
+        return AmbientVectorGNN(input_dim, num_classes, config)
+    if name == "signature_gnn":
+        return SignatureGNN(input_dim, num_classes, config)
     if name == "linear":
         return LinearBaseline(input_dim, num_classes)
     if name == "mlp":

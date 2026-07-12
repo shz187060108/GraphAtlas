@@ -54,7 +54,7 @@ def _save_figure(fig: Any, output_stem: Path) -> list[str]:
 
 
 def _synthetic_classification(frame: pd.DataFrame) -> pd.DataFrame:
-    result = frame[frame["dataset"].astype(str).str.lower().eq("atlas_het")].copy()
+    result = frame[frame["dataset"].astype(str).str.lower().str.startswith("atlas_het")].copy()
     if "task" in result:
         result = result[result["task"].eq("node_classification")]
     return result
