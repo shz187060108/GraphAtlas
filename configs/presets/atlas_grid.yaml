@@ -1,0 +1,41 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 300
+  patience: 50
+  eval_every: 5
+  progress: true
+loss:
+  sample_nodes: 256
+datasets:
+- name: atlas_het
+  num_nodes: 3000
+  num_charts: 2
+  heterophily: 0.3
+  overlap: 0.05
+  coordinate_shift_strength: 0.3
+- name: atlas_het
+  num_nodes: 3000
+  num_charts: 2
+  heterophily: 0.7
+  overlap: 0.15
+  coordinate_shift_strength: 0.7
+- name: atlas_het
+  num_nodes: 3000
+  num_charts: 4
+  heterophily: 0.7
+  overlap: 0.3
+  coordinate_shift_strength: 1.0
+- name: atlas_het
+  num_nodes: 3000
+  num_charts: 8
+  heterophily: 0.9
+  overlap: 0.15
+  coordinate_shift_strength: 1.0
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas

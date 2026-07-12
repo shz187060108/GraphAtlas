@@ -1,0 +1,54 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+train:
+  epochs: 4
+  patience: 4
+  eval_every: 1
+  progress: true
+  regularization_every: 100
+  num_threads: 1
+loss:
+  sample_nodes: 24
+  cocycle: 0.0
+  metric: 0.0
+  geometry: 0.0
+datasets:
+- name: atlas_het
+  num_nodes: 120
+  num_charts: 3
+  feature_dim: 10
+  knn: 5
+  relation_edges_per_node: 1
+- name: atlas_het
+  task: link_prediction
+  num_nodes: 120
+  num_charts: 3
+  feature_dim: 10
+  knn: 5
+  relation_edges_per_node: 1
+  link_val_ratio: 0.1
+  link_test_ratio: 0.1
+  negative_ratio: 1.0
+models:
+- name: graphatlas_no_transport
+  hidden_dim: 24
+  observation_dim: 6
+  vector_channels: 3
+  num_layers: 1
+  dropout: 0.0
+  jacobian_chunk_size: 64
+- name: graphatlas_free_transition
+  hidden_dim: 24
+  observation_dim: 6
+  vector_channels: 3
+  num_layers: 1
+  dropout: 0.0
+  jacobian_chunk_size: 64
+- name: graphatlas
+  hidden_dim: 24
+  observation_dim: 6
+  vector_channels: 3
+  num_layers: 1
+  dropout: 0.0
+  jacobian_chunk_size: 64

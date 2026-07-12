@@ -1,0 +1,7 @@
+{
+  "dataset": "wikics",
+  "source": "PyTorch Geometric WikiCS",
+  "sha256": "0894d77f4ec610fd988037f41ff85d64f714b02d6a10c098e07e5e353dd65b3f",
+  "num_nodes": 11701,
+  "num_edges": 431726
+}

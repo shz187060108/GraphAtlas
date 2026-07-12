@@ -1,0 +1,49 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26100-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "numpy": "1.26.4",
+  "scipy": "1.15.3",
+  "scikit_learn": "1.7.2",
+  "pandas": "2.3.3",
+  "pyyaml": "6.0.3",
+  "git_commit": null,
+  "preset": "screening",
+  "manifest_runs": 324,
+  "manifest_datasets": [
+    "actor",
+    "amazon_ratings",
+    "chameleon_filtered",
+    "citeseer",
+    "coauthor_cs",
+    "coauthor_physics",
+    "cora",
+    "cornell",
+    "dblp",
+    "minesweeper",
+    "pubmed",
+    "questions",
+    "roman_empire",
+    "squirrel_filtered",
+    "texas",
+    "tolokers",
+    "wikics",
+    "wisconsin"
+  ],
+  "manifest_tasks": [
+    "node_classification"
+  ],
+  "manifest_models": [
+    "graphatlas",
+    "graphatlas_free_transition",
+    "graphatlas_no_cocycle",
+    "graphatlas_no_metric",
+    "graphatlas_no_overlap",
+    "graphatlas_no_transport"
+  ],
+  "optional_empty_manifest": false,
+  "tests_exit_code": null,
+  "status": "passed"
+}

@@ -1,0 +1,44 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+train:
+  epochs: 400
+  patience: 70
+  eval_every: 5
+  progress: true
+  num_threads: 2
+datasets:
+- name: hetgb_cornell
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_texas
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_wisconsin
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_actor
+  num_charts: 6
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_amazon
+  num_charts: 8
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas
+allow_empty: true

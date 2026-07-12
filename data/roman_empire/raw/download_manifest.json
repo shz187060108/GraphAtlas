@@ -1,0 +1,14 @@
+{
+  "dataset": "roman_empire",
+  "source": "Heterophilous Graph Benchmark",
+  "urls": [
+    "https://raw.githubusercontent.com/yandex-research/heterophilous-graphs/main/data/roman_empire.npz"
+  ],
+  "num_nodes": 22662,
+  "num_features": 300,
+  "num_classes": 18,
+  "multilabel": false,
+  "num_edges_raw": 32927,
+  "num_splits": 10,
+  "sha256": "a58ba741d123bf892fe5c872138d07463d75a2e9012360b8dd78ac2d4766d428"
+}

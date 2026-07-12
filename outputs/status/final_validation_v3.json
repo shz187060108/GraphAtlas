@@ -1,0 +1,42 @@
+{
+  "package_version": "aaai_v3",
+  "validated_utc": "2026-07-12T05:05:00Z",
+  "test_suite": {
+    "passed": 61,
+    "failed": 0
+  },
+  "published_result_registry": {
+    "numeric_rows": 179,
+    "numeric_sources": 3,
+    "dataset_versions": 12,
+    "exact_rows": 79,
+    "contextual_rows": 100,
+    "registered_source_families": 6
+  },
+  "preflight_manifests": {
+    "screening": 324,
+    "confirmatory": 660,
+    "paper": 540,
+    "link": 270,
+    "smoke": 6
+  },
+  "clean_extract_validation": {
+    "compileall": "passed",
+    "published_registry": "passed",
+    "smoke_preflight": "passed",
+    "one_training_job": "passed",
+    "collected_rows": 1
+  },
+  "default_training_policy": "GraphAtlas and GraphAtlas ablations only; external methods use curated published aggregates.",
+  "optional_frontier_groups": [
+    "HeTGB 2025",
+    "H2GB KDD 2025",
+    "LINKX large non-homophily suite",
+    "CITE 2025"
+  ],
+  "known_limits": [
+    "H2GB comparisons are contextual while using the typed homogeneous projection.",
+    "Large-scale presets remain disabled until standardized local data and memory preflight are available.",
+    "Published aggregate means are not used for paired significance tests."
+  ]
+}

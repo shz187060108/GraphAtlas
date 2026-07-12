@@ -1,0 +1,7 @@
+{
+  "dataset": "pubmed",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\pubmed\\raw\\pubmed.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "fa94685616be89ba919357c758e9fd2a1c7968682ea03eaccdbf878cff34bfae",
+  "converted_sha256": "fa94685616be89ba919357c758e9fd2a1c7968682ea03eaccdbf878cff34bfae"
+}

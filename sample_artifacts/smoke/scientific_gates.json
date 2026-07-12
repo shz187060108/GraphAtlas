@@ -1,0 +1,38 @@
+{
+  "all_decisive_gates_pass": false,
+  "passed": 3,
+  "failed": 2,
+  "not_evaluated": 0,
+  "gates": [
+    {
+      "name": "nonlinear_coordinate_invariance",
+      "passed": true,
+      "value": 7.450580707946131e-10,
+      "criterion": "maximum nonlinear intervention error < 1e-6"
+    },
+    {
+      "name": "invariance_separates_graphatlas_no_transport",
+      "passed": true,
+      "value": 29584.665086497887,
+      "criterion": "ablation error / full error >= 10"
+    },
+    {
+      "name": "invariance_separates_graphatlas_free_transition",
+      "passed": true,
+      "value": 35305.66597781083,
+      "criterion": "ablation error / full error >= 10"
+    },
+    {
+      "name": "boundary_node_gain",
+      "passed": false,
+      "value": 0.0,
+      "criterion": "mean paired gain >= 0.020"
+    },
+    {
+      "name": "induced_transition_gain",
+      "passed": false,
+      "value": 0.0,
+      "criterion": "mean paired test-metric gain > 0"
+    }
+  ]
+}

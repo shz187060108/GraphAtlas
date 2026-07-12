@@ -1,0 +1,7 @@
+{
+  "dataset": "ogbn_arxiv",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\ogbn_arxiv\\raw\\ogbn_arxiv.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "c330daedb76b1b92281177a7118b75bc1df87726fd0cde4ff3da98b56908c083",
+  "converted_sha256": "c330daedb76b1b92281177a7118b75bc1df87726fd0cde4ff3da98b56908c083"
+}

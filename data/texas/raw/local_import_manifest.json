@@ -1,0 +1,7 @@
+{
+  "dataset": "texas",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\PHSGCL\\data\\texas\\raw",
+  "source_format": "geom_gcn_raw",
+  "source_fingerprint": "5009bb5a36585061d44b2d803150c2415ca47c1059255a7af7db93607d3001e3",
+  "converted_sha256": "0ed25510a7d103296065034767f1ae9703145921ffda557c065f8550a3c8743c"
+}

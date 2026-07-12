@@ -1,0 +1,61 @@
+datasets:
+  roman_empire:
+    dataset_version: hgb_iclr2023_v1
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: accuracy
+  amazon_ratings:
+    dataset_version: hgb_iclr2023_v1
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: accuracy
+  minesweeper:
+    dataset_version: hgb_iclr2023_v1
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: roc_auc
+  tolokers:
+    dataset_version: hgb_iclr2023_v1
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: roc_auc
+  questions:
+    dataset_version: hgb_iclr2023_v1
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: roc_auc
+  chameleon_filtered:
+    dataset_version: hgb_filtered_iclr2023
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: accuracy
+  squirrel_filtered:
+    dataset_version: hgb_filtered_iclr2023
+    split_protocol: hgb_fixed_10
+    feature_condition: native
+    metric: accuracy
+  hetgb_cornell:
+    dataset_version: hetgb_2025
+    split_protocol: hetgb_paper
+    feature_condition: text_plus_structure
+    metric: accuracy
+  hetgb_texas:
+    dataset_version: hetgb_2025
+    split_protocol: hetgb_paper
+    feature_condition: text_plus_structure
+    metric: accuracy
+  hetgb_wisconsin:
+    dataset_version: hetgb_2025
+    split_protocol: hetgb_paper
+    feature_condition: text_plus_structure
+    metric: accuracy
+  hetgb_actor:
+    dataset_version: hetgb_2025
+    split_protocol: hetgb_paper
+    feature_condition: text_plus_structure
+    metric: accuracy
+  hetgb_amazon:
+    dataset_version: hetgb_2025
+    split_protocol: hetgb_paper
+    feature_condition: text_plus_structure
+    metric: accuracy

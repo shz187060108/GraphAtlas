@@ -1,0 +1,18 @@
+.venv/
+.idea/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+dist/
+
+# Rebuildable caches and interrupted downloads
+outputs/cache/
+data/_pyg_cache/
+data/_ogb_cache/
+*.part
+*.tmp
+
+# Local platform noise
+.DS_Store
+Thumbs.db

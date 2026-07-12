@@ -1,0 +1,7 @@
+{
+  "dataset": "ogbn_products",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\ogbn_products\\raw\\ogbn_products.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "e1f5ea8a856f8e1cc955ad6759bd856d7d40cd53417ca68a541562ba23d685a0",
+  "converted_sha256": "e1f5ea8a856f8e1cc955ad6759bd856d7d40cd53417ca68a541562ba23d685a0"
+}

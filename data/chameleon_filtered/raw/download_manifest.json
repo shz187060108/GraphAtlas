@@ -1,0 +1,14 @@
+{
+  "dataset": "chameleon_filtered",
+  "source": "Heterophilous Graph Benchmark",
+  "urls": [
+    "https://raw.githubusercontent.com/yandex-research/heterophilous-graphs/main/data/chameleon_filtered.npz"
+  ],
+  "num_nodes": 890,
+  "num_features": 2325,
+  "num_classes": 5,
+  "multilabel": false,
+  "num_edges_raw": 8854,
+  "num_splits": 10,
+  "sha256": "bf46f07e1fb5249280447e5fe3100f3e82fc4b93ad1e13ffcfdec924b6ac0bb5"
+}

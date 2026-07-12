@@ -1,0 +1,7 @@
+{
+  "dataset": "coauthor_physics",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\coauthor_physics\\raw\\coauthor_physics.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "f13a494574bffa656492f57e3cd74b02d57df56ce93ddb302ff35dcf472b6d40",
+  "converted_sha256": "f13a494574bffa656492f57e3cd74b02d57df56ce93ddb302ff35dcf472b6d40"
+}

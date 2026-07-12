@@ -1,0 +1,7 @@
+{
+  "dataset": "ogbn_proteins",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\ogbn_proteins\\raw\\ogbn_proteins.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "e126bee339a454b21f1dab03038a99ea0809d9db316d6b134c35e3db7f544c1e",
+  "converted_sha256": "e126bee339a454b21f1dab03038a99ea0809d9db316d6b134c35e3db7f544c1e"
+}

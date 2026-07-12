@@ -1,0 +1,7 @@
+{
+  "dataset": "cornell",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\PHSGCL\\data\\cornell\\raw",
+  "source_format": "geom_gcn_raw",
+  "source_fingerprint": "1e860ed52deeca63f6141d3fe296a2a553cd8e370c7d17b51026e349ccea4083",
+  "converted_sha256": "c7d8b8c995b37b4ffc092c833908cac67c7121239e2f3e3aeef2672b08bbd674"
+}

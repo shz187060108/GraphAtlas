@@ -1,0 +1,29 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 300
+  patience: 50
+  eval_every: 5
+  progress: true
+  num_threads: 4
+datasets:
+- name: ogbn_arxiv
+  num_charts: 8
+  metric: accuracy
+- name: ogbn_products
+  num_charts: 8
+  metric: accuracy
+  enabled: false
+- name: ogbn_proteins
+  num_charts: 8
+  metric: roc_auc
+  feature_source: native
+models:
+- name: graphatlas
+  hidden_dim: 128
+  vector_channels: 4
+  enabled: false
+allow_empty: true

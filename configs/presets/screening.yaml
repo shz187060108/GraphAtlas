@@ -1,0 +1,60 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 250
+  patience: 50
+  eval_every: 5
+  progress: true
+  num_threads: 1
+loss:
+  sample_nodes: 192
+datasets:
+- name: roman_empire
+  num_charts: 4
+- name: amazon_ratings
+  num_charts: 4
+- name: minesweeper
+  num_charts: 4
+  metric: roc_auc
+- name: tolokers
+  num_charts: 4
+  metric: roc_auc
+- name: questions
+  num_charts: 4
+  metric: roc_auc
+- name: actor
+  num_charts: 4
+- name: chameleon_filtered
+  num_charts: 4
+- name: squirrel_filtered
+  num_charts: 4
+- name: cornell
+  num_charts: 3
+- name: texas
+  num_charts: 3
+- name: wisconsin
+  num_charts: 3
+- name: cora
+  num_charts: 3
+- name: citeseer
+  num_charts: 3
+- name: pubmed
+  num_charts: 3
+- name: wikics
+  num_charts: 4
+- name: dblp
+  num_charts: 4
+- name: coauthor_cs
+  num_charts: 4
+- name: coauthor_physics
+  num_charts: 4
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas_no_metric
+- name: graphatlas_no_cocycle
+- name: graphatlas_no_overlap
+- name: graphatlas

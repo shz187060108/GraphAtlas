@@ -1,0 +1,58 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+train:
+  epochs: 500
+  patience: 80
+  eval_every: 5
+  progress: true
+  regularization_every: 10
+  num_threads: 1
+loss:
+  sample_nodes: 256
+  geometry: 0.0
+datasets:
+- name: atlas_het
+  task: link_prediction
+  num_nodes: 3000
+  num_charts: 3
+  feature_dim: 24
+  heterophily: 0.75
+  overlap: 0.24
+- name: roman_empire
+  task: link_prediction
+  num_charts: 4
+- name: amazon_ratings
+  task: link_prediction
+  num_charts: 4
+- name: minesweeper
+  task: link_prediction
+  num_charts: 4
+- name: tolokers
+  task: link_prediction
+  num_charts: 4
+- name: questions
+  task: link_prediction
+  num_charts: 4
+- name: actor
+  task: link_prediction
+  num_charts: 4
+- name: chameleon_filtered
+  task: link_prediction
+  num_charts: 4
+- name: squirrel_filtered
+  task: link_prediction
+  num_charts: 4
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas

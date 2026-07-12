@@ -1,0 +1,68 @@
+groups:
+  heterophily_main:
+    datasets:
+    - roman_empire
+    - amazon_ratings
+    - minesweeper
+    - tolokers
+    - questions
+    - actor
+    - chameleon_filtered
+    - squirrel_filtered
+    - cornell
+    - texas
+    - wisconsin
+    role: main and confirmatory heterophily evaluation
+  controls:
+    datasets:
+    - cora
+    - citeseer
+    - pubmed
+    - wikics
+    - dblp
+    - coauthor_cs
+    - coauthor_physics
+    role: non-degradation and general node-classification controls
+  scale:
+    datasets:
+    - ogbn_arxiv
+    - ogbn_products
+    - ogbn_proteins
+    role: official-split scale and task-boundary evaluation
+  recent_novelty:
+    datasets:
+    - ieee_cis_g
+    - h_pokec
+    - pdns
+    - mag_year
+    - oag_cs
+    - oag_eng
+    - oag_chem
+    - rcdd
+    source: H2GB, KDD 2025
+    role: heterogeneous and heterophilic extension
+  text_heterophily:
+    datasets:
+    - hetgb_cornell
+    - hetgb_texas
+    - hetgb_wisconsin
+    - hetgb_actor
+    - hetgb_amazon
+    source: HeTGB, 2025 preprint
+    role: text-attributed heterophily extension
+  large_nonhomophily:
+    datasets:
+    - penn94
+    - genius
+    - twitch_gamer
+    - pokec
+    - wiki
+    - arxiv_year
+    - snap_patents
+    source: LINKX, NeurIPS 2021
+    role: large-scale homogeneous non-homophily stress tests
+  frontier_heterogeneous_text:
+    datasets:
+    - cite_catalysis
+    source: CITE, 2025
+    role: heterogeneous text-attributed frontier stress test

@@ -1,0 +1,14 @@
+{
+  "dataset": "minesweeper",
+  "source": "Heterophilous Graph Benchmark",
+  "urls": [
+    "https://raw.githubusercontent.com/yandex-research/heterophilous-graphs/main/data/minesweeper.npz"
+  ],
+  "num_nodes": 10000,
+  "num_features": 7,
+  "num_classes": 2,
+  "multilabel": false,
+  "num_edges_raw": 39402,
+  "num_splits": 10,
+  "sha256": "e664c8dacf1e8ac466c2c09ed4b237bd2c5541f47a6eae9c6092cb87f16412b3"
+}

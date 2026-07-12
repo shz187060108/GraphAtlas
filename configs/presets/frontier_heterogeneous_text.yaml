@@ -1,0 +1,22 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 300
+  patience: 60
+  eval_every: 5
+  progress: true
+  num_threads: 4
+datasets:
+- name: cite_catalysis
+  num_charts: 8
+  metric: accuracy
+  feature_source: text_plus_type_relation
+  enabled: false
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas
+allow_empty: true

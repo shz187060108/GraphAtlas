@@ -1,0 +1,7 @@
+{
+  "dataset": "coauthor_cs",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\coauthor_cs\\raw\\coauthor_cs.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "4d6fa94abb525163ceb7b0da968c598c175cd91ae685ebe0bce8a8a159c02b9b",
+  "converted_sha256": "4d6fa94abb525163ceb7b0da968c598c175cd91ae685ebe0bce8a8a159c02b9b"
+}

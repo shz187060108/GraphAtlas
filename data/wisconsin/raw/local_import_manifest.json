@@ -1,0 +1,7 @@
+{
+  "dataset": "wisconsin",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\PHSGCL\\data\\wisconsin\\raw",
+  "source_format": "geom_gcn_raw",
+  "source_fingerprint": "2b8f583e9febcc80fca195a0408488e29c1073830d3731d2ad439216932658fb",
+  "converted_sha256": "6bbdf0787275178c868d17f4378f9eda2d676b05b26ba8b44d072c18bc154e71"
+}

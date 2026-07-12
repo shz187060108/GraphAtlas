@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "graphatlas"
+version = "0.2.0"
+description = "Coordinate-invariant graph message passing over learned Riemannian atlases"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.2",
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "scikit-learn>=1.3",
+  "networkx>=3.1",
+  "PyYAML>=6.0",
+  "tqdm>=4.66",
+  "pandas>=2.0",
+  "tabulate>=0.9",
+  "matplotlib>=3.7",
+  "threadpoolctl>=3.1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+graph = ["torch-geometric>=2.5"]
+ogb = ["ogb>=1.3.6", "torch-geometric>=2.5"]
+novelty = ["H2GB>=0.1", "torch-geometric>=2.5", "ogb>=1.3.6"]
+text = ["sentence-transformers>=3.0"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project.scripts]
+graphatlas-train = "graphatlas.cli:train_main"
+graphatlas-run = "graphatlas.cli:run_main"
+graphatlas-summarize = "graphatlas.cli:summarize_main"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-q -m 'not visualization'"
+markers = ["visualization: publication-figure integration tests run in a separate process"]

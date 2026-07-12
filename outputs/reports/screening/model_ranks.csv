@@ -1,0 +1,5 @@
+task,model,mean_rank,median_rank,evaluated_runs
+node_classification,graphatlas_no_cocycle,1.3333333333333333,1.0,3
+node_classification,graphatlas_no_metric,1.6666666666666667,2.0,3
+node_classification,graphatlas_free_transition,3.5,3.5,3
+node_classification,graphatlas_no_transport,3.5,3.5,3

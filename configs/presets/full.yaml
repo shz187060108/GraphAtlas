@@ -1,0 +1,44 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 300
+  patience: 50
+  eval_every: 5
+  progress: true
+  regularization_every: 10
+  num_threads: 1
+loss:
+  sample_nodes: 128
+datasets:
+- name: atlas_het
+  num_nodes: 1600
+  num_charts: 3
+  feature_dim: 20
+  heterophily: 0.75
+  overlap: 0.24
+- name: roman_empire
+  num_charts: 4
+- name: amazon_ratings
+  num_charts: 4
+- name: minesweeper
+  num_charts: 4
+- name: tolokers
+  num_charts: 4
+- name: questions
+  num_charts: 4
+- name: actor
+  num_charts: 4
+- name: chameleon
+  num_charts: 4
+- name: squirrel
+  num_charts: 4
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas_no_metric
+- name: graphatlas_no_cocycle
+- name: graphatlas_no_overlap
+- name: graphatlas

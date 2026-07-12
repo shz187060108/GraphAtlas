@@ -1,0 +1,31 @@
+dataset:
+  name: cora
+  root: data
+  num_charts: 3
+  split: 0
+
+model:
+  name: graphatlas
+  hidden_dim: 24
+  observation_dim: 6
+  vector_channels: 3
+  num_charts: 3
+  num_layers: 1
+  dropout: 0.0
+  jacobian_chunk_size: 64
+
+loss:
+  sample_nodes: 24
+  cocycle: 0.0
+  metric: 0.0
+  geometry: 0.0
+
+train:
+  seed: 0
+  epochs: 4
+  patience: 4
+  eval_every: 1
+  regularization_every: 100
+  progress: false
+  output_dir: outputs/runs/local_cora_smoke
+  num_threads: 1

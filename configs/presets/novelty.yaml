@@ -1,0 +1,67 @@
+base_config: configs/base.yaml
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 300
+  patience: 60
+  eval_every: 5
+  progress: true
+  num_threads: 2
+datasets:
+- name: atlas_het
+  num_nodes: 3000
+  num_charts: 8
+  heterophily: 0.85
+  overlap: 0.2
+  coordinate_shift_strength: 1.0
+- name: ieee_cis_g
+  num_charts: 8
+  metric: macro_f1
+  feature_source: native_plus_type_relation
+  enabled: false
+- name: h_pokec
+  num_charts: 8
+  metric: accuracy
+  feature_source: native_plus_type_relation
+  enabled: false
+- name: pdns
+  num_charts: 8
+  metric: macro_f1
+  feature_source: native_plus_type_relation
+  enabled: false
+- name: mag_year
+  num_charts: 8
+  metric: accuracy
+  feature_source: native_plus_type_relation
+  enabled: false
+- name: hetgb_cornell
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_texas
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_wisconsin
+  num_charts: 4
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_actor
+  num_charts: 6
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+- name: hetgb_amazon
+  num_charts: 8
+  metric: accuracy
+  feature_source: text_plus_structure
+  enabled: false
+models:
+- name: graphatlas_no_transport
+- name: graphatlas_free_transition
+- name: graphatlas

@@ -1,0 +1,97 @@
+{
+  "status": "passed_with_scope_limitations",
+  "regular_tests": {
+    "passed": 42,
+    "command": "python -m pytest -q"
+  },
+  "visualization_test": {
+    "passed": 1,
+    "command": "python -m pytest -q -o addopts='' -m visualization tests/test_visualization.py"
+  },
+  "single_job_acceptance": {
+    "passed": true,
+    "plan": "outputs/plan_acceptance.jsonl",
+    "model": "mlp",
+    "test_metric": 0.6428571343421936
+  },
+  "preflight": {
+    "paper_manifest_runs": 1440,
+    "link_manifest_runs": 1170,
+    "status": "passed"
+  },
+  "mechanism_study": {
+    "runs": 9,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "means": {
+      "graphatlas": {
+        "test_metric": 0.7387387355168661,
+        "boundary_accuracy": 0.7365514834721884,
+        "invariance_error_nonlinear": 6.703184851630795e-08,
+        "runtime_seconds": 13.297149817148844
+      },
+      "graphatlas_free_transition": {
+        "test_metric": 0.7252252300580343,
+        "boundary_accuracy": 0.6753839254379272,
+        "invariance_error_nonlinear": 0.14316496253013608,
+        "runtime_seconds": 11.65672755241394
+      },
+      "graphatlas_no_transport": {
+        "test_metric": 0.7027027010917664,
+        "boundary_accuracy": 0.6939588884512583,
+        "invariance_error_nonlinear": 0.06624124882121878,
+        "runtime_seconds": 10.273921569188436
+      }
+    },
+    "scientific_gates": {
+      "all_decisive_gates_pass": true,
+      "passed": 5,
+      "failed": 0,
+      "not_evaluated": 0,
+      "gates": [
+        {
+          "name": "nonlinear_coordinate_invariance",
+          "passed": true,
+          "value": 8.522590633219806e-08,
+          "criterion": "maximum nonlinear intervention error < 1e-6"
+        },
+        {
+          "name": "invariance_separates_graphatlas_no_transport",
+          "passed": true,
+          "value": 988205.6110253796,
+          "criterion": "ablation error / full error >= 10"
+        },
+        {
+          "name": "invariance_separates_graphatlas_free_transition",
+          "passed": true,
+          "value": 2135775.2426491114,
+          "criterion": "ablation error / full error >= 10"
+        },
+        {
+          "name": "boundary_node_gain",
+          "passed": true,
+          "value": 0.04259259502092997,
+          "criterion": "mean paired gain >= 0.020"
+        },
+        {
+          "name": "induced_transition_gain",
+          "passed": true,
+          "value": 0.013513505458831787,
+          "criterion": "mean paired test-metric gain > 0"
+        }
+      ]
+    },
+    "result_table": "outputs/results_mechanism.csv",
+    "main_figure": "outputs/reports/mechanism/figures/graphatlas_mechanism_group.pdf"
+  },
+  "scope_limitations": [
+    "The 1440-run real-data node-classification matrix was validated but not executed in this container.",
+    "The 1170-run link-prediction matrix was validated but not executed in this container.",
+    "The packaged positive mechanism result uses three seeds on one Atlas-Het setting.",
+    "Path-consistency and metric-compatibility diagnostics are not positive empirical claims in the current low-regularization study.",
+    "AAAI acceptance cannot be guaranteed."
+  ]
+}

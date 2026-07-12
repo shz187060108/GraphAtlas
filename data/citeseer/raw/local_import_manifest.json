@@ -1,0 +1,7 @@
+{
+  "dataset": "citeseer",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\citeseer\\raw\\citeseer.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "90979673e9788b726c28660cd045af0e821dd70c8b359cbacd533088f28dd9eb",
+  "converted_sha256": "90979673e9788b726c28660cd045af0e821dd70c8b359cbacd533088f28dd9eb"
+}

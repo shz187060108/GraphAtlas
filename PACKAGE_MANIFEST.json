@@ -1,0 +1,20 @@
+{
+  "created_utc": "2026-07-12T05:03:36.820591+00:00",
+  "project": "GraphAtlas",
+  "file_count": 245,
+  "includes_training_runs": false,
+  "entry_points": [
+    "setup.sh",
+    "run_smoke.sh",
+    "run_mechanism.sh",
+    "run_screening.sh",
+    "run_main_tables.sh",
+    "run_all_ablations.sh",
+    "run_large_scale.sh",
+    "run_paper.sh",
+    "run_link.sh",
+    "run_everything.sh",
+    "run_full_benchmark.ps1",
+    "run_full_benchmark.bat"
+  ]
+}

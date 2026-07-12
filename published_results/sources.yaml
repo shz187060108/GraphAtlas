@@ -1,0 +1,68 @@
+sources:
+- source_id: platonov_iclr2023_official
+  status: curated
+  paper: A Critical Look at the Evaluation of GNNs under Heterophily
+  venue: ICLR 2023
+  datasets:
+  - roman_empire
+  - amazon_ratings
+  - minesweeper
+  - tolokers
+  - questions
+  comparison: exact when official files, masks and metrics are used
+- source_id: platonov_iclr2023_filtered
+  status: curated
+  paper: A Critical Look at the Evaluation of GNNs under Heterophily
+  venue: ICLR 2023
+  datasets:
+  - chameleon_filtered
+  - squirrel_filtered
+  comparison: exact only for filtered versions
+- source_id: hetgb_2025_table2
+  status: curated_contextual
+  paper: HeTGB
+  venue: 2025 preprint
+  datasets:
+  - hetgb_cornell
+  - hetgb_texas
+  - hetgb_wisconsin
+  - hetgb_actor
+  - hetgb_amazon
+  comparison: contextual until exact released text embeddings and splits are matched
+- source_id: h2gb_kdd2025
+  status: source_registered
+  paper: When Heterophily Meets Heterogeneity
+  venue: KDD 2025 Datasets and Benchmarks
+  datasets:
+  - ogbn_mag
+  - mag_year
+  - oag_cs
+  - oag_eng
+  - oag_chem
+  - rcdd
+  - ieee_cis_g
+  - h_pokec
+  - pdns
+  comparison: contextual for typed homogeneous projection; exact only after native
+    H2GB evaluator integration
+- source_id: linkx_neurips2021
+  status: source_registered
+  paper: Large Scale Learning on Non-Homophilous Graphs
+  venue: NeurIPS 2021
+  datasets:
+  - penn94
+  - genius
+  - twitch_gamer
+  - pokec
+  - wiki
+  - arxiv_year
+  - snap_patents
+  comparison: exact only with official fixed splits and evaluator
+- source_id: cite_2025
+  status: frontier_dataset
+  paper: 'CITE: A Comprehensive Benchmark for Heterogeneous Text-Attributed Graphs
+    on Catalytic Materials'
+  venue: 2025 preprint
+  datasets:
+  - cite_catalysis
+  comparison: frontier stress test; requires heterogeneous text pipeline

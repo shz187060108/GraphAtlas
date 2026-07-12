@@ -1,0 +1,14 @@
+{
+  "dataset": "amazon_ratings",
+  "source": "Heterophilous Graph Benchmark",
+  "urls": [
+    "https://raw.githubusercontent.com/yandex-research/heterophilous-graphs/main/data/amazon_ratings.npz"
+  ],
+  "num_nodes": 24492,
+  "num_features": 300,
+  "num_classes": 5,
+  "multilabel": false,
+  "num_edges_raw": 93050,
+  "num_splits": 10,
+  "sha256": "4c3a3e3b9d9f6cba0fede4625a00aad8c5721c1a36ed771367f446763241c7dd"
+}

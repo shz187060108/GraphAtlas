@@ -1,0 +1,7 @@
+{
+  "dataset": "cora",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\cora\\raw\\cora.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "55633206c27cee4a321bdba1e813085e561016641026a454c6b412c75b5e1882",
+  "converted_sha256": "55633206c27cee4a321bdba1e813085e561016641026a454c6b412c75b5e1882"
+}

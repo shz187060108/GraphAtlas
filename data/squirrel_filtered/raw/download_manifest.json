@@ -1,0 +1,14 @@
+{
+  "dataset": "squirrel_filtered",
+  "source": "Heterophilous Graph Benchmark",
+  "urls": [
+    "https://raw.githubusercontent.com/yandex-research/heterophilous-graphs/main/data/squirrel_filtered.npz"
+  ],
+  "num_nodes": 2223,
+  "num_features": 2089,
+  "num_classes": 5,
+  "multilabel": false,
+  "num_edges_raw": 46998,
+  "num_splits": 10,
+  "sha256": "f06370ffb3116c5de8b7a600005400b2293c025e0ce2f6916d8201a825505ac7"
+}

@@ -1,0 +1,54 @@
+dataset:
+  name: atlas_het
+  root: data
+  num_nodes: 800
+  num_charts: 3
+  latent_dim: 2
+  feature_dim: 16
+  num_classes: 3
+  overlap: 0.22
+  heterophily: 0.70
+  relation_edges_per_node: 2
+  knn: 8
+  noise: 0.05
+  coordinate_shift_strength: 0.80
+  split: 0
+
+model:
+  name: graphatlas
+  hidden_dim: 64
+  observation_dim: 12
+  chart_dim: 2
+  vector_channels: 6
+  num_charts: 3
+  num_layers: 1
+  dropout: 0.05
+  membership_topk: 2
+  jacobian_chunk_size: 2048
+  propagation_steps: 10
+  teleport: 0.10
+
+loss:
+  task: 1.0
+  reconstruction: 0.05
+  cocycle: 0.01
+  metric: 0.01
+  cover: 0.01
+  balance: 0.005
+  sparsity: 0.005
+  geometry: 0.01
+  sample_nodes: 128
+
+train:
+  seed: 0
+  device: auto
+  epochs: 250
+  patience: 40
+  learning_rate: 0.003
+  weight_decay: 0.0005
+  grad_clip: 5.0
+  progress: true
+  eval_every: 5
+  regularization_every: 10
+  output_dir: outputs/runs
+  num_threads: 1

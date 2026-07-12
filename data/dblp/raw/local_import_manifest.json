@@ -1,0 +1,7 @@
+{
+  "dataset": "dblp",
+  "source_path": "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\data\\dblp\\raw\\dblp.npz",
+  "source_format": "graphatlas_npz",
+  "source_fingerprint": "52983519ba98b4b5b2da9e634fde2b89795a35d427676b3bdc1309b8f09c8cb8",
+  "converted_sha256": "52983519ba98b4b5b2da9e634fde2b89795a35d427676b3bdc1309b8f09c8cb8"
+}

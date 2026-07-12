@@ -1,0 +1,19 @@
+base_config: configs/base.yaml
+seeds: [0]
+train:
+  epochs: 2
+  patience: 2
+  eval_every: 1
+  regularization_every: 1
+  progress: false
+  num_threads: 1
+datasets:
+  - {name: atlas_het, num_nodes: 60, num_charts: 3, feature_dim: 8, knn: 3, relation_edges_per_node: 1}
+models:
+  - {name: linear}
+  - {name: link}
+  - {name: gat, hidden_dim: 16, attention_heads: 2, dropout: 0.0}
+  - {name: gcnii, hidden_dim: 16, num_layers: 2, dropout: 0.0}
+  - {name: fagcn, hidden_dim: 16, num_layers: 1, dropout: 0.0}
+  - {name: acmgcn, hidden_dim: 16, num_layers: 1, dropout: 0.0}
+  - {name: graphatlas, hidden_dim: 16, observation_dim: 6, vector_channels: 2, num_layers: 1, dropout: 0.0}
