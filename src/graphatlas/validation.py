@@ -25,6 +25,8 @@ SUPPORTED_MODELS = {
     "linkx",
     "geometry_moe",
     "graphatlas",
+    "graphatlas_min_distortion",
+    "graphatlas_certified",
     "graphatlas_no_transport",
     "graphatlas_free_transition",
     "graphatlas_no_metric",
@@ -80,6 +82,14 @@ def validate_config(config: ExperimentConfig) -> None:
         errors.append("GraphAtlas model.num_charts must match dataset.num_charts")
     if not 0.0 <= m.dropout < 1.0:
         errors.append("model.dropout must be in [0, 1)")
+    if m.transport_mode not in {"original", "min_distortion", "certified"}:
+        errors.append("model.transport_mode must be original, min_distortion, or certified")
+    if m.transportability_beta < 0:
+        errors.append("model.transportability_beta must be non-negative")
+    if m.transportability_eps <= 0:
+        errors.append("model.transportability_eps must be positive")
+    if m.transportability_pinv_rtol <= 0:
+        errors.append("model.transportability_pinv_rtol must be positive")
     if m.propagation_steps < 1:
         errors.append("model.propagation_steps must be positive")
     if m.attention_heads < 1:

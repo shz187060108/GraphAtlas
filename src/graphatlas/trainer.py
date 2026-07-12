@@ -305,6 +305,22 @@ class Trainer:
                 "split": int(data.metadata.get("split", self.config.dataset.split)) if data.metadata else int(self.config.dataset.split),
             }
         )
+        transport_names = (
+            "transportability_mean", "transportability_std", "transportability_min",
+            "transportability_max", "distortion_mean", "fraction_q_below_025",
+            "fraction_q_above_075",
+        )
+        layer_diagnostics = final_output.get("layer_diagnostics", [])
+        for name in transport_names:
+            values = [entry[name] for entry in layer_diagnostics if name in entry]
+            if not values:
+                metrics[name] = float("nan")
+            elif name.endswith("_min"):
+                metrics[name] = float(torch.stack(values).min().detach().cpu())
+            elif name.endswith("_max"):
+                metrics[name] = float(torch.stack(values).max().detach().cpu())
+            else:
+                metrics[name] = float(torch.stack(values).mean().detach().cpu())
         if isinstance(final_output.get("membership"), torch.Tensor):
             membership = final_output["membership"]
             active = (membership > 0.05).sum(dim=-1)

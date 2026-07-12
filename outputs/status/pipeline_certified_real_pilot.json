@@ -1,0 +1,37 @@
+{
+  "mode": "certified_real_pilot",
+  "total_stages": 7,
+  "completed_stages": 2,
+  "failed_stages": 0,
+  "elapsed_seconds": 73.38341403007507,
+  "current_stage": "Download certified_real_pilot datasets",
+  "complete": false,
+  "stages": [
+    {
+      "index": 1,
+      "name": "Validate certified_real_pilot manifest",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/preflight.py",
+        "--preset",
+        "certified_real_pilot"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.7779901027679443
+    },
+    {
+      "index": 2,
+      "name": "Download certified_real_pilot datasets",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/download_data.py",
+        "--preset",
+        "certified_real_pilot"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 70.59826350212097
+    }
+  ]
+}

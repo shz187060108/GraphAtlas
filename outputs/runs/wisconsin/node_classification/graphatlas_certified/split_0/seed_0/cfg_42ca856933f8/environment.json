@@ -1,0 +1,19 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "wisconsin",
+    "split": 0,
+    "num_splits": 1,
+    "metric": "accuracy",
+    "multilabel": false,
+    "directed": false,
+    "source": "PyTorch Geometric / Open Graph Benchmark / local import",
+    "sha256": "6bbdf0787275178c868d17f4378f9eda2d676b05b26ba8b44d072c18bc154e71",
+    "task": "node_classification"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "chameleon_filtered",
+    "split": 0,
+    "num_splits": 10,
+    "metric": "accuracy",
+    "multilabel": false,
+    "directed": false,
+    "source": "Heterophilous Graph Benchmark",
+    "sha256": "bf46f07e1fb5249280447e5fe3100f3e82fc4b93ad1e13ffcfdec924b6ac0bb5",
+    "task": "node_classification"
+  }
+}

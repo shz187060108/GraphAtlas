@@ -1,0 +1,18 @@
+{
+  "preset": "certified_real_pilot",
+  "expected_runs": 12,
+  "completed_runs": 11,
+  "failed_runs": 0,
+  "remaining_runs": 1,
+  "progress_fraction": 0.9166666666666666,
+  "current": {
+    "run_id": "chameleon_filtered__node_classification__graphatlas_certified__split0__seed0__3532c7652c8b",
+    "dataset": "chameleon_filtered",
+    "task": "node_classification",
+    "model": "graphatlas_certified",
+    "seed": 0,
+    "split": 0,
+    "index": 12
+  },
+  "complete": false
+}

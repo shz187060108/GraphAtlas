@@ -65,6 +65,14 @@ class GraphAtlas(nn.Module):
             mode = "no_transport"
         elif config.name == "graphatlas_free_transition":
             mode = "free_transition"
+        transport_mode = config.transport_mode
+        if config.name == "graphatlas":
+            transport_mode = "original"
+        elif config.name == "graphatlas_min_distortion":
+            transport_mode = "min_distortion"
+        elif config.name == "graphatlas_certified":
+            transport_mode = "certified"
+        self.transport_mode = transport_mode
         self.layers = nn.ModuleList(
             [
                 AtlasEquivariantLayer(
@@ -74,6 +82,11 @@ class GraphAtlas(nn.Module):
                     num_charts=config.num_charts,
                     hidden_dim=config.hidden_dim,
                     mode=mode,
+                    transport_mode=transport_mode,
+                    transportability_beta=config.transportability_beta,
+                    transportability_eps=config.transportability_eps,
+                    transportability_stop_gradient=config.transportability_stop_gradient,
+                    edge_chunk_size=config.jacobian_chunk_size,
                     dropout=config.dropout,
                 )
                 for _ in range(config.num_layers)
@@ -175,6 +188,27 @@ class GraphAtlas(nn.Module):
         coordinates = torch.stack([state.coordinate for state in chart_states], dim=1)
         reconstruction = torch.stack([state.reconstruction for state in chart_states], dim=1)
 
+        decoder_jacobians = None
+        decoder_pinv = None
+        if self.transport_mode in {"min_distortion", "certified"} and all(
+            layer.mode == "transport" for layer in self.layers
+        ):
+            basis = torch.eye(
+                self.config.chart_dim, device=h.device, dtype=h.dtype,
+            ).expand(data.num_nodes, -1, -1)
+            decoder_jacobians = torch.stack([state.push(basis) for state in chart_states], dim=1)
+            if not torch.isfinite(decoder_jacobians).all():
+                raise RuntimeError(f"{self.transport_mode} transport produced non-finite decoder_jacobians")
+            pinv_input = decoder_jacobians
+            if pinv_input.dtype not in {torch.float32, torch.float64}:
+                pinv_input = pinv_input.float()
+            decoder_pinv = torch.linalg.pinv(
+                pinv_input,
+                rtol=self.config.transportability_pinv_rtol,
+            ).to(decoder_jacobians.dtype)
+            if not torch.isfinite(decoder_pinv).all():
+                raise RuntimeError(f"{self.transport_mode} transport produced non-finite decoder_pinv")
+
         def pull(chart: int, vectors: torch.Tensor) -> torch.Tensor:
             return chart_states[chart].pull(vectors)
 
@@ -189,7 +223,11 @@ class GraphAtlas(nn.Module):
         tangent = torch.stack([pull(chart, base_vectors) for chart in range(self.config.num_charts)], dim=1)
         layer_diagnostics: list[dict[str, torch.Tensor]] = []
         for layer in self.layers:
-            tangent, diagnostics = layer(tangent, membership, h, data.edge_index, push, pull)
+            tangent, diagnostics = layer(
+                tangent, membership, h, data.edge_index, push, pull,
+                decoder_jacobians=decoder_jacobians,
+                decoder_pinv=decoder_pinv,
+            )
             layer_diagnostics.append(diagnostics)
 
         pushed = torch.stack([push(chart, tangent[:, chart]) for chart in range(self.config.num_charts)], dim=1)

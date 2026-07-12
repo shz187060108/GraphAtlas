@@ -1,0 +1,37 @@
+{
+  "mode": "certified_mechanism",
+  "total_stages": 7,
+  "completed_stages": 2,
+  "failed_stages": 0,
+  "elapsed_seconds": 45.952505588531494,
+  "current_stage": "Download certified_mechanism datasets",
+  "complete": false,
+  "stages": [
+    {
+      "index": 1,
+      "name": "Validate certified_mechanism manifest",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/preflight.py",
+        "--preset",
+        "certified_mechanism"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.7372772693634033
+    },
+    {
+      "index": 2,
+      "name": "Download certified_mechanism datasets",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/download_data.py",
+        "--preset",
+        "certified_mechanism"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 43.20959258079529
+    }
+  ]
+}

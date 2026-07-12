@@ -62,6 +62,11 @@ class ModelConfig:
     alpha: float = 0.1
     theta: float = 0.5
     label: str | None = None
+    transport_mode: str = "original"
+    transportability_beta: float = 1.0
+    transportability_eps: float = 1e-8
+    transportability_pinv_rtol: float = 1e-5
+    transportability_stop_gradient: bool = True
 
 
 @dataclass

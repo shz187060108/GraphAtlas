@@ -268,3 +268,28 @@ and the membership-weighted observation-space readout is invariant.
 ## 11. Scope of the theorem
 
 The theorem concerns reparameterizations of learned chart coordinates. It does not assert invariance to arbitrary changes of the input feature basis, graph rewiring, or changes in chart membership. It also does not imply that a learned chart atlas is identifiable. Multiple atlases can yield the same invariant predictor. The reconstruction, cocycle, metric and geometry terms constrain this non-identifiability but do not remove it completely.
+
+## Transportability-Certified Message Passing
+
+For source-chart vectors (V_j^l\in\mathbb R^{d\times C}), the ambient message is (W_j^l=J_j^lV_j^l\in\mathbb R^{p\times C}). A target chart represents only the decoder column space \(\operatorname{Range}(J_i^k)\). The canonical transport is
+
+\[
+U_{ij}^{(k,l)}=(J_i^k)^\dagger W_j^l,
+\quad W_{\mathrm{proj}}=J_i^kU_{ij}^{(k,l)},
+\quad R=W_j^l-W_{\mathrm{proj}}.
+\]
+
+The pseudoinverse gives the unique minimum-norm least-squares solution and the smallest attainable ambient residual; the least-squares solution itself is unique only for a full-column-rank target Jacobian. For non-negligible source energy,
+
+\[
+q=\frac{\lVert W_{\mathrm{proj}}\rVert_F^2}{\lVert W_j^l\rVert_F^2},
+\qquad
+\delta=\frac{\lVert R\rVert_F^2}{\lVert W_j^l\rVert_F^2},
+\qquad q+\delta\simeq1.
+\]
+
+Zero messages use (q=\delta=0). Certified routing preserves semantic edge attention and uses (r_{ij}^{(k,l)}=\operatorname{softmax}_l(\log\pi_j^l+\beta q_{ij}^{(k,l)})), with zero mass for inactive source charts; (q) is not multiplied into transported vectors.
+
+Under invertible source coordinates (R_j^l), (widetilde J_j^l=J_j^l(R_j^l)^{-1}) and (widetilde V_j^l=R_j^lV_j^l), so the ambient source message is unchanged. Target reparameterization preserves the decoder column space, orthogonal projection, (q), and (delta). If the target Jacobian has full column rank, ((J_i^k(R_i^k)^{-1})^\dagger=R_i^k(J_i^k)^\dagger), hence target coordinates transform equivariantly. The ambient reconstruction is non-expansive, (lVert W_{\mathrm{proj}}\rVert_F\leq\lVert W\rVert_F), but target-coordinate norms need not be. The certificate measures geometric representability, not universal semantic relevance, noisy-edge correctness, or intrinsic Levi--Civita parallel transport.
+
+Use `graphatlas_min_distortion` for pseudoinverse transport, or `graphatlas_certified` with `transportability_beta`, `transportability_eps`, `transportability_pinv_rtol`, and `transportability_stop_gradient` for certificate-guided routing.
