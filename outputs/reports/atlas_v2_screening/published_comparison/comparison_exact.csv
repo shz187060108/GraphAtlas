@@ -1,0 +1,2 @@
+dataset,task,model_graphatlas,metric_name,graphatlas_mean,graphatlas_std,graphatlas_runs,metric,source_id,paper_title,venue,year,table_id,source_url,dataset_version,feature_condition,split_protocol,model_published,mean,std,unit,n_runs,comparison_level,notes,mean_fraction,std_fraction,effective_comparison_level,compatibility_notes,delta_vs_published_mean
+atlas_het_coordinate,node_classification,ambient_vector_gnn,accuracy,0.8466257452964783,,1,accuracy,,,,,,,,,,,,,,,,,,,,,

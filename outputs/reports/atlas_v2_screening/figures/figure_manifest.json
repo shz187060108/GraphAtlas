@@ -1,0 +1,26 @@
+{
+  "results": "outputs\\results\\atlas_v2_screening.csv",
+  "output_dir": "outputs\\reports\\atlas_v2_screening\\figures",
+  "mechanism_diagnostics": {
+    "generated": false,
+    "reason": "Atlas-Het classification results with full, no-transport, and free-transition variants are required.",
+    "files": []
+  },
+  "atlas_diagnostics": {
+    "generated": false,
+    "reason": "At least two atlas variants and one finite atlas diagnostic are required.",
+    "files": []
+  },
+  "benchmark_overview": {
+    "generated": true,
+    "files": [
+      "outputs\\reports\\atlas_v2_screening\\figures\\benchmark_rank_node_classification.pdf",
+      "outputs\\reports\\atlas_v2_screening\\figures\\benchmark_rank_node_classification.png"
+    ],
+    "tasks": [
+      "node_classification"
+    ],
+    "models": 1
+  },
+  "claim_report": "outputs\\reports\\atlas_v2_screening\\figures\\README.md"
+}

@@ -104,6 +104,22 @@ class Trainer:
         if self.device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(self.device)
         model = build_model(data.num_features, data.num_classes, self.config.model, data.num_nodes).to(self.device)
+        tensor_devices = {
+            str(value.device)
+            for value in data.__dict__.values()
+            if isinstance(value, torch.Tensor)
+        }
+        parameter_devices = {str(parameter.device) for parameter in model.parameters()}
+        expected = self.device
+        if expected.type == "cuda" and expected.index is None:
+            expected = torch.device("cuda", torch.cuda.current_device())
+        expected_device = str(expected)
+        if tensor_devices != {expected_device} or parameter_devices != {expected_device}:
+            raise RuntimeError(
+                "Model/data device mismatch: "
+                f"expected={expected_device}, tensors={sorted(tensor_devices)}, "
+                f"parameters={sorted(parameter_devices)}"
+            )
         optimizer = torch.optim.AdamW(
             model.parameters(),
             lr=self.config.train.learning_rate,

@@ -1,6 +1,6 @@
 base_config: configs/base.yaml
 seeds: [0, 1, 2]
-train: {epochs: 200, patience: 40, eval_every: 5, regularization_every: 5, light_regularization_nodes: 32, light_metric_probes: 2, progress: true, num_threads: 1}
+train: {device: cuda, epochs: 200, patience: 40, eval_every: 5, regularization_every: 5, light_regularization_nodes: 32, light_metric_probes: 2, progress: true, num_threads: 1}
 loss: {reconstruction: 0.05, inverse_cycle: 0.01, path_consistency: 0.02, metric: 0.02, chart_rank: 0.01, geometry: 0.01, metric_probes: 4, sample_nodes: 128}
 datasets:
   - {name: atlas_het_coordinate, atlas_variant: coordinate_only, num_nodes: 800, num_charts: 3, overlap: 0.28, cross_chart_edge_fraction: 0.20}

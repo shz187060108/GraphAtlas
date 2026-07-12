@@ -50,6 +50,11 @@ def resolve_device(name: str = "auto") -> "torch.device":
 
     if name == "auto":
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    if name.lower().startswith("cuda") and not torch.cuda.is_available():
+        print(f"PyTorch version: {torch.__version__}")
+        print(f"CUDA version: {torch.version.cuda}")
+        print("GPU name: unavailable")
+        raise RuntimeError("CUDA was explicitly requested but is not available; CPU fallback is disabled")
     return torch.device(name)
 
 

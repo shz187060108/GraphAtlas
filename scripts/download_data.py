@@ -68,6 +68,9 @@ def main() -> None:
         requested.extend(_datasets_from_preset(preset, project_root))
     names = list(dict.fromkeys(_normalize(name) for name in requested))
     if not names:
+        if args.preset:
+            print("Preset contains only synthetic Atlas-Het datasets; no download is required.")
+            return
         parser.error("Select --all, --main, --preset, or at least one --dataset.")
 
     unsupported = sorted(set(names) - SUPPORTED_NAMES)

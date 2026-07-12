@@ -1,0 +1,10 @@
+{
+  "preset": "atlas_v2_screening",
+  "expected_runs": 1,
+  "completed_runs": 1,
+  "failed_runs": 0,
+  "remaining_runs": 0,
+  "progress_fraction": 1.0,
+  "current": null,
+  "complete": true
+}

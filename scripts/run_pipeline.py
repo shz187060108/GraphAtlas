@@ -13,10 +13,35 @@ from pathlib import Path
 from typing import Sequence
 
 from tqdm.auto import tqdm
+from graphatlas.utils import load_yaml
 
 
 ROOT = Path(PROJECT_ROOT)
 OUTPUTS = ROOT / "outputs"
+
+
+def _require_requested_cuda(preset: str | None) -> None:
+    if not preset:
+        return
+    path = Path(preset)
+    if not path.suffix:
+        path = ROOT / "configs" / "presets" / f"{preset}.yaml"
+    elif not path.is_absolute():
+        path = ROOT / path
+    payload = load_yaml(path)
+    device = str(payload.get("train", {}).get("device", "auto"))
+    if not device.lower().startswith("cuda"):
+        return
+    import torch
+
+    print(f"PyTorch version: {torch.__version__}")
+    print(f"CUDA version: {torch.version.cuda}")
+    if not torch.cuda.is_available():
+        print("GPU name: unavailable")
+        raise SystemExit("CUDA was explicitly requested but is not available; CPU fallback is disabled")
+    requested = torch.device(device)
+    index = requested.index if requested.index is not None else torch.cuda.current_device()
+    print(f"GPU name: {torch.cuda.get_device_name(index)}")
 
 
 def _command(*parts: str) -> list[str]:
@@ -171,6 +196,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None, help="Limit jobs per experiment preset for debugging.")
     args = parser.parse_args()
 
+    _require_requested_cuda(args.preset)
     stages = _stage_plan(args)
     status_name = Path(args.preset).stem if args.preset else args.mode
     status_path = OUTPUTS / "status" / f"pipeline_{status_name}.json"
