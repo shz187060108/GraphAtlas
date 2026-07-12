@@ -1,11 +1,11 @@
 {
   "mode": "certified_real_pilot",
   "total_stages": 7,
-  "completed_stages": 2,
+  "completed_stages": 7,
   "failed_stages": 0,
-  "elapsed_seconds": 73.38341403007507,
-  "current_stage": "Download certified_real_pilot datasets",
-  "complete": false,
+  "elapsed_seconds": 1033.4912996292114,
+  "current_stage": "Build provenance-aware published comparison tables",
+  "complete": true,
   "stages": [
     {
       "index": 1,
@@ -32,6 +32,79 @@
       ],
       "returncode": 0,
       "elapsed_seconds": 70.59826350212097
+    },
+    {
+      "index": 3,
+      "name": "Run certified_real_pilot matrix",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/run_all.py",
+        "--preset",
+        "certified_real_pilot",
+        "--continue-on-error",
+        "--limit",
+        "12"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 956.7156202793121
+    },
+    {
+      "index": 4,
+      "name": "Compute statistics and claim gates",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/summarize.py",
+        "--results",
+        "outputs/results/certified_real_pilot.csv",
+        "--output-dir",
+        "outputs/reports/certified_real_pilot",
+        "--no-plots"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.9113013744354248
+    },
+    {
+      "index": 5,
+      "name": "Generate publication figures",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/visualize.py",
+        "--results",
+        "outputs/results/certified_real_pilot.csv",
+        "--output-dir",
+        "outputs/reports/certified_real_pilot/figures"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 1.456589698791504
+    },
+    {
+      "index": 6,
+      "name": "Validate curated published results",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/validate_published_results.py"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.474837064743042
+    },
+    {
+      "index": 7,
+      "name": "Build provenance-aware published comparison tables",
+      "command": [
+        "C:\\Users\\24953\\.conda\\envs\\dl\\python.exe",
+        "-u",
+        "scripts/build_comparison_tables.py",
+        "--results",
+        "outputs/results/certified_real_pilot.csv",
+        "--output-dir",
+        "outputs/reports/certified_real_pilot/published_comparison"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 0.5397272109985352
     }
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "graphatlas_rows": 12,
+  "published_rows": 179,
+  "exact_rows": 79,
+  "contextual_rows": 100,
+  "policy": "Published aggregate means are never used for paired significance tests or seed-level ranks."
+}

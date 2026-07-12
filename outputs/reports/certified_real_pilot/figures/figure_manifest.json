@@ -1,0 +1,26 @@
+{
+  "results": "outputs\\results\\certified_real_pilot.csv",
+  "output_dir": "outputs\\reports\\certified_real_pilot\\figures",
+  "mechanism_diagnostics": {
+    "generated": false,
+    "reason": "Atlas-Het classification results with full, no-transport, and free-transition variants are required.",
+    "files": []
+  },
+  "atlas_diagnostics": {
+    "generated": false,
+    "reason": "At least two atlas variants and one finite atlas diagnostic are required.",
+    "files": []
+  },
+  "benchmark_overview": {
+    "generated": true,
+    "files": [
+      "outputs\\reports\\certified_real_pilot\\figures\\benchmark_rank_node_classification.pdf",
+      "outputs\\reports\\certified_real_pilot\\figures\\benchmark_rank_node_classification.png"
+    ],
+    "tasks": [
+      "node_classification"
+    ],
+    "models": 3
+  },
+  "claim_report": "outputs\\reports\\certified_real_pilot\\figures\\README.md"
+}
