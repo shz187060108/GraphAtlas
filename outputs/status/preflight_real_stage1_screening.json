@@ -9,7 +9,7 @@
   "scikit_learn": "1.7.2",
   "pandas": "2.3.3",
   "pyyaml": "6.0.3",
-  "git_commit": "343c02624b0a307a3e3f4257e8d9b6c146f06b60",
+  "git_commit": "defdd7f31760be29fd0f7dcf709800ce19757260",
   "preset": "real_stage1_screening",
   "manifest_runs": 120,
   "manifest_datasets": [

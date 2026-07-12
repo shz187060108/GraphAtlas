@@ -1,0 +1,37 @@
+{
+  "mode": "atlas_v2_screening",
+  "total_stages": 9,
+  "completed_stages": 2,
+  "failed_stages": 1,
+  "elapsed_seconds": 4.577967882156372,
+  "current_stage": "Download atlas_v2_screening datasets",
+  "complete": false,
+  "stages": [
+    {
+      "index": 1,
+      "name": "Validate atlas_v2_screening manifest",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/preflight.py",
+        "--preset",
+        "configs/presets/atlas_v2_screening.yaml"
+      ],
+      "returncode": 0,
+      "elapsed_seconds": 2.408968687057495
+    },
+    {
+      "index": 2,
+      "name": "Download atlas_v2_screening datasets",
+      "command": [
+        "C:\\Users\\24953\\PycharmProjects\\GraphAtlas\\graphatlas_project\\.venv\\Scripts\\python.exe",
+        "-u",
+        "scripts/download_data.py",
+        "--preset",
+        "configs/presets/atlas_v2_screening.yaml"
+      ],
+      "returncode": 2,
+      "elapsed_seconds": 2.161756753921509
+    }
+  ]
+}

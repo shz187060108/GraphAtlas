@@ -1,0 +1,2 @@
+task,model,mean_rank,median_rank,evaluated_runs
+node_classification,ambient_vector_gnn,1.0,1.0,1
