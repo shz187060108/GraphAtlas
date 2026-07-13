@@ -1,0 +1,20 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26100-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "minesweeper",
+    "split": 0,
+    "num_splits": 10,
+    "metric": "roc_auc",
+    "multilabel": false,
+    "directed": false,
+    "source": "Heterophilous Graph Benchmark",
+    "sha256": "e664c8dacf1e8ac466c2c09ed4b237bd2c5541f47a6eae9c6092cb87f16412b3",
+    "task": "node_classification",
+    "split_protocol": "stratified_60_20_20"
+  }
+}

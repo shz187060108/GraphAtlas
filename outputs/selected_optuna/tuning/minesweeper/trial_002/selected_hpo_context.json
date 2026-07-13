@@ -1,0 +1,14 @@
+{
+  "stage": "tune",
+  "dataset": "minesweeper",
+  "params": {
+    "learning_rate": 0.0005450765780025134,
+    "weight_decay": 7.764889602690966e-05,
+    "dropout": 0.21856816676072166,
+    "hidden_dim": 128,
+    "geometry_loss_scale": 0.5305930675422174
+  },
+  "model_seed": 0,
+  "split_seed": 0,
+  "hash": "d7d5dd7add8e"
+}
