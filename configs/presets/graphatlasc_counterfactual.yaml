@@ -1,0 +1,49 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+train:
+  epochs: 120
+  patience: 25
+datasets:
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.0
+  condition_id: ov0.10_cross0.00
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.15
+  condition_id: ov0.10_cross0.15
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.3
+  condition_id: ov0.10_cross0.30
+models:
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas_certified
+  label: graphatlas_c_membership
+  certified_routing_mode: membership_only
+- name: graphatlas_certified
+  label: graphatlas_c_q_shuffle_source
+  certified_routing_mode: q_shuffle_source
+- name: graphatlas_certified
+  label: graphatlas_c_q_shuffle_edge
+  certified_routing_mode: q_shuffle_edge
+- name: graphatlas_certified
+  label: graphatlas_c_random
+  certified_routing_mode: random
+- name: graphatlas_certified
+  label: graphatlas_c_oracle
+  certified_routing_mode: oracle_max_q

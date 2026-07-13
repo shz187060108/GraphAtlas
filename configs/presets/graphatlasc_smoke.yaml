@@ -1,0 +1,35 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+train:
+  device: cpu
+  epochs: 3
+  patience: 3
+  eval_every: 1
+  progress: false
+datasets:
+- name: atlas_het
+  num_nodes: 96
+  num_charts: 3
+  condition_id: smoke
+models:
+- name: graphatlas
+  label: graphatlas_original
+- name: graphatlas_min_distortion
+  label: graphatlas_min_distortion
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas_certified
+  label: graphatlas_c_beta_minus_1
+  transportability_beta: -1.0
+- name: graphatlas_certified
+  label: graphatlas_c_q_shuffle_source
+  certified_routing_mode: q_shuffle_source
+- name: graphatlas_certified
+  label: graphatlas_c_oracle
+  certified_routing_mode: oracle_max_q
+- name: graphatlas_certified
+  label: graphatlas_c_coordinate_relu
+  coordinate_activation: relu

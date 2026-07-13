@@ -20,7 +20,7 @@ from graphatlas.config import ExperimentConfig
 from graphatlas.data import GraphData
 from graphatlas.losses import atlas_regularization_terms, compute_loss
 from graphatlas.metrics import accuracy, evaluate_output, output_primary_metric
-from graphatlas.nn.model import build_model
+from graphatlas.nn.model import build_model, wrap_link_prediction_model
 from graphatlas.utils import configure_torch_threads, count_parameters, resolve_device, save_json, save_yaml, seed_everything
 
 
@@ -108,6 +108,8 @@ class Trainer:
 
         pyg_data = Data(x=data.x, edge_index=data.edge_index, y=data.y)
         model = build_model(data.num_features, data.num_classes, self.config.model, data.num_nodes).to(self.device)
+        if self.config.dataset.task == "link_prediction":
+            model = wrap_link_prediction_model(model, data, self.config.model)
         optimizer = torch.optim.AdamW(model.parameters(), lr=self.config.train.learning_rate,
                                       weight_decay=self.config.train.weight_decay)
         target_nodes = torch.arange(data.num_nodes)
@@ -190,8 +192,8 @@ class Trainer:
             if epoch == 1 or epoch % self.config.train.eval_every == 0 or epoch == self.config.train.epochs:
                 logits = infer()
                 eval_output = {"logits": logits, "embedding": logits}
-                val_score = output_primary_metric(eval_output, data, "val")
-                train_score = output_primary_metric(eval_output, data, "train")
+                val_score = output_primary_metric(eval_output, data, "val", model)
+                train_score = output_primary_metric(eval_output, data, "train", model)
                 history.append({"epoch": epoch, "loss": total_loss / max(batches, 1),
                                 "val_metric": val_score, "train_metric": train_score})
                 if val_score > best_val + 1e-8:
@@ -259,6 +261,8 @@ class Trainer:
         if self.device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(self.device)
         model = build_model(data.num_features, data.num_classes, self.config.model, data.num_nodes).to(self.device)
+        if self.config.dataset.task == "link_prediction":
+            model = wrap_link_prediction_model(model, data, self.config.model)
         tensor_devices = {
             str(value.device)
             for value in data.__dict__.values()
@@ -401,7 +405,7 @@ class Trainer:
         model.load_state_dict(best_state)
         model.eval()
         with torch.no_grad():
-            if model.__class__.__name__ == "GraphAtlas" and getattr(model, "transport_mode", None) == "certified":
+            if model.__class__.__name__ == "GraphAtlas":
                 final_output = model(data, transport_diagnostics=True)
             else:
                 final_output = model(data)
@@ -457,6 +461,14 @@ class Trainer:
                 "task": self.config.dataset.task,
                 "model": self.config.model.label or self.config.model.name,
                 "model_family": self.config.model.name,
+                "condition_id": self.config.dataset.condition_id or "",
+                "intervention_profile": self.config.dataset.intervention_profile or "",
+                "certified_routing_mode": self.config.model.certified_routing_mode,
+                "transportability_beta": self.config.model.transportability_beta,
+                "readout_mode": self.config.model.readout_mode,
+                "coordinate_activation": self.config.model.coordinate_activation,
+                "coordinate_left_linear": self.config.model.coordinate_left_linear,
+                "link_decoder": self.config.model.link_decoder,
                 "seed": self.config.train.seed,
                 "best_epoch": best_epoch,
                 "last_epoch": final_epoch,
@@ -481,6 +493,8 @@ class Trainer:
             "routing_total_variation_from_membership", "routing_entropy_mean",
             "active_target_chart_count", "fraction_edges_with_multiple_target_charts",
             "q_route_spread_median", "q_route_spread_max",
+            "q_delta_closure_error", "routing_opportunity", "irreducible_transport_risk",
+            "cross_chart_mass", "oracle_agreement",
         )
         layer_diagnostics = final_output.get("layer_diagnostics", [])
         for name in transport_names:
@@ -520,6 +534,11 @@ class Trainer:
             value = final_output.get(key)
             if torch.is_tensor(value):
                 prediction_payload[key] = value.detach().cpu()
+        if layer_diagnostics:
+            for key in ("node_cross_chart_mass", "node_q_spread", "node_transport_risk"):
+                value = layer_diagnostics[-1].get(key)
+                if torch.is_tensor(value):
+                    prediction_payload[key] = value.detach().cpu()
         if data.link_split is not None:
             for field_name in ("train_pos", "train_neg", "val_pos", "val_neg", "test_pos", "test_neg"):
                 prediction_payload[f"link_{field_name}"] = getattr(data.link_split, field_name).detach().cpu()

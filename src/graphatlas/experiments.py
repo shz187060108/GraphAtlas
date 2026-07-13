@@ -90,7 +90,7 @@ def _run_identity(config: ExperimentConfig, source_hash: str) -> tuple[str, str]
     config_hash = stable_hash({"config": config.fingerprint_dict(), "source_hash": source_hash})
     run_id = (
         f"{_safe_name(config.dataset.name)}__{_safe_name(config.dataset.task)}"
-        f"__{_safe_name(config.model.name)}__split{config.dataset.split}"
+        f"__{_safe_name(config.model.label or config.model.name)}__split{config.dataset.split}"
         f"__seed{config.train.seed}__{config_hash}"
     )
     return run_id, config_hash
@@ -101,7 +101,7 @@ def _run_directory(project_root: Path, config: ExperimentConfig, config_hash: st
         project_root
         / config.train.output_dir
         / _safe_name(config.dataset.name)
-        / _safe_name(config.model.name)
+        / _safe_name(config.model.label or config.model.name)
         / f"split-{config.dataset.split}"
         / f"seed-{config.train.seed}"
         / f"config-{config_hash[:8]}"
@@ -125,7 +125,14 @@ def _merge_master_results(path: Path, frame: pd.DataFrame) -> None:
     sort_columns = [column for column in ["dataset", "task", "model", "split", "seed"] if column in combined]
     if sort_columns:
         combined = combined.sort_values(sort_columns).reset_index(drop=True)
-    combined.to_csv(path, index=False)
+    _atomic_csv(combined, path)
+
+
+def _atomic_csv(frame: pd.DataFrame, path: Path) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_name(path.name + ".tmp")
+    frame.to_csv(temporary, index=False)
+    os.replace(temporary, path)
 
 
 PUBLIC_RESULT_COLUMNS = (
@@ -227,6 +234,7 @@ def run_preset(
     manifests_dir = outputs / "manifests"
     results_path = results_dir / "all.csv"
     preset_results_path = results_dir / f"{preset_path.stem}.csv"
+    preset_concise_path = results_dir / f"{preset_path.stem}_concise.csv"
     status_path = status_dir / f"experiment_{preset_path.stem}.json"
     failures_path = status_dir / f"failures_{preset_path.stem}.json"
     manifest_path = manifests_dir / f"{preset_path.stem}.csv"
@@ -260,7 +268,7 @@ def run_preset(
     results_dir.mkdir(parents=True, exist_ok=True)
     status_dir.mkdir(parents=True, exist_ok=True)
     manifests_dir.mkdir(parents=True, exist_ok=True)
-    manifest.to_csv(manifest_path, index=False)
+    _atomic_csv(manifest, manifest_path)
     if dry_run:
         return manifest
 
@@ -330,8 +338,10 @@ def run_preset(
         finally:
             frame = pd.DataFrame(collected)
             if not frame.empty:
-                concise_results_frame(frame).to_csv(preset_results_path, index=False)
-                concise_results_frame(frame).to_csv(results_path / "latest.csv", index=False)
+                _atomic_csv(frame, preset_results_path)
+                _atomic_csv(concise_results_frame(frame), preset_concise_path)
+                _atomic_csv(frame, results_dir / "latest.csv")
+                _atomic_csv(concise_results_frame(frame), results_dir / "latest_concise.csv")
             status_payload = {
                 "preset": preset_path.stem,
                 "expected_runs": len(prepared),
@@ -349,8 +359,11 @@ def run_preset(
     if not frame.empty:
         sort_columns = [column for column in ["dataset", "task", "model", "split", "seed"] if column in frame]
         frame = frame.sort_values(sort_columns).reset_index(drop=True)
-        concise_results_frame(frame).to_csv(preset_results_path, index=False)
-        concise_results_frame(frame).to_csv(results_path / "latest.csv", index=False)
+        _atomic_csv(frame, preset_results_path)
+        _atomic_csv(concise_results_frame(frame), preset_concise_path)
+        _atomic_csv(frame, results_dir / "latest.csv")
+        _atomic_csv(concise_results_frame(frame), results_dir / "latest_concise.csv")
+        _merge_master_results(results_path, frame)
     if failures:
         save_json({"failures": failures}, failures_path)
         if not continue_on_error:

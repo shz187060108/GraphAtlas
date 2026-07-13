@@ -278,10 +278,11 @@ def _link_split_edges(data: GraphData, split_name: str) -> tuple[torch.Tensor, t
     return positive, negative
 
 
-def link_prediction_metrics(embedding: torch.Tensor, data: GraphData, split_name: str) -> dict[str, float]:
+def link_prediction_metrics(embedding: torch.Tensor, data: GraphData, split_name: str, model: torch.nn.Module | None = None) -> dict[str, float]:
     positive, negative = _link_split_edges(data, split_name)
-    positive_score = edge_dot_scores(embedding, positive)
-    negative_score = edge_dot_scores(embedding, negative)
+    scorer = getattr(model, "score_edges", lambda z, edges: edge_dot_scores(z, edges))
+    positive_score = scorer(embedding, positive)
+    negative_score = scorer(embedding, negative)
     scores = torch.cat([positive_score, negative_score]).detach().cpu().numpy()
     labels = np.concatenate([np.ones(positive_score.numel()), np.zeros(negative_score.numel())])
     if positive_score.numel() == 0 or negative_score.numel() == 0:
@@ -296,12 +297,12 @@ def link_prediction_metrics(embedding: torch.Tensor, data: GraphData, split_name
     }
 
 
-def output_primary_metric(output: dict[str, torch.Tensor], data: GraphData, split_name: str) -> float:
+def output_primary_metric(output: dict[str, torch.Tensor], data: GraphData, split_name: str, model: torch.nn.Module | None = None) -> float:
     if data.metadata and data.metadata.get("task") == "link_prediction":
         embedding = output.get("embedding")
         if embedding is None:
             raise ValueError("Model output does not contain embedding for link prediction")
-        return link_prediction_metrics(embedding, data, split_name)["roc_auc"]
+        return link_prediction_metrics(embedding, data, split_name, model)["roc_auc"]
     mask = getattr(data, f"{split_name}_mask")
     return primary_metric(output["logits"], data, mask)
 
@@ -398,9 +399,9 @@ def evaluate_output(
         embedding = output.get("embedding")
         if embedding is None:
             raise ValueError("Model output does not contain embedding for link prediction")
-        train_link = link_prediction_metrics(embedding, data, "train")
-        val_link = link_prediction_metrics(embedding, data, "val")
-        test_link = link_prediction_metrics(embedding, data, "test") if include_test else {
+        train_link = link_prediction_metrics(embedding, data, "train", model)
+        val_link = link_prediction_metrics(embedding, data, "val", model)
+        test_link = link_prediction_metrics(embedding, data, "test", model) if include_test else {
             "roc_auc": float("nan"), "average_precision": float("nan"),
             "mrr": float("nan"), "hits_at_10": float("nan"), "hits_at_50": float("nan"),
         }
@@ -474,12 +475,13 @@ def evaluate_output(
         metrics["chart_ari"] = float("nan")
         metrics["overlap_f1"] = float("nan")
 
-    if isinstance(model, GraphAtlas):
+    geometry_model = getattr(model, "encoder", model)
+    if isinstance(geometry_model, GraphAtlas):
         rec = output["reconstruction"] - output["observation"][:, None]
         metrics["reconstruction_error"] = float(rec.square().mean().detach().cpu())
         if include_intervention:
-            affine = coordinate_intervention_diagnostics(model, data, seed + 1000, nonlinear=False)
-            nonlinear = coordinate_intervention_diagnostics(model, data, seed + 2000, nonlinear=True)
+            affine = coordinate_intervention_diagnostics(geometry_model, data, seed + 1000, nonlinear=False)
+            nonlinear = coordinate_intervention_diagnostics(geometry_model, data, seed + 2000, nonlinear=True)
             metrics["invariance_error_affine"] = affine["mean_error"]
             metrics["invariance_error_nonlinear"] = nonlinear["mean_error"]
             metrics["invariance_logit_max_affine"] = affine["max_logit_error"]

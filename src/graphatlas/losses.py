@@ -261,8 +261,9 @@ def compute_loss(
         embedding = output.get("embedding")
         if embedding is None:
             raise ValueError(f"{model.__class__.__name__} does not expose node embeddings for link prediction")
-        positive = edge_dot_scores(embedding, data.link_split.train_pos)
-        negative = edge_dot_scores(embedding, data.link_split.train_neg)
+        scorer = getattr(model, "score_edges", lambda z, edges: edge_dot_scores(z, edges))
+        positive = scorer(embedding, data.link_split.train_pos)
+        negative = scorer(embedding, data.link_split.train_neg)
         scores = torch.cat([positive, negative])
         labels = torch.cat([torch.ones_like(positive), torch.zeros_like(negative)])
         task = F.binary_cross_entropy_with_logits(scores, labels)

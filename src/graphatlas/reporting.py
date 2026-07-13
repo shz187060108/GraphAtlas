@@ -10,6 +10,25 @@ import pandas as pd
 from scipy import stats
 
 
+def resolve_target_model(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> str:
+    """Prefer GraphAtlas-C, retaining legacy GraphAtlas reports without migration."""
+    available = set(frame.get("model", pd.Series(dtype=str)).astype(str))
+    if target_model in available:
+        return target_model
+    if "graphatlas" in available:
+        return "graphatlas"
+    return target_model
+
+
+def _target_view(frame: pd.DataFrame, target_model: str) -> pd.DataFrame:
+    """Use the historical internal gate name without hard-coding a display label."""
+    selected = resolve_target_model(frame, target_model)
+    view = frame.copy()
+    if selected != "graphatlas" and "model" in view:
+        view.loc[view["model"] == selected, "model"] = "graphatlas"
+    return view
+
+
 def _flatten_columns(frame: pd.DataFrame) -> pd.DataFrame:
     frame.columns = [
         "_".join([str(part) for part in column if str(part)]) if isinstance(column, tuple) else str(column)
@@ -48,7 +67,8 @@ def _holm_adjust(p_values: list[float]) -> list[float]:
     return adjusted
 
 
-def paired_tests(frame: pd.DataFrame, target_model: str = "graphatlas") -> pd.DataFrame:
+def paired_tests(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> pd.DataFrame:
+    target_model = resolve_target_model(frame, target_model)
     rows: list[dict[str, object]] = []
     keys = [column for column in ["seed", "split"] if column in frame]
     if not keys:
@@ -123,7 +143,8 @@ def model_ranks(frame: pd.DataFrame) -> pd.DataFrame:
     return result.sort_values(sort_columns).reset_index(drop=True)
 
 
-def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02) -> dict[str, Any]:
+def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02, target_model: str = "graphatlas_c") -> dict[str, Any]:
+    frame = _target_view(frame, target_model)
     synthetic = (
         frame[frame["dataset"].astype(str).str.startswith("atlas_het")].copy()
         if "dataset" in frame
@@ -198,7 +219,8 @@ def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02) -> dict
     }
 
 
-def submission_readiness_gates(frame: pd.DataFrame) -> dict[str, Any]:
+def submission_readiness_gates(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> dict[str, Any]:
+    frame = _target_view(frame, target_model)
     gates: list[dict[str, Any]] = []
 
     def add(name: str, passed: bool, value: Any, criterion: str, **extra: Any) -> None:
@@ -374,6 +396,7 @@ def summarize_results(
     results_path: str | Path,
     plots: bool = True,
     output_dir: str | Path | None = None,
+    target_model: str = "graphatlas_c",
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Any]]:
     path = Path(results_path)
     if not path.exists():
@@ -452,15 +475,16 @@ def summarize_results(
         )
     summary.to_csv(report_dir / "summary.csv", index=False)
 
-    tests = paired_tests(frame)
+    target_model = resolve_target_model(frame, target_model)
+    tests = paired_tests(frame, target_model)
     tests.to_csv(report_dir / "paired_tests.csv", index=False)
     ranks = model_ranks(frame)
     ranks.to_csv(report_dir / "model_ranks.csv", index=False)
-    gates = scientific_gates(frame)
+    gates = scientific_gates(frame, target_model=target_model)
     (report_dir / "scientific_gates.json").write_text(
         json.dumps(gates, indent=2, ensure_ascii=False), encoding="utf-8"
     )
-    submission = submission_readiness_gates(frame)
+    submission = submission_readiness_gates(frame, target_model=target_model)
     (report_dir / "submission_readiness.json").write_text(
         json.dumps(submission, indent=2, ensure_ascii=False), encoding="utf-8"
     )
@@ -500,5 +524,5 @@ def summarize_results(
     if plots:
         from graphatlas.visualization import visualize_results
 
-        visualize_results(path, report_dir / "figures")
+        visualize_results(path, report_dir / "figures", target_model=target_model)
     return summary, tests, gates

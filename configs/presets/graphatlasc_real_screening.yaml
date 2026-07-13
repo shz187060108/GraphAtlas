@@ -1,0 +1,36 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+- 1
+- 2
+train:
+  epochs: 200
+  patience: 40
+datasets:
+- name: roman_empire
+  num_charts: 4
+- name: tolokers
+  num_charts: 4
+  metric: roc_auc
+- name: chameleon_filtered
+  num_charts: 4
+- name: squirrel_filtered
+  num_charts: 4
+- name: cornell
+  num_charts: 3
+- name: texas
+  num_charts: 3
+- name: wisconsin
+  num_charts: 3
+models:
+- name: graphatlas
+  label: graphatlas_original
+- name: graphatlas_min_distortion
+  label: graphatlas_min_distortion
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas_certified
+  label: graphatlas_c_beta_minus_1
+  transportability_beta: -1.0

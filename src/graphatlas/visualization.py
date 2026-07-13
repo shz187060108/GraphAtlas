@@ -459,12 +459,21 @@ def write_claim_report(frame: pd.DataFrame, output_dir: Path, mechanism: dict[st
     return path
 
 
-def visualize_results(results_path: str | Path, output_dir: str | Path | None = None) -> dict[str, Any]:
+def visualize_results(
+    results_path: str | Path,
+    output_dir: str | Path | None = None,
+    target_model: str = "graphatlas_c",
+) -> dict[str, Any]:
     _configure_matplotlib()
     results_path = Path(results_path)
     if not results_path.exists():
         raise FileNotFoundError(results_path)
     frame = pd.read_csv(results_path)
+    # Existing figure routines use the historic internal name. Map the requested
+    # display target locally and leave result files untouched.
+    if target_model in set(frame.get("model", pd.Series(dtype=str)).astype(str)) and target_model != "graphatlas":
+        frame = frame.copy()
+        frame.loc[frame["model"] == target_model, "model"] = "graphatlas"
     if "test_metric" not in frame and "test_accuracy" in frame:
         frame["test_metric"] = frame["test_accuracy"]
     destination = Path(output_dir) if output_dir is not None else results_path.parent / "figures"

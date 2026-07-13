@@ -42,6 +42,9 @@ class DatasetConfig:
     cross_chart_edge_fraction: float = 0.15
     geodesic_pair_count: int = 512
     intrinsic_candidate_neighbors: int = 24
+    # Stable identifiers for generated condition grids and interventions.
+    condition_id: str | None = None
+    intervention_profile: str | None = None
 
 
 @dataclass
@@ -71,6 +74,14 @@ class ModelConfig:
     transportability_eps: float = 1e-8
     transportability_pinv_rtol: float = 1e-5
     transportability_stop_gradient: bool = True
+    certified_routing_mode: str = "certificate"
+    routing_control_seed: int = 1729
+    routing_control_max_edges: int = 200000
+    readout_mode: str = "full"
+    coordinate_activation: str = "none"
+    coordinate_left_linear: bool = False
+    link_decoder: str = "dot"
+    link_decoder_hidden_dim: int = 64
 
 
 @dataclass

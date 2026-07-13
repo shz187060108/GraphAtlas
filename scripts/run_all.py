@@ -80,6 +80,7 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--sync-github", action="store_true")
     args = parser.parse_args()
 
     root = Path(__file__).resolve().parents[1]
@@ -158,7 +159,7 @@ def main() -> None:
     if collect.returncode != 0:
         raise SystemExit(collect.returncode)
     print(f"[{len(plan):>3}/{len(plan):<3} 100.00%] complete", flush=True)
-    if os.environ.get("GRAPHATLAS_DEFER_SYNC", "0") != "1":
+    if args.sync_github and os.environ.get("GRAPHATLAS_DEFER_SYNC", "0") != "1":
         subprocess.run(
             [sys.executable, "-u", str(root / "scripts" / "sync_github.py"),
              "--message", f"Complete {preset_name} experiment"],

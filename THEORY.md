@@ -293,3 +293,17 @@ Zero messages use (q=\delta=0). Certified routing preserves semantic edge attent
 Under invertible source coordinates (R_j^l), (widetilde J_j^l=J_j^l(R_j^l)^{-1}) and (widetilde V_j^l=R_j^lV_j^l), so the ambient source message is unchanged. Target reparameterization preserves the decoder column space, orthogonal projection, (q), and (delta). If the target Jacobian has full column rank, ((J_i^k(R_i^k)^{-1})^\dagger=R_i^k(J_i^k)^\dagger), hence target coordinates transform equivariantly. The ambient reconstruction is non-expansive, (lVert W_{\mathrm{proj}}\rVert_F\leq\lVert W\rVert_F), but target-coordinate norms need not be. The certificate measures geometric representability, not universal semantic relevance, noisy-edge correctness, or intrinsic Levi--Civita parallel transport.
 
 Use `graphatlas_min_distortion` for pseudoinverse transport, or `graphatlas_certified` with `transportability_beta`, `transportability_eps`, `transportability_pinv_rtol`, and `transportability_stop_gradient` for certificate-guided routing.
+# Transportability-Certified Message Passing
+
+For source tangent channels (V_j^l), GraphAtlas-C forms the ambient message
+(W_j^l=J_j^lV_j^l). For target decoder Jacobian (J_i^k), the canonical
+minimum-distortion target coordinates are (U_{ij}^{kl}=(J_i^k)^dagger W_j^l),
+with projected message (W_{proj}=J_i^kU) and residual (R=W-W_{proj}).
+The certificate is (q=\|W_{proj}\|_F^2/(\|W\|_F^2+\epsilon)), with
+distortion (delta=\|R\|_F^2/(\|W\|_F^2+\epsilon)); zero-energy messages use
+(q=\delta=0). Routing adds \(\beta q\) only to source-chart routing logits.
+The target column space, projection, (q), and (delta) are invariant under
+invertible coordinate changes. Target coordinates transform equivariantly when
+the target Jacobian has full column rank; only ambient projection is always
+non-expansive. The certificate is geometric representability, not semantic edge
+correctness.

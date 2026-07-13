@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import asdict
+import math
 
 from graphatlas.config import ExperimentConfig
 
@@ -88,12 +89,26 @@ def validate_config(config: ExperimentConfig) -> None:
         errors.append("model.dropout must be in [0, 1)")
     if m.transport_mode not in {"original", "min_distortion", "certified"}:
         errors.append("model.transport_mode must be original, min_distortion, or certified")
-    if m.transportability_beta < 0:
-        errors.append("model.transportability_beta must be non-negative")
+    if not math.isfinite(m.transportability_beta):
+        errors.append("model.transportability_beta must be finite")
     if m.transportability_eps <= 0:
         errors.append("model.transportability_eps must be positive")
     if m.transportability_pinv_rtol <= 0:
         errors.append("model.transportability_pinv_rtol must be positive")
+    if m.certified_routing_mode not in {
+        "certificate", "membership_only", "q_shuffle_edge", "q_shuffle_source", "random", "oracle_max_q",
+    }:
+        errors.append("model.certified_routing_mode is invalid")
+    if m.routing_control_max_edges < 1:
+        errors.append("model.routing_control_max_edges must be positive")
+    if m.readout_mode not in {"full", "observation_only", "atlas_only"}:
+        errors.append("model.readout_mode must be full, observation_only, or atlas_only")
+    if m.coordinate_activation not in {"none", "relu", "gelu"}:
+        errors.append("model.coordinate_activation must be none, relu, or gelu")
+    if m.link_decoder not in {"dot", "bilinear", "mlp"}:
+        errors.append("model.link_decoder must be dot, bilinear, or mlp")
+    if m.link_decoder_hidden_dim < 1:
+        errors.append("model.link_decoder_hidden_dim must be positive")
     if m.propagation_steps < 1:
         errors.append("model.propagation_steps must be positive")
     if m.attention_heads < 1:

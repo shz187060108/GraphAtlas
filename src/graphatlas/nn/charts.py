@@ -53,11 +53,13 @@ class LocalChart(nn.Module):
 class SmoothDiffeomorphism:
     """A smooth global chart reparameterization with exact cached JVPs."""
 
-    def __init__(self, orthogonal: torch.Tensor, scale: torch.Tensor, shift: torch.Tensor, nonlinear: bool = True):
+    def __init__(self, orthogonal: torch.Tensor, scale: torch.Tensor, shift: torch.Tensor, nonlinear: bool = True, kind: str | None = None, strength: float = 1.0):
         self.orthogonal = orthogonal
         self.scale = scale
         self.shift = shift
         self.nonlinear = nonlinear
+        self.kind = kind or ("asinh_affine" if nonlinear else "affine")
+        self.strength = float(strength)
 
     @classmethod
     def random(
@@ -76,10 +78,30 @@ class SmoothDiffeomorphism:
         return cls(orthogonal.to(device), scale.to(device), shift.to(device), nonlinear=nonlinear)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        if self.kind == "triangular_coupling":
+            split = x.shape[-1] // 2
+            if split == 0:
+                return x
+            left, right = x[..., :split], x[..., split:]
+            return torch.cat([left, right + self.strength * torch.tanh(left[..., :right.shape[-1]])], dim=-1)
+        if self.kind == "radial":
+            return x * torch.sqrt(1.0 + self.strength * x.square().sum(dim=-1, keepdim=True))
         base = torch.asinh(x) if self.nonlinear else x
         return (base * self.scale) @ self.orthogonal.T + self.shift
 
     def inverse(self, y: torch.Tensor) -> torch.Tensor:
+        if self.kind == "triangular_coupling":
+            split = y.shape[-1] // 2
+            if split == 0:
+                return y
+            left, right = y[..., :split], y[..., split:]
+            return torch.cat([left, right - self.strength * torch.tanh(left[..., :right.shape[-1]])], dim=-1)
+        if self.kind == "radial":
+            if self.strength == 0.0:
+                return y
+            r2 = y.square().sum(dim=-1, keepdim=True)
+            x2 = (torch.sqrt(1.0 + 4.0 * self.strength * r2) - 1.0) / (2.0 * self.strength)
+            return y / torch.sqrt(1.0 + self.strength * x2)
         base = ((y - self.shift) @ self.orthogonal) / self.scale
         return torch.sinh(base) if self.nonlinear else base
 
@@ -94,6 +116,20 @@ class SmoothDiffeomorphism:
         x: torch.Tensor,
         chunk_size: int = 0,
     ) -> tuple[torch.Tensor, Callable[[torch.Tensor], torch.Tensor]]:
+        if self.kind in {"triangular_coupling", "radial"}:
+            output = self.forward(x)
+            def apply_special(vectors: torch.Tensor) -> torch.Tensor:
+                if self.kind == "triangular_coupling":
+                    split = x.shape[-1] // 2
+                    if split == 0:
+                        return vectors
+                    left, right = vectors[..., :split, :], vectors[..., split:, :]
+                    derivative = self.strength * (1.0 - torch.tanh(x[..., :split]).square())
+                    return torch.cat([left, right + derivative[..., :right.shape[-2], None] * left[..., :right.shape[-2], :]], dim=-2)
+                scale = torch.sqrt(1.0 + self.strength * x.square().sum(dim=-1, keepdim=True))
+                dot = (x[..., :, None] * vectors).sum(dim=-2, keepdim=True)
+                return scale[..., None] * vectors + x[..., :, None] * (self.strength * dot / scale[..., None])
+            return output, apply_special
         base = torch.asinh(x) if self.nonlinear else x
         output = (base * self.scale) @ self.orthogonal.T + self.shift
         derivative = torch.rsqrt(1.0 + x.square()) if self.nonlinear else torch.ones_like(x)
@@ -113,6 +149,27 @@ class SmoothDiffeomorphism:
         y: torch.Tensor,
         chunk_size: int = 0,
     ) -> tuple[torch.Tensor, Callable[[torch.Tensor], torch.Tensor]]:
+        if self.kind in {"triangular_coupling", "radial"}:
+            output = self.inverse(y)
+            def apply_special(vectors: torch.Tensor) -> torch.Tensor:
+                if self.kind == "triangular_coupling":
+                    split = y.shape[-1] // 2
+                    if split == 0:
+                        return vectors
+                    left, right = vectors[..., :split, :], vectors[..., split:, :]
+                    derivative = self.strength * (1.0 - torch.tanh(y[..., :split]).square())
+                    return torch.cat([left, right - derivative[..., :right.shape[-2], None] * left[..., :right.shape[-2], :]], dim=-2)
+                if self.strength == 0.0:
+                    return vectors
+                r2 = y.square().sum(dim=-1, keepdim=True)
+                root = torch.sqrt(1.0 + 4.0 * self.strength * r2)
+                x2 = (root - 1.0) / (2.0 * self.strength)
+                scale = torch.sqrt(1.0 + self.strength * x2)
+                g = 1.0 / scale
+                dg = -0.5 * self.strength / (scale.pow(3) * root)
+                dot = (y[..., :, None] * vectors).sum(dim=-2, keepdim=True)
+                return g[..., None] * vectors + y[..., :, None] * (2.0 * dg[..., None] * dot)
+            return output, apply_special
         base = ((y - self.shift) @ self.orthogonal) / self.scale
         output = torch.sinh(base) if self.nonlinear else base
         derivative = torch.cosh(base) if self.nonlinear else torch.ones_like(base)
@@ -126,3 +183,29 @@ class SmoothDiffeomorphism:
             return torch.cat(pieces, dim=0)
 
         return output, apply
+
+
+def make_reparameterization(
+    kind: str,
+    dim: int,
+    device: torch.device,
+    dtype: torch.dtype,
+    seed: int,
+    strength: float = 1.0,
+) -> SmoothDiffeomorphism:
+    """Deterministic exact chart-coordinate transforms used by interventions."""
+    if kind not in {"affine", "asinh_affine", "triangular_coupling", "radial"}:
+        raise ValueError(f"Unknown reparameterization kind: {kind}")
+    if strength < 0:
+        raise ValueError("reparameterization strength must be non-negative")
+    if strength == 0:
+        eye = torch.eye(dim, device=device, dtype=dtype)
+        return SmoothDiffeomorphism(eye, torch.ones(dim, device=device, dtype=dtype), torch.zeros(dim, device=device, dtype=dtype), nonlinear=False, kind="affine", strength=0.0)
+    base = SmoothDiffeomorphism.random(dim, device, dtype, seed, nonlinear=(kind == "asinh_affine"))
+    if kind in {"affine", "asinh_affine"}:
+        base.kind, base.strength = kind, strength
+        base.scale = 1.0 + (base.scale - 1.0) * strength
+        base.shift = base.shift * strength
+        return base
+    base.kind, base.strength = kind, strength
+    return base
