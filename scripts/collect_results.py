@@ -9,7 +9,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from graphatlas.experiments import _merge_master_results, _validate_run_artifacts
+from graphatlas.experiments import _validate_run_artifacts, concise_results_frame
 from graphatlas.utils import save_json
 
 
@@ -49,7 +49,7 @@ def main() -> None:
 
     outputs = root / "outputs"
     results_dir = outputs / "results"
-    status_dir = outputs / "status"
+    status_dir = outputs / ".work" / "status"
     results_dir.mkdir(parents=True, exist_ok=True)
     status_dir.mkdir(parents=True, exist_ok=True)
     frame = pd.DataFrame(metrics)
@@ -58,8 +58,9 @@ def main() -> None:
         sort_columns = [c for c in ["dataset", "task", "model", "split", "seed"] if c in frame]
         if sort_columns:
             frame = frame.sort_values(sort_columns).reset_index(drop=True)
-        frame.to_csv(preset_results, index=False)
-        _merge_master_results(results_dir / "all.csv", frame)
+        concise = concise_results_frame(frame)
+        concise.to_csv(preset_results, index=False)
+        concise.to_csv(results_dir / "latest.csv", index=False)
     status = {
         "preset": args.preset_name,
         "expected_runs": len(records),

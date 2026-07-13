@@ -28,7 +28,7 @@ from .baselines import (
 )
 from .charts import ChartLinearization, LocalChart, SmoothDiffeomorphism
 from .equivariant import AtlasEquivariantLayer
-from .functional import MLP, channel_jvp, graph_signature, restrict_topk, sparsemax
+from .functional import MLP, cached_graph_signature, channel_jvp, restrict_topk, sparsemax
 
 
 class GraphAtlas(nn.Module):
@@ -86,7 +86,8 @@ class GraphAtlas(nn.Module):
                     transportability_beta=config.transportability_beta,
                     transportability_eps=config.transportability_eps,
                     transportability_stop_gradient=config.transportability_stop_gradient,
-                    edge_chunk_size=config.jacobian_chunk_size,
+                    edge_chunk_size=config.edge_chunk_size,
+                    edge_chunk_threshold=config.edge_chunk_threshold,
                     dropout=config.dropout,
                 )
                 for _ in range(config.num_layers)
@@ -171,8 +172,9 @@ class GraphAtlas(nn.Module):
         data: GraphData,
         reparameterizations: Sequence[SmoothDiffeomorphism | None] | None = None,
         compact: bool = False,
+        transport_diagnostics: bool = False,
     ) -> dict[str, torch.Tensor]:
-        signature = graph_signature(data.x, data.edge_index)
+        signature = cached_graph_signature(data, self.config.edge_chunk_size)
         h = self.observation_encoder(signature)
         membership_logits = self.membership_network(signature)
         membership_soft = torch.softmax(membership_logits, dim=-1)
@@ -227,6 +229,7 @@ class GraphAtlas(nn.Module):
                 tangent, membership, h, data.edge_index, push, pull,
                 decoder_jacobians=decoder_jacobians,
                 decoder_pinv=decoder_pinv,
+                detailed_transport_diagnostics=transport_diagnostics,
             )
             layer_diagnostics.append(diagnostics)
 

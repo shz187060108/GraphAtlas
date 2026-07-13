@@ -1,0 +1,32 @@
+base_config: configs/base.yaml
+runner: rapid_sota_baselines
+seeds: [0]
+train:
+  device: cuda
+  progress: false
+  num_threads: 1
+datasets:
+  - {name: cornell, num_charts: 3}
+  - {name: texas, num_charts: 3}
+  - {name: wisconsin, num_charts: 3}
+  - {name: chameleon_filtered, num_charts: 4}
+  - {name: squirrel_filtered, num_charts: 4}
+models:
+  - {name: mlp}
+  - {name: acmgcn}
+  - {name: gprgnn}
+  - {name: h2gcn}
+  - {name: linkx}
+  - {name: appnp}
+search:
+  stage_a: {epochs: 100, patience: 20, eval_every: 5}
+  stage_b: {epochs: 300, patience: 50, eval_every: 5}
+  configurations:
+    - {id: c0, hidden_dim: 64,  num_layers: 1, dropout: 0.3, learning_rate: 0.01,  weight_decay: 0.0005}
+    - {id: c1, hidden_dim: 64,  num_layers: 2, dropout: 0.5, learning_rate: 0.005, weight_decay: 0.005}
+    - {id: c2, hidden_dim: 64,  num_layers: 1, dropout: 0.7, learning_rate: 0.003, weight_decay: 0.01}
+    - {id: c3, hidden_dim: 64,  num_layers: 2, dropout: 0.3, learning_rate: 0.003, weight_decay: 0.005}
+    - {id: c4, hidden_dim: 128, num_layers: 1, dropout: 0.5, learning_rate: 0.01,  weight_decay: 0.01}
+    - {id: c5, hidden_dim: 128, num_layers: 2, dropout: 0.7, learning_rate: 0.005, weight_decay: 0.0005}
+    - {id: c6, hidden_dim: 128, num_layers: 1, dropout: 0.3, learning_rate: 0.005, weight_decay: 0.005}
+    - {id: c7, hidden_dim: 128, num_layers: 2, dropout: 0.5, learning_rate: 0.003, weight_decay: 0.0005}

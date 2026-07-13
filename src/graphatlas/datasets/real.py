@@ -334,11 +334,24 @@ def _load_npz(name: str, root: Path, split: int, feature_source: str = "native")
         node_type_np = np.asarray(raw["node_type"]) if "node_type" in raw.files else None
         edge_type_np = np.asarray(raw["edge_type"]) if "edge_type" in raw.files else None
 
+    if name == "ogbn_proteins" and edge_attr_np is not None:
+        # Rebuild from edge attributes even when an older converted NPZ already
+        # contains a destination-only feature matrix.
+        source, target = edges_np[:, 0], edges_np[:, 1]
+        x_np = np.zeros((x_np.shape[0], edge_attr_np.shape[1]), dtype=np.float32)
+        np.add.at(x_np, source, edge_attr_np)
+        np.add.at(x_np, target, edge_attr_np)
+        degree = np.bincount(np.concatenate([source, target]), minlength=x_np.shape[0]).clip(min=1)
+        x_np /= degree[:, None]
+
     split_index = int(split) % train_masks.shape[1]
     x = torch.from_numpy(x_np)
     y = torch.from_numpy(y_np)
     edge_index = torch.from_numpy(edges_np).to(torch.long).t().contiguous()
-    preserve_edge_metadata = edge_attr_np is not None or edge_type_np is not None
+    # OGB graphs are sampled as stored.  Coalescing them into an undirected
+    # full graph duplicates tens of millions of products edges before the
+    # NeighborLoader path even starts.
+    preserve_edge_metadata = edge_attr_np is not None or edge_type_np is not None or name.startswith("ogbn_")
     if not preserve_edge_metadata:
         edge_index = coalesce_undirected(edge_index, x.shape[0])
     metric = "roc_auc" if name in ROC_AUC_NAMES else "accuracy"

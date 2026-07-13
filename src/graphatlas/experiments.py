@@ -101,11 +101,10 @@ def _run_directory(project_root: Path, config: ExperimentConfig, config_hash: st
         project_root
         / config.train.output_dir
         / _safe_name(config.dataset.name)
-        / _safe_name(config.dataset.task)
         / _safe_name(config.model.name)
-        / f"split_{config.dataset.split}"
-        / f"seed_{config.train.seed}"
-        / f"cfg_{config_hash}"
+        / f"split-{config.dataset.split}"
+        / f"seed-{config.train.seed}"
+        / f"config-{config_hash[:8]}"
     )
 
 
@@ -127,6 +126,22 @@ def _merge_master_results(path: Path, frame: pd.DataFrame) -> None:
     if sort_columns:
         combined = combined.sort_values(sort_columns).reset_index(drop=True)
     combined.to_csv(path, index=False)
+
+
+PUBLIC_RESULT_COLUMNS = (
+    "dataset", "task", "model", "model_family", "seed", "split", "metric_name",
+    "train_metric", "val_metric", "test_metric", "best_epoch", "last_epoch",
+    "runtime_seconds", "parameters", "device", "num_nodes", "num_edges",
+    "peak_cuda_memory_bytes", "neighbor_sampling", "batch_size", "num_neighbors",
+)
+
+
+def concise_results_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Return the small, human-facing result table written to outputs/results."""
+    columns = [column for column in PUBLIC_RESULT_COLUMNS if column in frame.columns]
+    result = frame.loc[:, columns].copy()
+    order = [column for column in ("dataset", "model", "seed", "split") if column in result]
+    return result.sort_values(order).reset_index(drop=True) if order else result
 
 def _run_job_subprocess(
     project_root: Path,
@@ -208,7 +223,7 @@ def run_preset(
         jobs = jobs[:limit]
     outputs = project_root / "outputs"
     results_dir = outputs / "results"
-    status_dir = outputs / "status"
+    status_dir = outputs / ".work" / "status"
     manifests_dir = outputs / "manifests"
     results_path = results_dir / "all.csv"
     preset_results_path = results_dir / f"{preset_path.stem}.csv"
@@ -315,8 +330,8 @@ def run_preset(
         finally:
             frame = pd.DataFrame(collected)
             if not frame.empty:
-                frame.to_csv(preset_results_path, index=False)
-                _merge_master_results(results_path, frame)
+                concise_results_frame(frame).to_csv(preset_results_path, index=False)
+                concise_results_frame(frame).to_csv(results_path / "latest.csv", index=False)
             status_payload = {
                 "preset": preset_path.stem,
                 "expected_runs": len(prepared),
@@ -334,8 +349,8 @@ def run_preset(
     if not frame.empty:
         sort_columns = [column for column in ["dataset", "task", "model", "split", "seed"] if column in frame]
         frame = frame.sort_values(sort_columns).reset_index(drop=True)
-        frame.to_csv(preset_results_path, index=False)
-        _merge_master_results(results_path, frame)
+        concise_results_frame(frame).to_csv(preset_results_path, index=False)
+        concise_results_frame(frame).to_csv(results_path / "latest.csv", index=False)
     if failures:
         save_json({"failures": failures}, failures_path)
         if not continue_on_error:

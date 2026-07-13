@@ -67,7 +67,7 @@ def _write_status(root: Path, preset: str, total: int, completed: int, failed: l
         "current": current,
         "complete": completed == total and not failed,
     }
-    path = root / "outputs" / "status" / f"experiment_{preset}.json"
+    path = root / "outputs" / ".work" / "status" / f"experiment_{preset}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
 

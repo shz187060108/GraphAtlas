@@ -1,4 +1,0 @@
-task,model,mean_rank,median_rank,evaluated_runs
-node_classification,original,1.5,1.0,4
-node_classification,certified_beta_1,2.125,2.0,4
-node_classification,min_distortion,2.375,2.5,4

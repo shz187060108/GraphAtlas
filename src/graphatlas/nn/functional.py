@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 from collections.abc import Callable
+from typing import Any
 
 import torch
 from torch import nn
@@ -32,18 +33,45 @@ def restrict_topk(probabilities: torch.Tensor, k: int) -> torch.Tensor:
     return pruned / pruned.sum(dim=-1, keepdim=True).clamp_min(1e-12)
 
 
-def graph_signature(x: torch.Tensor, edge_index: torch.Tensor) -> torch.Tensor:
+def graph_signature(
+    x: torch.Tensor,
+    edge_index: torch.Tensor,
+    edge_chunk_size: int = 100_000,
+) -> torch.Tensor:
     src, dst = edge_index
     n = x.shape[0]
     degree = torch.zeros(n, device=x.device, dtype=x.dtype)
-    degree.index_add_(0, dst, torch.ones_like(dst, dtype=x.dtype))
     neighbor_sum = torch.zeros_like(x)
-    neighbor_sum.index_add_(0, dst, x[src])
+    # Large OGB graphs cannot materialize x[src] for every edge at once.
+    for start, end in _chunk_ranges(src.numel(), edge_chunk_size):
+        edge_dst = dst[start:end]
+        degree.index_add_(0, edge_dst, torch.ones(edge_dst.numel(), device=x.device, dtype=x.dtype))
+        neighbor_sum.index_add_(0, edge_dst, x[src[start:end]])
     neighbor_mean = neighbor_sum / degree.clamp_min(1.0).unsqueeze(-1)
     diff = torch.linalg.vector_norm(x - neighbor_mean, dim=-1, keepdim=True)
     log_degree = torch.log1p(degree).unsqueeze(-1)
     log_degree = log_degree / log_degree.max().clamp_min(1.0)
     return torch.cat([x, log_degree, diff], dim=-1)
+
+
+def cached_graph_signature(data: Any, edge_chunk_size: int = 100_000) -> torch.Tensor:
+    """Cache static full-graph signatures while preserving feature-gradient use."""
+    if data.x.requires_grad:
+        return graph_signature(data.x, data.edge_index, edge_chunk_size)
+    cache_key = (
+        int(data.x.data_ptr()),
+        int(data.edge_index.data_ptr()),
+        str(data.x.device),
+        str(data.x.dtype),
+        int(edge_chunk_size),
+    )
+    cached = getattr(data, "cached_signature", None)
+    if cached is not None and getattr(data, "cached_signature_key", None) == cache_key:
+        return cached
+    signature = graph_signature(data.x, data.edge_index, edge_chunk_size)
+    data.cached_signature = signature
+    data.cached_signature_key = cache_key
+    return signature
 
 
 def segment_softmax(scores: torch.Tensor, index: torch.Tensor, num_segments: int) -> torch.Tensor:
@@ -77,14 +105,58 @@ def attention_aggregate(
     edge_index: torch.Tensor,
     queries: torch.Tensor,
     keys: torch.Tensor,
+    edge_chunk_size: int = 100_000,
+    edge_chunk_threshold: int = 2_000_000,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     src, dst = edge_index
-    scores = (queries[dst] * keys[src]).sum(dim=-1) / math.sqrt(queries.shape[-1])
-    alpha = segment_softmax(scores, dst, values.shape[0])
+    # Preserve the fast single-kernel route for small graphs.  The chunked
+    # route below never forms [E, hidden_dim] queries/keys or [E, ...] values.
+    if edge_chunk_size <= 0 or src.numel() <= edge_chunk_threshold:
+        scores = (queries[dst] * keys[src]).sum(dim=-1) / math.sqrt(queries.shape[-1])
+        alpha = segment_softmax(scores, dst, values.shape[0])
+        output = torch.zeros_like(values)
+        expand = (slice(None),) + (None,) * (values.ndim - 1)
+        output.index_add_(0, dst, values[src] * alpha[expand])
+        return output, alpha
+
+    num_nodes = values.shape[0]
+    scale = math.sqrt(queries.shape[-1])
+    maxima = torch.full((num_nodes,), -torch.inf, device=queries.device, dtype=queries.dtype)
+    # Pass 1: per-target score maximum for stable softmax.
+    for start, end in _chunk_ranges(src.numel(), edge_chunk_size):
+        score = (queries[dst[start:end]] * keys[src[start:end]]).sum(dim=-1) / scale
+        # The max is used solely for numerical stabilization.  Detaching it is
+        # the standard softmax formulation and avoids mutating a tensor that an
+        # earlier ScatterReduce backward node has saved for its version check.
+        chunk_maxima = torch.full_like(maxima, -torch.inf)
+        chunk_maxima.scatter_reduce_(0, dst[start:end], score.detach(), reduce="amax", include_self=True)
+        maxima = torch.maximum(maxima, chunk_maxima)
+
+    denominators = torch.zeros(num_nodes, device=queries.device, dtype=queries.dtype)
+    # Pass 2: per-target exp(score - max) sum.
+    for start, end in _chunk_ranges(src.numel(), edge_chunk_size):
+        edge_dst = dst[start:end]
+        score = (queries[edge_dst] * keys[src[start:end]]).sum(dim=-1) / scale
+        chunk_denominators = torch.zeros_like(denominators)
+        chunk_denominators.index_add_(0, edge_dst, (score - maxima[edge_dst]).exp())
+        denominators = denominators + chunk_denominators
+
     output = torch.zeros_like(values)
+    # alpha is retained for the existing diagnostics/public return contract;
+    # unlike the old implementation, no edge-by-hidden or edge-by-message
+    # tensor is created globally.
+    alpha_parts: list[torch.Tensor] = []
     expand = (slice(None),) + (None,) * (values.ndim - 1)
-    output.index_add_(0, dst, values[src] * alpha[expand])
-    return output, alpha
+    # Pass 3: recompute chunk scores and aggregate chunk-sized messages.
+    for start, end in _chunk_ranges(src.numel(), edge_chunk_size):
+        edge_src, edge_dst = src[start:end], dst[start:end]
+        score = (queries[edge_dst] * keys[edge_src]).sum(dim=-1) / scale
+        alpha_chunk = (score - maxima[edge_dst]).exp() / denominators[edge_dst].clamp_min(1e-12)
+        alpha_parts.append(alpha_chunk)
+        chunk_output = torch.zeros_like(output)
+        chunk_output.index_add_(0, edge_dst, values[edge_src] * alpha_chunk[expand])
+        output = output + chunk_output
+    return output, torch.cat(alpha_parts, dim=0)
 
 
 

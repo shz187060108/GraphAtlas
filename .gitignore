@@ -8,6 +8,7 @@ dist/
 
 # Rebuildable caches and interrupted downloads
 outputs/cache/
+outputs/.work/
 data/_pyg_cache/
 data/_ogb_cache/
 *.part

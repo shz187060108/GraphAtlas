@@ -1,0 +1,14 @@
+{
+  "stage": "tune",
+  "dataset": "coauthor_cs",
+  "params": {
+    "learning_rate": 0.0006215009519403605,
+    "weight_decay": 2.9094623380030006e-05,
+    "dropout": 0.24286908493255138,
+    "hidden_dim": 96,
+    "geometry_loss_scale": 0.546896439497494
+  },
+  "model_seed": 0,
+  "split_seed": 0,
+  "hash": "21fb24f3219c"
+}

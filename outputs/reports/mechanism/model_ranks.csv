@@ -1,4 +1,0 @@
-task,model,mean_rank,median_rank,evaluated_runs
-node_classification,graphatlas,1.3333333333333333,1.0,3
-node_classification,graphatlas_free_transition,2.3333333333333335,3.0,3
-node_classification,graphatlas_no_transport,2.3333333333333335,2.0,3

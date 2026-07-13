@@ -53,7 +53,7 @@ def run_main() -> None:
 
 def summarize_main() -> None:
     parser = argparse.ArgumentParser(description="Summarize GraphAtlas experiment results.")
-    parser.add_argument("--results", default="outputs/results/all.csv")
+    parser.add_argument("--results", default="outputs/results/latest.csv")
     parser.add_argument("--no-plots", action="store_true")
     parser.add_argument("--strict-gates", action="store_true")
     parser.add_argument("--strict-submission-gates", action="store_true")

@@ -25,6 +25,8 @@ model:
   dropout: 0.05
   membership_topk: 2
   jacobian_chunk_size: 2048
+  edge_chunk_size: 100000
+  edge_chunk_threshold: 2000000
   propagation_steps: 10
   teleport: 0.10
 
@@ -60,5 +62,6 @@ train:
   regularization_every: 10
   light_regularization_nodes: 32
   light_metric_probes: 2
+  output_dir: outputs/.work/runs
   output_dir: outputs/runs
   num_threads: 1

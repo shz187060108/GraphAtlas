@@ -1,2 +1,0 @@
-run_id,config_hash,source_hash,dataset,task,model,seed,split,num_threads,run_dir,job_config
-roman_empire__node_classification__ambient_vector_gnn__split0__seed0__3be0f6041727,3be0f6041727,13cd544cee4412a5,roman_empire,node_classification,ambient_vector_gnn,0,0,1,outputs\runs\roman_empire\node_classification\ambient_vector_gnn\split_0\seed_0\cfg_3be0f6041727,outputs\runs\roman_empire\node_classification\ambient_vector_gnn\split_0\seed_0\cfg_3be0f6041727\job_config.yaml

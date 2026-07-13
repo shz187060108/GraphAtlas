@@ -6,7 +6,7 @@ import torch.nn.functional as F
 
 from graphatlas.config import ModelConfig
 from graphatlas.data import GraphData
-from .functional import MLP, attention_aggregate, graph_signature
+from .functional import MLP, attention_aggregate, cached_graph_signature
 
 
 class AmbientVectorLayer(nn.Module):
@@ -16,10 +16,14 @@ class AmbientVectorLayer(nn.Module):
         channels: int,
         num_charts: int,
         hidden_dim: int,
+        edge_chunk_size: int = 100_000,
+        edge_chunk_threshold: int = 2_000_000,
         dropout: float = 0.0,
     ):
         super().__init__()
         self.dropout_probability = float(dropout)
+        self.edge_chunk_size = int(edge_chunk_size)
+        self.edge_chunk_threshold = int(edge_chunk_threshold)
         self.self_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
         self.message_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
         self.residual_mix = nn.Parameter(0.1 * torch.eye(channels))
@@ -54,7 +58,9 @@ class AmbientVectorLayer(nn.Module):
         mixed = torch.einsum("ndc,ce->nde", vectors, self.message_mix)
         queries = self.query(h)
         keys = self.key(h)
-        aggregated, alpha = attention_aggregate(mixed, edge_index, queries, keys)
+        aggregated, alpha = attention_aggregate(
+            mixed, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold,
+        )
 
         self_term = torch.einsum("ndc,ce->nde", vectors, self.self_mix)
         preactivation = self_term + aggregated
@@ -130,6 +136,8 @@ class AmbientVectorGNN(nn.Module):
                     channels=config.vector_channels,
                     num_charts=config.num_charts,
                     hidden_dim=config.hidden_dim,
+                    edge_chunk_size=config.edge_chunk_size,
+                    edge_chunk_threshold=config.edge_chunk_threshold,
                     dropout=config.dropout,
                 )
                 for _ in range(config.num_layers)
@@ -145,7 +153,7 @@ class AmbientVectorGNN(nn.Module):
         )
 
     def forward(self, data: GraphData, compact: bool = False, **_: object) -> dict[str, object]:
-        signature = graph_signature(data.x, data.edge_index)
+        signature = cached_graph_signature(data, self.config.edge_chunk_size)
         h = self.observation_encoder(signature)
         adapter_weights = torch.softmax(self.ambient_router(h), dim=-1)
         adapter_values = torch.stack([adapter(h) for adapter in self.ambient_adapters], dim=1)
@@ -176,9 +184,17 @@ class AmbientVectorGNN(nn.Module):
 
 
 class SignatureAttentionLayer(nn.Module):
-    def __init__(self, hidden_dim: int, dropout: float = 0.0):
+    def __init__(
+        self,
+        hidden_dim: int,
+        dropout: float = 0.0,
+        edge_chunk_size: int = 100_000,
+        edge_chunk_threshold: int = 2_000_000,
+    ):
         super().__init__()
         self.dropout_probability = float(dropout)
+        self.edge_chunk_size = int(edge_chunk_size)
+        self.edge_chunk_threshold = int(edge_chunk_threshold)
         self.query = nn.Linear(hidden_dim, hidden_dim, bias=False)
         self.key = nn.Linear(hidden_dim, hidden_dim, bias=False)
         self.value = nn.Linear(hidden_dim, hidden_dim, bias=False)
@@ -196,6 +212,8 @@ class SignatureAttentionLayer(nn.Module):
             edge_index,
             self.query(h),
             self.key(h),
+            self.edge_chunk_size,
+            self.edge_chunk_threshold,
         )
         update = self.output(aggregated)
         update = F.dropout(
@@ -210,6 +228,7 @@ class SignatureAttentionLayer(nn.Module):
 class SignatureGNN(nn.Module):
     def __init__(self, input_dim: int, num_classes: int, config: ModelConfig):
         super().__init__()
+        self.config = config
         signature_dim = input_dim + 2
         self.encoder = MLP(
             signature_dim,
@@ -219,7 +238,15 @@ class SignatureGNN(nn.Module):
             dropout=config.dropout,
         )
         self.layers = nn.ModuleList(
-            [SignatureAttentionLayer(config.hidden_dim, config.dropout) for _ in range(config.num_layers)]
+            [
+                SignatureAttentionLayer(
+                    config.hidden_dim,
+                    config.dropout,
+                    config.edge_chunk_size,
+                    config.edge_chunk_threshold,
+                )
+                for _ in range(config.num_layers)
+            ]
         )
         self.classifier = MLP(
             config.hidden_dim,
@@ -230,7 +257,7 @@ class SignatureGNN(nn.Module):
         )
 
     def forward(self, data: GraphData, **_: object) -> dict[str, torch.Tensor]:
-        signature = graph_signature(data.x, data.edge_index)
+        signature = cached_graph_signature(data, self.config.edge_chunk_size)
         h = self.encoder(signature)
         for layer in self.layers:
             h, _ = layer(h, data.edge_index)

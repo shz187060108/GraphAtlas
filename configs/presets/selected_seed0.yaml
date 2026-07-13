@@ -1,0 +1,91 @@
+﻿base_config: configs/base.yaml
+
+seeds:
+  - 0
+
+train:
+  epochs: 400
+  patience: 80
+  learning_rate: 0.0015
+  weight_decay: 0.0001
+  eval_every: 5
+  regularization_every: 10
+  progress: true
+  num_threads: 2
+
+loss:
+  reconstruction: 0.01
+  cocycle: 0.002
+  metric: 0.001
+  cover: 0.005
+  balance: 0.001
+  sparsity: 0.001
+  geometry: 0.0
+  sample_nodes: 128
+
+datasets:
+  - name: actor
+    num_charts: 4
+
+  - name: amazon_ratings
+    num_charts: 4
+
+  - name: citeseer
+    num_charts: 3
+
+  - name: coauthor_cs
+    num_charts: 4
+
+  - name: coauthor_physics
+    num_charts: 4
+
+  - name: cora
+    num_charts: 3
+
+  - name: dblp
+    num_charts: 4
+
+  - name: minesweeper
+    num_charts: 4
+    metric: roc_auc
+
+  - name: ogbn_arxiv
+    num_charts: 6
+    metric: accuracy
+
+  - name: ogbn_products
+    num_charts: 6
+    metric: accuracy
+
+  - name: ogbn_proteins
+    num_charts: 6
+    metric: roc_auc
+    feature_source: native
+
+  - name: pubmed
+    num_charts: 3
+
+  - name: questions
+    num_charts: 4
+    metric: roc_auc
+
+  - name: roman_empire
+    num_charts: 4
+
+  - name: tolokers
+    num_charts: 4
+    metric: roc_auc
+
+  - name: wikics
+    num_charts: 4
+
+models:
+  - name: graphatlas
+    hidden_dim: 96
+    observation_dim: 24
+    chart_dim: 4
+    vector_channels: 6
+    num_layers: 1
+    dropout: 0.15
+    membership_topk: 2
+    jacobian_chunk_size: 1024

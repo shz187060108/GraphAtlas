@@ -8,11 +8,12 @@ import time
 import platform
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from tqdm.auto import trange
 
 from graphatlas.config import ExperimentConfig
@@ -85,7 +86,159 @@ class Trainer:
         seed_everything(config.train.seed)
         self.device = resolve_device(config.train.device)
 
-    def fit(self, data: GraphData, run_dir: str | Path) -> tuple[torch.nn.Module, dict[str, Any]]:
+    def _uses_neighbor_sampling(self, data: GraphData) -> bool:
+        name = str((data.metadata or {}).get("name", self.config.dataset.name)).lower()
+        return self.config.train.neighbor_sampling and name in {
+            "ogbn_arxiv", "ogbn_products", "ogbn_proteins"
+        }
+
+    def _fit_neighbor_sampled(
+        self,
+        data: GraphData,
+        run_dir: Path,
+        environment: dict[str, Any],
+        evaluate_test: bool = True,
+    ) -> tuple[torch.nn.Module, dict[str, Any]]:
+        """NeighborLoader training for OGB graphs without putting the full graph on CUDA."""
+        try:
+            from torch_geometric.data import Data
+            from torch_geometric.loader import NeighborLoader
+        except ImportError as error:
+            raise RuntimeError("OGB neighbor sampling requires `pip install -e .[graph,ogb]`.") from error
+
+        pyg_data = Data(x=data.x, edge_index=data.edge_index, y=data.y)
+        model = build_model(data.num_features, data.num_classes, self.config.model, data.num_nodes).to(self.device)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=self.config.train.learning_rate,
+                                      weight_decay=self.config.train.weight_decay)
+        target_nodes = torch.arange(data.num_nodes)
+
+        def loader(nodes: torch.Tensor, shuffle: bool):
+            return NeighborLoader(
+                pyg_data,
+                input_nodes=nodes,
+                num_neighbors=self.config.train.num_neighbors,
+                batch_size=self.config.train.batch_size,
+                shuffle=shuffle,
+                num_workers=self.config.train.num_workers,
+            )
+
+        def batch_graph(batch: Any) -> tuple[GraphData, int, torch.Tensor]:
+            batch = batch.to(self.device)
+            seeds = int(batch.batch_size)
+            n = int(batch.num_nodes)
+            empty = torch.zeros(n, device=self.device, dtype=torch.bool)
+            # GraphAtlas itself does not consume split masks in forward.  Keep
+            # a valid local GraphData carrier without copying full-graph masks.
+            local = GraphData(batch.x, batch.edge_index, batch.y, empty, empty, empty,
+                              metadata={"name": self.config.dataset.name, "task": "node_classification"})
+            return local, seeds, batch.n_id[:seeds]
+
+        def task_loss(logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+            if labels.ndim == 1:
+                return F.cross_entropy(logits, labels)
+            finite = torch.isfinite(labels)
+            if not bool(finite.any()):
+                raise RuntimeError("Neighbor batch has no finite multilabel targets")
+            return F.binary_cross_entropy_with_logits(logits[finite], labels.to(logits.dtype)[finite])
+
+        @torch.no_grad()
+        def infer() -> torch.Tensor:
+            model.eval()
+            logits = torch.empty((data.num_nodes, data.num_classes), dtype=torch.float32)
+            for batch in loader(target_nodes, shuffle=False):
+                local, seeds, node_ids = batch_graph(batch)
+                output = model(local, compact=True)
+                logits[node_ids.detach().cpu()] = output["logits"][:seeds].detach().float().cpu()
+            return logits
+
+        save_json({**environment, "neighbor_sampling": True}, run_dir / "environment.json")
+        best_path, last_path = run_dir / "best.pt", run_dir / "last.pt"
+        best_val, best_epoch, stale, start_epoch = -float("inf"), -1, 0, 1
+        history: list[dict[str, float]] = []
+        prior_runtime_seconds = 0.0
+        if self.config.train.resume and last_path.exists():
+            checkpoint = torch.load(last_path, map_location=self.device, weights_only=False)
+            model.load_state_dict(checkpoint["model"])
+            optimizer.load_state_dict(checkpoint["optimizer"])
+            best_val, best_epoch, stale = float(checkpoint["best_val"]), int(checkpoint["best_epoch"]), int(checkpoint["stale"])
+            history, start_epoch = list(checkpoint.get("history", [])), int(checkpoint["epoch"]) + 1
+            prior_runtime_seconds = float(checkpoint.get("elapsed_seconds", 0.0))
+            if "rng_state" in checkpoint:
+                _restore_rng_state(checkpoint["rng_state"])
+
+        started = time.time()
+        iterator = trange(start_epoch, self.config.train.epochs + 1,
+                          disable=not self.config.train.progress,
+                          desc=f"{self.config.dataset.name}/sampled/s{self.config.train.seed}", leave=False)
+        final_epoch = start_epoch - 1
+        for epoch in iterator:
+            final_epoch = epoch
+            model.train()
+            total_loss = 0.0
+            batches = 0
+            for batch in loader(torch.nonzero(data.train_mask, as_tuple=False).flatten(), shuffle=True):
+                local, seeds, _ = batch_graph(batch)
+                optimizer.zero_grad(set_to_none=True)
+                loss = task_loss(model(local, compact=True)["logits"][:seeds], local.y[:seeds])
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(f"Non-finite sampled loss at epoch {epoch}")
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.train.grad_clip)
+                optimizer.step()
+                total_loss += float(loss.detach().cpu())
+                batches += 1
+            if epoch == 1 or epoch % self.config.train.eval_every == 0 or epoch == self.config.train.epochs:
+                logits = infer()
+                eval_output = {"logits": logits, "embedding": logits}
+                val_score = output_primary_metric(eval_output, data, "val")
+                train_score = output_primary_metric(eval_output, data, "train")
+                history.append({"epoch": epoch, "loss": total_loss / max(batches, 1),
+                                "val_metric": val_score, "train_metric": train_score})
+                if val_score > best_val + 1e-8:
+                    best_val, best_epoch, stale = val_score, epoch, 0
+                    _atomic_torch_save(model.state_dict(), best_path)
+                else:
+                    stale += self.config.train.eval_every
+                pd.DataFrame(history).to_csv(run_dir / "history.csv", index=False)
+                _atomic_torch_save({"epoch": epoch, "model": model.state_dict(), "optimizer": optimizer.state_dict(),
+                                    "best_val": best_val, "best_epoch": best_epoch, "stale": stale,
+                                    "history": history, "rng_state": _rng_state(),
+                                    "elapsed_seconds": prior_runtime_seconds + time.time() - started}, last_path)
+                if stale >= self.config.train.patience:
+                    break
+
+        if best_path.exists():
+            model.load_state_dict(torch.load(best_path, map_location=self.device, weights_only=True))
+        logits = infer()
+        metrics = evaluate_output(
+            torch.nn.Identity(),
+            {"logits": logits, "embedding": logits},
+            data,
+            self.config.train.seed,
+            include_intervention=False,
+            include_test=evaluate_test,
+        )
+        metrics.update({"dataset": self.config.dataset.name, "task": self.config.dataset.task,
+                        "model": self.config.model.label or self.config.model.name, "model_family": self.config.model.name,
+                        "seed": self.config.train.seed, "best_epoch": best_epoch, "last_epoch": final_epoch,
+                        "best_val_metric": best_val, "parameters": count_parameters(model), "num_nodes": data.num_nodes,
+                        "num_edges": int(data.edge_index.shape[1]), "runtime_seconds": prior_runtime_seconds + time.time() - started,
+                        "device": str(self.device), "split": int((data.metadata or {}).get("split", 0)),
+                        "neighbor_sampling": True, "batch_size": self.config.train.batch_size,
+                        "num_neighbors": list(self.config.train.num_neighbors)})
+        _atomic_torch_save({"logits": logits, "labels": data.y, "train_mask": data.train_mask,
+                            "val_mask": data.val_mask, "test_mask": data.test_mask}, run_dir / "predictions.pt")
+        save_json(metrics, run_dir / "metrics.json")
+        return model, metrics
+
+    def fit(
+        self,
+        data: GraphData,
+        run_dir: str | Path,
+        on_evaluation: Callable[[int, float], None] | None = None,
+        evaluate_test: bool = True,
+        include_intervention: bool = True,
+    ) -> tuple[torch.nn.Module, dict[str, Any]]:
         run_dir = Path(run_dir)
         run_dir.mkdir(parents=True, exist_ok=True)
         save_yaml(self.config.to_dict(), run_dir / "config.yaml")
@@ -100,6 +253,8 @@ class Trainer:
             "dataset_metadata": data.metadata or {},
         }
         save_json(environment, run_dir / "environment.json")
+        if self._uses_neighbor_sampling(data):
+            return self._fit_neighbor_sampled(data, run_dir, environment, evaluate_test=evaluate_test)
         data = data.to(self.device)
         if self.device.type == "cuda":
             torch.cuda.reset_peak_memory_stats(self.device)
@@ -234,6 +389,8 @@ class Trainer:
                     },
                     last_path,
                 )
+                if on_evaluation is not None:
+                    on_evaluation(epoch, val_score)
                 if stale >= self.config.train.patience:
                     break
 
@@ -244,8 +401,18 @@ class Trainer:
         model.load_state_dict(best_state)
         model.eval()
         with torch.no_grad():
-            final_output = model(data)
-        metrics = evaluate_output(model, final_output, data, self.config.train.seed, include_intervention=True)
+            if model.__class__.__name__ == "GraphAtlas" and getattr(model, "transport_mode", None) == "certified":
+                final_output = model(data, transport_diagnostics=True)
+            else:
+                final_output = model(data)
+        metrics = evaluate_output(
+            model,
+            final_output,
+            data,
+            self.config.train.seed,
+            include_intervention=include_intervention,
+            include_test=evaluate_test,
+        )
         if hasattr(model, "config") and model.__class__.__name__ == "GraphAtlas":
             diagnostic_loss = replace(
                 self.config.loss,
@@ -309,6 +476,11 @@ class Trainer:
             "transportability_mean", "transportability_std", "transportability_min",
             "transportability_max", "distortion_mean", "fraction_q_below_025",
             "fraction_q_above_075",
+            "active_source_chart_count", "q_route_spread_mean", "q_route_spread_p90",
+            "routing_kl_from_membership", "fraction_edges_with_multiple_source_charts",
+            "routing_total_variation_from_membership", "routing_entropy_mean",
+            "active_target_chart_count", "fraction_edges_with_multiple_target_charts",
+            "q_route_spread_median", "q_route_spread_max",
         )
         layer_diagnostics = final_output.get("layer_diagnostics", [])
         for name in transport_names:

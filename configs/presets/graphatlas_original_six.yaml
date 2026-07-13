@@ -1,0 +1,19 @@
+base_config: configs/base.yaml
+seeds: [0]
+train:
+  device: cuda
+  epochs: 250
+  patience: 50
+  eval_every: 5
+  progress: true
+  resume: true
+  num_threads: 1
+datasets:
+  - {name: roman_empire, num_charts: 4}
+  - {name: amazon_ratings, num_charts: 4}
+  - {name: minesweeper, num_charts: 4, metric: roc_auc}
+  - {name: tolokers, num_charts: 4, metric: roc_auc}
+  - {name: questions, num_charts: 4, metric: roc_auc}
+  - {name: actor, num_charts: 4}
+models:
+  - {name: graphatlas, label: original}

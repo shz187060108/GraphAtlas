@@ -56,6 +56,10 @@ class ModelConfig:
     dropout: float = 0.2
     membership_topk: int = 2
     jacobian_chunk_size: int = 2048
+    edge_chunk_size: int = 100000
+    # Keep normal public graphs on the original vectorized attention path.
+    # ``edge_chunk_size`` is only the block size after this threshold is crossed.
+    edge_chunk_threshold: int = 2_000_000
     propagation_steps: int = 10
     teleport: float = 0.1
     attention_heads: int = 4
@@ -110,9 +114,16 @@ class TrainConfig:
     regularization_every: int = 10
     light_regularization_nodes: int = 32
     light_metric_probes: int = 2
-    output_dir: str = "outputs/runs"
+    # Checkpoints and raw predictions are resumability internals, not the
+    # user-facing result surface.  Human-readable summaries live in
+    # outputs/results and outputs/reports.
+    output_dir: str = "outputs/.work/runs"
     num_threads: int = 1
     resume: bool = True
+    neighbor_sampling: bool = False
+    batch_size: int = 1024
+    num_neighbors: list[int] = field(default_factory=lambda: [15])
+    num_workers: int = 0
 
 
 @dataclass

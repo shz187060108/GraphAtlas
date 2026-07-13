@@ -1,0 +1,20 @@
+{
+  "python": "3.10.19 | packaged by conda-forge | (main, Oct 22 2025, 22:23:22) [MSC v.1944 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.26100-SP0",
+  "torch": "2.5.1+cu121",
+  "cuda_available": true,
+  "cuda_version": "12.1",
+  "device": "cuda",
+  "dataset_metadata": {
+    "name": "dblp",
+    "split": 0,
+    "num_splits": 1,
+    "metric": "accuracy",
+    "multilabel": false,
+    "directed": true,
+    "source": "PyTorch Geometric / Open Graph Benchmark / local import",
+    "sha256": "52983519ba98b4b5b2da9e634fde2b89795a35d427676b3bdc1309b8f09c8cb8",
+    "task": "node_classification",
+    "split_protocol": "stratified_60_20_20"
+  }
+}

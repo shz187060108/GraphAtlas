@@ -45,6 +45,10 @@ class GraphData:
     true_edge_lengths: torch.Tensor | None = None
     geodesic_pairs: torch.Tensor | None = None
     geodesic_distances: torch.Tensor | None = None
+    # Static graph features are reused within a training run.  The key keeps
+    # link-prediction copies with a different edge tensor from sharing a cache.
+    cached_signature: torch.Tensor | None = None
+    cached_signature_key: tuple[int, int, str, str, int] | None = None
 
     @property
     def num_nodes(self) -> int:

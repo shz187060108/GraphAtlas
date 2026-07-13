@@ -470,9 +470,13 @@ def _convert_ogb(dataset: str, source: Path) -> dict[str, np.ndarray]:
     x = data.x
     edge_attr = getattr(data, "edge_attr", None)
     if x is None and edge_attr is not None:
+        # ogbn-proteins has relation features but no native node attributes.
+        # Aggregate incident edge attributes into the initial node features.
         x = torch.zeros(data.num_nodes, edge_attr.shape[-1], dtype=edge_attr.dtype)
-        x.index_add_(0, data.edge_index[1], edge_attr)
-        degree = torch.bincount(data.edge_index[1], minlength=data.num_nodes).clamp_min(1).to(x.dtype)
+        source, target = data.edge_index
+        x.index_add_(0, source, edge_attr)
+        x.index_add_(0, target, edge_attr)
+        degree = torch.bincount(torch.cat([source, target]), minlength=data.num_nodes).clamp_min(1).to(x.dtype)
         x = x / degree[:, None]
     if x is None:
         raise ValueError(f"{dataset} contains no node features and no usable edge features")

@@ -79,10 +79,19 @@ def _stage_plan(args: argparse.Namespace) -> list[tuple[str, Sequence[str]]]:
 
     if args.preset:
         preset = Path(args.preset).stem
+        preset_path = Path(args.preset)
+        if not preset_path.suffix:
+            preset_path = ROOT / "configs" / "presets" / f"{preset}.yaml"
+        elif not preset_path.is_absolute():
+            preset_path = ROOT / preset_path
+        preset_payload = load_yaml(preset_path)
         stages.append((f"Validate {preset} manifest", _command("scripts/preflight.py", "--preset", args.preset)))
         if not args.skip_download:
             stages.append((f"Download {preset} datasets", _command("scripts/download_data.py", "--preset", args.preset)))
-        stages.append((f"Run {preset} matrix", _preset_runner(args.preset, common)))
+        if preset_payload.get("runner") == "rapid_sota_baselines":
+            stages.append((f"Run {preset} successive halving", _command("scripts/run_rapid_sota.py", "--preset", str(preset_path))))
+        else:
+            stages.append((f"Run {preset} matrix", _preset_runner(args.preset, common)))
         result = f"outputs/results/{preset}.csv"
         report = f"outputs/reports/{preset}"
     elif args.mode == "mechanism":
@@ -199,7 +208,7 @@ def main() -> None:
     _require_requested_cuda(args.preset)
     stages = _stage_plan(args)
     status_name = Path(args.preset).stem if args.preset else args.mode
-    status_path = OUTPUTS / "status" / f"pipeline_{status_name}.json"
+    status_path = OUTPUTS / ".work" / "status" / f"pipeline_{status_name}.json"
     started = time.time()
     completed: list[dict[str, object]] = []
     failures: list[dict[str, object]] = []

@@ -23,6 +23,7 @@ class AtlasEquivariantLayer(nn.Module):
         transportability_eps: float = 1e-8,
         transportability_stop_gradient: bool = True,
         edge_chunk_size: int = 2048,
+        edge_chunk_threshold: int = 2_000_000,
         dropout: float = 0.0,
     ):
         super().__init__()
@@ -36,6 +37,7 @@ class AtlasEquivariantLayer(nn.Module):
         self.transportability_eps = float(transportability_eps)
         self.transportability_stop_gradient = bool(transportability_stop_gradient)
         self.edge_chunk_size = int(edge_chunk_size)
+        self.edge_chunk_threshold = int(edge_chunk_threshold)
         self.dropout_probability = float(dropout)
         self.self_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
         self.message_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
@@ -61,6 +63,7 @@ class AtlasEquivariantLayer(nn.Module):
         pull: Callable[[int, torch.Tensor], torch.Tensor],
         decoder_jacobians: torch.Tensor | None = None,
         decoder_pinv: torch.Tensor | None = None,
+        detailed_transport_diagnostics: bool = False,
     ) -> tuple[torch.Tensor, dict[str, torch.Tensor]]:
         mixed = torch.einsum("nkdc,ce->nkde", tangent, self.message_mix)
         queries = self.query(h)
@@ -70,14 +73,14 @@ class AtlasEquivariantLayer(nn.Module):
         if self.mode == "transport" and self.transport_mode == "original":
             source_observation = torch.stack([push(chart, mixed[:, chart]) for chart in range(self.num_charts)], dim=1)
             source_observation = (source_observation * membership[:, :, None, None]).sum(dim=1)
-            aggregated_observation, alpha = attention_aggregate(source_observation, edge_index, queries, keys)
+            aggregated_observation, alpha = attention_aggregate(source_observation, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
             pulled = torch.stack([pull(chart, aggregated_observation) for chart in range(self.num_charts)], dim=1)
         elif self.mode == "transport" and self.transport_mode == "min_distortion":
             if decoder_pinv is None:
                 raise RuntimeError("min_distortion transport requires cached decoder_pinv")
             source_observation = torch.stack([push(chart, mixed[:, chart]) for chart in range(self.num_charts)], dim=1)
             source_observation = (source_observation * membership[:, :, None, None]).sum(dim=1)
-            aggregated_observation, alpha = attention_aggregate(source_observation, edge_index, queries, keys)
+            aggregated_observation, alpha = attention_aggregate(source_observation, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
             # U_i^k = (J_i^k)^dagger W_i, [N,K,d,p] x [N,p,C] -> [N,K,d,C].
             pulled = torch.einsum("nkdp,npc->nkdc", decoder_pinv, aggregated_observation)
         elif self.mode == "transport" and self.transport_mode == "certified":
@@ -86,7 +89,7 @@ class AtlasEquivariantLayer(nn.Module):
             src, dst = edge_index
             source_ambient = torch.stack([push(chart, mixed[:, chart]) for chart in range(self.num_charts)], dim=1)
             semantic_values = (source_ambient * membership[:, :, None, None]).sum(dim=1)
-            _, alpha = attention_aggregate(semantic_values, edge_index, queries, keys)
+            aggregated_observation, alpha = attention_aggregate(semantic_values, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
 
             pulled = torch.zeros(
                 tangent.shape[0], self.num_charts, self.chart_dim, self.channels,
@@ -101,6 +104,18 @@ class AtlasEquivariantLayer(nn.Module):
                 "delta_sum": tangent.new_zeros(()),
                 "below": tangent.new_zeros(()),
                 "above": tangent.new_zeros(()),
+            }
+            detailed = {
+                "active_sum": tangent.new_zeros(()),
+                "edge_count": 0,
+                "multiple": tangent.new_zeros(()),
+                "kl_sum": tangent.new_zeros(()),
+                "kl_count": 0,
+                "spreads": [],
+                "entropy_sum": tangent.new_zeros(()),
+                "tv_sum": tangent.new_zeros(()),
+                "target_active_sum": tangent.new_zeros(()),
+                "target_multiple": tangent.new_zeros(()),
             }
             chunk_size = max(1, self.edge_chunk_size)
             for start in range(0, src.numel(), chunk_size):
@@ -155,6 +170,36 @@ class AtlasEquivariantLayer(nn.Module):
                     statistics["delta_sum"] += valid_delta.sum()
                     statistics["below"] += (valid_q < 0.25).to(valid_q.dtype).sum()
                     statistics["above"] += (valid_q > 0.75).to(valid_q.dtype).sum()
+                if detailed_transport_diagnostics:
+                    active_mask = source_membership > 0
+                    active_count = active_mask.sum(dim=-1)
+                    detailed["active_sum"] += active_count.to(tangent.dtype).sum()
+                    detailed["edge_count"] += active_count.numel()
+                    detailed["multiple"] += (active_count > 1).to(tangent.dtype).sum()
+                    base_routing = source_membership[:, None, :].expand_as(routing)
+                    kl_terms = torch.where(
+                        routing > 0,
+                        routing * (
+                            routing.clamp_min(self.transportability_eps).log()
+                            - base_routing.clamp_min(self.transportability_eps).log()
+                        ),
+                        torch.zeros_like(routing),
+                    )
+                    detailed["kl_sum"] += kl_terms.sum(dim=-1).detach().sum()
+                    detailed["kl_count"] += routing.shape[0] * routing.shape[1]
+                    detailed["entropy_sum"] += (
+                        -(routing * routing.clamp_min(self.transportability_eps).log()).sum(dim=-1)
+                    ).detach().sum()
+                    detailed["tv_sum"] += (0.5 * (routing - base_routing).abs().sum(dim=-1)).detach().sum()
+                    target_count = (membership[chunk_dst] > 0).sum(dim=-1)
+                    detailed["target_active_sum"] += target_count.to(tangent.dtype).sum()
+                    detailed["target_multiple"] += (target_count > 1).to(tangent.dtype).sum()
+                    if (active_count > 1).any():
+                        expanded_mask = active_mask[:, None, :].expand_as(q)
+                        q_max = q.masked_fill(~expanded_mask, -torch.inf).max(dim=-1).values
+                        q_min = q.masked_fill(~expanded_mask, torch.inf).min(dim=-1).values
+                        spread = q_max - q_min
+                        detailed["spreads"].append(spread[active_count > 1].detach())
 
             count = max(int(statistics["count"]), 1)
             q_mean = statistics["q_sum"] / count
@@ -168,9 +213,34 @@ class AtlasEquivariantLayer(nn.Module):
                 "fraction_q_below_025": statistics["below"] / count,
                 "fraction_q_above_075": statistics["above"] / count,
             }
+            if detailed_transport_diagnostics:
+                edge_count = max(int(detailed["edge_count"]), 1)
+                kl_count = max(int(detailed["kl_count"]), 1)
+                spread_values = (
+                    torch.cat(detailed["spreads"])
+                    if detailed["spreads"]
+                    else tangent.new_zeros(1)
+                )
+                certificate_diagnostics.update({
+                    "active_source_chart_count": detailed["active_sum"] / edge_count,
+                    "fraction_edges_with_multiple_source_charts": detailed["multiple"] / edge_count,
+                    "q_route_spread_mean": spread_values.mean(),
+                    "q_route_spread_p90": torch.quantile(spread_values, 0.90),
+                    "routing_kl_from_membership": detailed["kl_sum"] / kl_count,
+                    "routing_total_variation_from_membership": detailed["tv_sum"] / kl_count,
+                    "routing_entropy_mean": detailed["entropy_sum"] / kl_count,
+                    "active_target_chart_count": detailed["target_active_sum"] / edge_count,
+                    "fraction_edges_with_multiple_target_charts": detailed["target_multiple"] / edge_count,
+                    "q_route_spread_median": spread_values.median(),
+                    "q_route_spread_max": spread_values.max(),
+                })
+            if self.transportability_beta == 0.0:
+                # Preserve the exact minimum-distortion accumulation order for
+                # the beta-zero equivalence diagnostic and ablation.
+                pulled = torch.einsum("nkdp,npc->nkdc", decoder_pinv, aggregated_observation)
         elif self.mode == "no_transport":
             source_coordinates = (mixed * membership[:, :, None, None]).sum(dim=1)
-            aggregated_coordinates, alpha = attention_aggregate(source_coordinates, edge_index, queries, keys)
+            aggregated_coordinates, alpha = attention_aggregate(source_coordinates, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
             pulled = aggregated_coordinates[:, None].expand(-1, self.num_charts, -1, -1)
         elif self.mode == "free_transition":
             target_values = []
@@ -182,7 +252,7 @@ class AtlasEquivariantLayer(nn.Module):
                 ]
                 stacked = torch.stack(per_source, dim=1)
                 value = (stacked * membership[:, :, None, None]).sum(dim=1)
-                aggregated, alpha = attention_aggregate(value, edge_index, queries, keys)
+                aggregated, alpha = attention_aggregate(value, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
                 target_values.append(aggregated)
             pulled = torch.stack(target_values, dim=1)
         else:

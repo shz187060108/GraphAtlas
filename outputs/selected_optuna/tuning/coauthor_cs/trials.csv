@@ -1,0 +1,5 @@
+number,state,value,params
+0,COMPLETE,0.9250068068504333,"{""dropout"": 0.3429906434480903, ""geometry_loss_scale"": 0.6981410890189181, ""hidden_dim"": 128, ""learning_rate"": 0.0007407200227375523, ""weight_decay"": 6.699208178750479e-05}"
+1,COMPLETE,0.9449141025543213,"{""dropout"": 0.2849688405427283, ""geometry_loss_scale"": 1.3940884610145, ""hidden_dim"": 96, ""learning_rate"": 0.002561075096107793, ""weight_decay"": 0.00013076762306504588}"
+2,COMPLETE,0.9331879019737244,"{""dropout"": 0.21856816676072166, ""geometry_loss_scale"": 0.5305930675422174, ""hidden_dim"": 128, ""learning_rate"": 0.0005450765780025134, ""weight_decay"": 7.764889602690966e-05}"
+3,PRUNED,0.6760294437408447,{}

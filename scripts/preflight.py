@@ -129,7 +129,7 @@ def main() -> None:
         "tests_exit_code": tests_exit_code,
         "status": "passed",
     }
-    save_json(report, root / "outputs" / "status" / f"preflight_{preset_path.stem}.json")
+    save_json(report, root / "outputs" / ".work" / "status" / f"preflight_{preset_path.stem}.json")
     print(json.dumps(report, indent=2, ensure_ascii=False))
     lock_handle.close()
 

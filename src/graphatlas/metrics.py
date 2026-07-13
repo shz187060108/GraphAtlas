@@ -389,6 +389,7 @@ def evaluate_output(
     data: GraphData,
     seed: int,
     include_intervention: bool = True,
+    include_test: bool = True,
 ) -> dict[str, Any]:
     task_name = (data.metadata or {}).get("task", "node_classification")
     logits = output["logits"].detach()
@@ -399,7 +400,10 @@ def evaluate_output(
             raise ValueError("Model output does not contain embedding for link prediction")
         train_link = link_prediction_metrics(embedding, data, "train")
         val_link = link_prediction_metrics(embedding, data, "val")
-        test_link = link_prediction_metrics(embedding, data, "test")
+        test_link = link_prediction_metrics(embedding, data, "test") if include_test else {
+            "roc_auc": float("nan"), "average_precision": float("nan"),
+            "mrr": float("nan"), "hits_at_10": float("nan"), "hits_at_50": float("nan"),
+        }
         metrics: dict[str, Any] = {
             "task": task_name,
             "metric_name": "roc_auc",
@@ -428,7 +432,7 @@ def evaluate_output(
         }
     else:
         split_values: dict[str, dict[str, float]] = {}
-        for split in ("train", "val", "test"):
+        for split in (("train", "val", "test") if include_test else ("train", "val")):
             mask = getattr(data, f"{split}_mask")
             split_values[split] = multilabel_metrics(logits, data.y, mask) if data.is_multilabel else single_label_metrics(logits, data.y, mask)
         metrics = {
@@ -436,7 +440,7 @@ def evaluate_output(
             "metric_name": metric_name,
             "train_metric": primary_metric(logits, data, data.train_mask),
             "val_metric": primary_metric(logits, data, data.val_mask),
-            "test_metric": primary_metric(logits, data, data.test_mask),
+            "test_metric": primary_metric(logits, data, data.test_mask) if include_test else float("nan"),
             "train_link_roc_auc": float("nan"), "val_link_roc_auc": float("nan"), "test_link_roc_auc": float("nan"),
             "train_link_average_precision": float("nan"), "val_link_average_precision": float("nan"), "test_link_average_precision": float("nan"),
             "train_link_mrr": float("nan"), "val_link_mrr": float("nan"), "test_link_mrr": float("nan"),
@@ -449,7 +453,7 @@ def evaluate_output(
         for required in ("accuracy", "roc_auc"):
             for split in ("train", "val", "test"):
                 metrics.setdefault(f"{split}_{required}", float("nan"))
-        if data.boundary_mask is not None and not data.is_multilabel:
+        if include_test and data.boundary_mask is not None and not data.is_multilabel:
             boundary_test = data.test_mask & data.boundary_mask
             interior_test = data.test_mask & ~data.boundary_mask
             metrics["boundary_accuracy"] = accuracy(logits, data.y, boundary_test)

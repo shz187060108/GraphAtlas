@@ -78,6 +78,10 @@ def validate_config(config: ExperimentConfig) -> None:
             errors.append(f"model.{field} must be positive")
     if m.membership_topk < 1 or m.membership_topk > m.num_charts:
         errors.append("model.membership_topk must be between 1 and model.num_charts")
+    if m.edge_chunk_size < 1:
+        errors.append("model.edge_chunk_size must be positive")
+    if m.edge_chunk_threshold < 1:
+        errors.append("model.edge_chunk_threshold must be positive")
     if m.name.startswith("graphatlas") and m.num_charts != d.num_charts:
         errors.append("GraphAtlas model.num_charts must match dataset.num_charts")
     if not 0.0 <= m.dropout < 1.0:
@@ -127,5 +131,11 @@ def validate_config(config: ExperimentConfig) -> None:
         errors.append("train.light_regularization_nodes must be positive")
     if train.light_metric_probes < 1:
         errors.append("train.light_metric_probes must be positive")
+    if train.batch_size < 1:
+        errors.append("train.batch_size must be positive")
+    if train.num_workers < 0:
+        errors.append("train.num_workers must be non-negative")
+    if not train.num_neighbors or any(value < 0 for value in train.num_neighbors):
+        errors.append("train.num_neighbors must be a non-empty list of non-negative values")
     if errors:
         raise ValueError("Invalid GraphAtlas configuration:\n- " + "\n- ".join(errors))
