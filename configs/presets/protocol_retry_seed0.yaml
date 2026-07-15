@@ -1,0 +1,70 @@
+﻿base_config: configs/base.yaml
+
+seeds:
+  - 0
+
+train:
+  device: cuda
+  epochs: 400
+  patience: 80
+  learning_rate: 0.0015
+  weight_decay: 0.0001
+  eval_every: 5
+  regularization_every: 10
+  progress: true
+  num_threads: 2
+  resume: true
+
+loss:
+  reconstruction: 0.01
+  cocycle: 0.002
+  metric: 0.001
+  cover: 0.005
+  balance: 0.001
+  sparsity: 0.001
+  geometry: 0.0
+  sample_nodes: 128
+
+datasets:
+  - name: coauthor_physics
+    root: data_protocol
+    split: 0
+    num_charts: 4
+
+  - name: coauthor_cs
+    root: data_protocol
+    split: 0
+    num_charts: 4
+
+  - name: questions
+    root: data_protocol
+    split: 0
+    num_charts: 4
+    metric: roc_auc
+
+  - name: tolokers
+    root: data_protocol
+    split: 0
+    num_charts: 4
+    metric: roc_auc
+
+  - name: hetgb_amazon
+    root: data_protocol
+    split: 0
+    num_charts: 4
+
+  - name: hetgb_cornell
+    root: data_protocol
+    split: 0
+    num_charts: 3
+
+models:
+  - name: graphatlas
+    hidden_dim: 96
+    observation_dim: 24
+    chart_dim: 4
+    vector_channels: 6
+    num_layers: 1
+    dropout: 0.15
+    membership_topk: 2
+    jacobian_chunk_size: 1024

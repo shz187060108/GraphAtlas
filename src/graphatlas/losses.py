@@ -11,6 +11,30 @@ from graphatlas.nn.model import GraphAtlas
 from graphatlas.nn.functional import edge_dot_scores
 
 
+def node_classification_loss(
+    logits: torch.Tensor,
+    labels: torch.Tensor,
+    mode: str = "cross_entropy",
+    focal_gamma: float = 2.0,
+    class_weight: torch.Tensor | None = None,
+) -> torch.Tensor:
+    """Classification objective with weights estimated only from these training labels."""
+    labels = labels.long()
+    weight = class_weight if mode in {"weighted_ce", "focal"} else None
+    if mode in {"weighted_ce", "focal"}:
+        if weight is None:
+            counts = torch.bincount(labels, minlength=logits.shape[-1]).to(logits.dtype).clamp_min(1)
+            weight = counts.sum() / (counts * counts.numel())
+        else:
+            weight = weight.to(device=logits.device, dtype=logits.dtype)
+    if mode == "focal":
+        ce = F.cross_entropy(logits, labels, weight=weight, reduction="none")
+        return ((1.0 - torch.exp(-ce)).pow(focal_gamma) * ce).mean()
+    if mode not in {"cross_entropy", "weighted_ce"}:
+        raise ValueError(f"Unsupported classification loss: {mode}")
+    return F.cross_entropy(logits, labels, weight=weight)
+
+
 def _sample_indices(num_nodes: int, sample_size: int, device: torch.device) -> torch.Tensor:
     if sample_size <= 0 or sample_size >= num_nodes:
         return torch.arange(num_nodes, device=device)
@@ -254,7 +278,12 @@ def compute_loss(
             finite = torch.isfinite(target)
             task = F.binary_cross_entropy_with_logits(score[finite], target[finite])
         else:
-            task = F.cross_entropy(output["logits"][data.train_mask], data.y[data.train_mask])
+            task = node_classification_loss(
+                output["logits"][data.train_mask],
+                data.y[data.train_mask],
+                config.classification_loss,
+                config.focal_gamma,
+            )
     elif task_name == "link_prediction":
         if data.link_split is None:
             raise ValueError("link_prediction requires data.link_split")

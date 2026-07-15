@@ -6,24 +6,28 @@ seeds:
 - 1
 - 2
 train:
+  device: cuda
+  execution_tag: gpu_20260714
   epochs: 200
   patience: 40
 datasets:
-- name: roman_empire
+- name: actor
   num_charts: 4
-- name: tolokers
+- name: questions
   num_charts: 4
   metric: roc_auc
-- name: chameleon_filtered
+- name: dblp
   num_charts: 4
-- name: squirrel_filtered
+- name: coauthor_cs
   num_charts: 4
-- name: cornell
-  num_charts: 3
-- name: texas
-  num_charts: 3
-- name: wisconsin
-  num_charts: 3
+- name: coauthor_physics
+  num_charts: 4
+- name: hetgb_texas
+  num_charts: 4
+- name: hetgb_actor
+  num_charts: 4
+- name: hetgb_amazon
+  num_charts: 4
 models:
 - name: graphatlas
   label: graphatlas_original

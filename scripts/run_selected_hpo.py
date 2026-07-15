@@ -56,6 +56,7 @@ STAGE_EPOCHS = {
     "final": 1000,
     "seed_scan": 200,
     "seed_promote": 1000,
+    "best_single": 200,
 }
 PRUNING_START_EPOCH = 15
 EDGE_CHUNK_SIZE = 100_000
@@ -513,6 +514,67 @@ def final_dataset(dataset: str) -> None:
     _update_summary(row)
 
 
+def _best_available(dataset: str) -> tuple[dict[str, Any], int, int, Path, dict[str, Any]]:
+    """Resolve the strongest validation-selected config/seed already on disk."""
+    promoted = OUTPUT / "best_configs" / f"{dataset}.json"
+    if promoted.exists():
+        selection = json.loads(promoted.read_text(encoding="utf-8"))
+        selected = dict(selection["selected"])
+        values = [float(value) for value in selected.get("values", [])]
+        seed = PROMOTE_SEEDS[int(np.nanargmax(values))] if values else 0
+        source = OUTPUT / "promote" / dataset / f"rank_{int(selected['rank'])}" / f"seed_{seed}"
+        return dict(selected["params"]), seed, seed, source, {
+            "selection_source": "promote_mean_then_best_validation_seed",
+            "validation_score": values[PROMOTE_SEEDS.index(seed)] if values else float("nan"),
+            "trial": int(selected["trial"]),
+        }
+    trial = _top_trials(dataset)[0]
+    params = dict(trial.user_attrs["resolved_params"])
+    source = OUTPUT / "tuning" / dataset / f"trial_{trial.number:03d}"
+    return params, TUNE_SEED, 0, source, {
+        "selection_source": "best_completed_tune_trial",
+        "validation_score": float(trial.value),
+        "trial": int(trial.number),
+    }
+
+
+def best_single_dataset(dataset: str) -> None:
+    """Continue the best existing validation run and evaluate its test split once."""
+    params, model_seed, split_seed, source, selection = _best_available(dataset)
+    _ensure_splits(dataset, _load_split_data(dataset, split_seed))
+    run_dir = OUTPUT / "best_single" / dataset / f"seed_{model_seed}"
+    if not (run_dir / "last.pt").exists():
+        _prepare_seed_promotion(source, run_dir)
+    metrics = _run_one(
+        stage="best_single",
+        dataset=dataset,
+        params=params,
+        model_seed=model_seed,
+        split_seed=split_seed,
+        run_dir=run_dir,
+        evaluate_test=True,
+    )
+    payload = {
+        "dataset": dataset,
+        "metric": "roc_auc" if dataset in ROC_AUC_DATASETS else "accuracy",
+        "model": "graphatlas",
+        "params": params,
+        "model_seed": model_seed,
+        "split_seed": split_seed,
+        "best_val_metric": float(metrics["best_val_metric"]),
+        "test_metric": float(metrics["test_metric"]),
+        "best_epoch": int(metrics["best_epoch"]),
+        "runtime_seconds": float(metrics["runtime_seconds"]),
+        **selection,
+    }
+    save_json(payload, OUTPUT / "best_single" / dataset / "summary.json")
+    summary_path = OUTPUT / "best_single" / "summary.csv"
+    frame = pd.read_csv(summary_path) if summary_path.exists() else pd.DataFrame()
+    if "dataset" in frame:
+        frame = frame[frame["dataset"] != dataset]
+    pd.concat([frame, pd.DataFrame([payload])], ignore_index=True).sort_values("dataset").to_csv(summary_path, index=False)
+
+
 def _seed_result_row(metrics: dict[str, Any], metric: str) -> dict[str, Any]:
     return {
         "seed": int(metrics["model_seed"]),
@@ -664,6 +726,8 @@ def _run_stage(
     elif stage == "seed_ceiling":
         seed_scan_dataset(dataset, scan_seeds)
         seed_promote_dataset(dataset, seed_promote_count)
+    elif stage == "best_single":
+        best_single_dataset(dataset)
     elif stage == "all":
         tune_dataset(dataset, n_trials)
         promote_dataset(dataset)
@@ -681,7 +745,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Optuna HPO protocol for the selected public GraphAtlas datasets.")
     parser.add_argument(
         "--stage",
-        choices=("tune", "promote", "final", "seed_scan", "seed_promote", "seed_ceiling", "all"),
+        choices=("tune", "promote", "final", "seed_scan", "seed_promote", "seed_ceiling", "best_single", "all"),
         required=True,
     )
     parser.add_argument("--dataset", choices=DATASETS)

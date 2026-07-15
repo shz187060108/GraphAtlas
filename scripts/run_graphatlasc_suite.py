@@ -13,6 +13,9 @@ STAGES = {
     "beta": "graphatlasc_beta_sweep", "counterfactual": "graphatlasc_counterfactual",
     "real": "graphatlasc_real_screening", "confirmatory": "graphatlasc_main_confirmatory",
     "ogb": "graphatlasc_ogb_arxiv",
+    "h2gb": "atn_h2gb_screening",
+    "h2gb_confirmatory": "atn_h2gb_confirmatory",
+    "h2gb_mechanism": "atn_h2gb_mechanism",
 }
 
 
@@ -23,7 +26,12 @@ def main() -> None:
     parser.add_argument("--limit", type=int)
     parser.add_argument("--skip-external", action="store_true")
     parser.add_argument("--sync-github", action="store_true")
+    parser.add_argument("--build-paper-figures", action="store_true")
+    parser.add_argument("--paper-figures-only", action="store_true")
     args = parser.parse_args()
+    if args.paper_figures_only:
+        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/results/latest.csv"], cwd=ROOT, check=False)
+        return
     stages = list(STAGES) if args.stage == "all" else [args.stage]
     for stage in stages:
         preset = STAGES[stage]
@@ -35,6 +43,10 @@ def main() -> None:
         if args.sync_github:
             command.append("--sync-github")
         subprocess.run(command, cwd=ROOT, check=True)
+    if args.build_paper_figures:
+        subprocess.run([sys.executable, "-u", "scripts/summarize.py", "--results", "outputs/results/latest.csv", "--no-plots"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/visualize.py", "--results", "outputs/results/latest.csv", "--output-dir", "outputs/reports/latest/figures"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/results/latest.csv"], cwd=ROOT, check=False)
 
 
 if __name__ == "__main__":

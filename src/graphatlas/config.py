@@ -31,7 +31,10 @@ class DatasetConfig:
     format: str = "auto"
     metric: str | None = None
     target_node_type: str | None = None
+    heterogeneous: bool = False
+    homogeneous_projection: bool = False
     feature_source: str = "native"
+    feature_normalization: str = "none"
     directed: bool = False
     max_nodes: int | None = None
     enabled: bool = True
@@ -82,6 +85,14 @@ class ModelConfig:
     coordinate_left_linear: bool = False
     link_decoder: str = "dot"
     link_decoder_hidden_dim: int = 64
+    heterogeneous: bool = False
+    type_specific_input: bool = True
+    type_embedding_dim: int = 16
+    relation_embedding_dim: int = 16
+    type_conditioned_membership: bool = True
+    type_conditioned_chart_encoder: bool = True
+    relation_conditioning: str = "invariant_gate"
+    missing_feature_mode: str = "type_token_plus_degree"
 
 
 @dataclass
@@ -103,6 +114,8 @@ class LossConfig:
     sparsity: float = 0.01
     geometry: float = 0.0
     sample_nodes: int = 128
+    classification_loss: str = "cross_entropy"
+    focal_gamma: float = 2.0
 
     def resolved_inverse_cycle(self) -> float:
         return self.cocycle if self.inverse_cycle is None else self.inverse_cycle
@@ -135,6 +148,14 @@ class TrainConfig:
     batch_size: int = 1024
     num_neighbors: list[int] = field(default_factory=lambda: [15])
     num_workers: int = 0
+    mode: str = "full_batch"
+    neighbor_sizes: list[int] = field(default_factory=lambda: [20, 15])
+    target_batching: bool = False
+    # Optional run-isolation label. Unlike the runtime-only device field, this
+    # participates in the experiment fingerprint and preserves earlier runs.
+    execution_tag: str | None = None
+    deterministic: bool = True
+    final_diagnostics: bool = True
 
 
 @dataclass

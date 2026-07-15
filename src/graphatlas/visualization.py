@@ -9,30 +9,11 @@ import numpy as np
 import pandas as pd
 
 from graphatlas.reporting import scientific_gates
+from graphatlas.figure_style import configure_nature_style, save_figure_bundle
 
 
 def _configure_matplotlib() -> None:
-    import matplotlib as mpl
-
-    mpl.use("Agg", force=True)
-    mpl.rcParams.update(
-        {
-            "font.size": 9,
-            "axes.titlesize": 10,
-            "axes.labelsize": 9,
-            "xtick.labelsize": 8,
-            "ytick.labelsize": 8,
-            "legend.fontsize": 8,
-            "figure.titlesize": 11,
-            "axes.linewidth": 0.8,
-            "lines.linewidth": 1.4,
-            "lines.markersize": 4.5,
-            "savefig.bbox": "tight",
-            "savefig.pad_inches": 0.05,
-            "pdf.fonttype": 42,
-            "ps.fonttype": 42,
-        }
-    )
+    configure_nature_style()
 
 
 def _ci95(values: Iterable[float]) -> float:
@@ -44,13 +25,7 @@ def _ci95(values: Iterable[float]) -> float:
 
 
 def _save_figure(fig: Any, output_stem: Path) -> list[str]:
-    output_stem.parent.mkdir(parents=True, exist_ok=True)
-    paths: list[str] = []
-    for suffix, kwargs in ((".pdf", {}), (".png", {"dpi": 320})):
-        path = output_stem.with_suffix(suffix)
-        fig.savefig(path, **kwargs)
-        paths.append(str(path))
-    return paths
+    return save_figure_bundle(fig, output_stem)
 
 
 def _synthetic_classification(frame: pd.DataFrame) -> pd.DataFrame:

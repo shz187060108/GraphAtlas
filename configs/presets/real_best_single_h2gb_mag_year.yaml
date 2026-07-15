@@ -1,0 +1,53 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: atn
+seeds:
+- 0
+train:
+  device: cuda
+  mode: hetero_neighbor
+  batch_size: 256
+  neighbor_sizes:
+  - 20
+  - 15
+  target_batching: true
+  epochs: 200
+  patience: 40
+  eval_every: 5
+  progress: true
+  resume: true
+  learning_rate: 0.003
+  weight_decay: 0.0005
+  output_dir: outputs/.work/runs_real_best_single
+loss:
+  reconstruction: 0.05
+  cocycle: 0.01
+  inverse_cycle: 0.01
+  path_consistency: 0.02
+  metric: 0.02
+  chart_rank: 0.01
+  cover: 0.01
+  balance: 0.005
+  sparsity: 0.005
+  geometry: 0.0
+datasets:
+- name: h2gb_mag_year
+  num_charts: 4
+  split: 0
+  heterogeneous: true
+  target_node_type: paper
+  metric: accuracy
+models:
+- name: atn
+  label: atn
+  heterogeneous: true
+  hidden_dim: 64
+  dropout: 0.05
+  observation_dim: 24
+  chart_dim: 4
+  vector_channels: 6
+  num_charts: 4
+  num_layers: 1
+  membership_topk: 2
+  edge_chunk_size: 100000
+  edge_chunk_threshold: 2000000

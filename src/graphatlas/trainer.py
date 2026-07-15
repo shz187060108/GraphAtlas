@@ -17,10 +17,11 @@ import torch.nn.functional as F
 from tqdm.auto import trange
 
 from graphatlas.config import ExperimentConfig
-from graphatlas.data import GraphData
-from graphatlas.losses import atlas_regularization_terms, compute_loss
+from graphatlas.data import GraphData, HeteroGraphData
+from graphatlas.losses import atlas_regularization_terms, compute_loss, node_classification_loss
 from graphatlas.metrics import accuracy, evaluate_output, output_primary_metric
 from graphatlas.nn.model import build_model, wrap_link_prediction_model
+from graphatlas.nn.heterogeneous import build_hetero_model
 from graphatlas.utils import configure_torch_threads, count_parameters, resolve_device, save_json, save_yaml, seed_everything
 
 
@@ -83,7 +84,7 @@ class Trainer:
         config.validate()
         self.config = config
         configure_torch_threads(config.train.num_threads)
-        seed_everything(config.train.seed)
+        seed_everything(config.train.seed, deterministic=config.train.deterministic)
         self.device = resolve_device(config.train.device)
 
     def _uses_neighbor_sampling(self, data: GraphData) -> bool:
@@ -92,9 +93,347 @@ class Trainer:
             "ogbn_arxiv", "ogbn_products", "ogbn_proteins"
         }
 
+    def _hetero_neighbor_loader(self, data: HeteroGraphData, indices: torch.Tensor, shuffle: bool):
+        try:
+            from torch_geometric.data import HeteroData
+            from torch_geometric.loader import NeighborLoader
+        except ImportError as error:
+            raise RuntimeError("hetero_neighbor mode requires the project's graph extras") from error
+        import torch_geometric.typing
+        if not (torch_geometric.typing.WITH_PYG_LIB or torch_geometric.typing.WITH_TORCH_SPARSE):
+            return self._fallback_hetero_batches(data, indices, shuffle)
+        pyg = HeteroData()
+        for node_type, count in data.num_nodes_dict.items():
+            pyg[node_type].num_nodes = count
+            if data.x_dict[node_type] is not None:
+                pyg[node_type].x = data.x_dict[node_type]
+            pyg[node_type].global_node_id = (
+                data.global_node_id_dict[node_type]
+                if data.global_node_id_dict is not None
+                else torch.arange(count, dtype=torch.long)
+            )
+        for edge_type, edge_index in data.edge_index_dict.items():
+            pyg[edge_type].edge_index = edge_index
+        pyg[data.task_entity].y = data.y
+        return NeighborLoader(
+            pyg,
+            input_nodes=(data.task_entity, indices),
+            num_neighbors=self.config.train.neighbor_sizes,
+            batch_size=self.config.train.batch_size,
+            shuffle=shuffle,
+            num_workers=self.config.train.num_workers,
+        )
+
+    def _fallback_hetero_batches(self, data: HeteroGraphData, indices: torch.Tensor, shuffle: bool):
+        """Deterministic CPU sampler used when optional PyG sampler kernels are absent."""
+        order = indices[torch.randperm(len(indices))] if shuffle else indices
+        batch_size = self.config.train.batch_size
+        for start in range(0, len(order), batch_size):
+            seeds = order[start:start + batch_size].long()
+            selected: dict[str, torch.Tensor] = {data.task_entity: seeds}
+            for fanout in self.config.train.neighbor_sizes:
+                additions: dict[str, list[torch.Tensor]] = {}
+                for (source_type, _, target_type), edge_index in data.edge_index_dict.items():
+                    targets = selected.get(target_type)
+                    if targets is None or not targets.numel():
+                        continue
+                    source_parts = []
+                    for target in targets.tolist():
+                        candidates = edge_index[0, edge_index[1].eq(target)]
+                        if candidates.numel():
+                            source_parts.append(candidates[:fanout])
+                    if source_parts:
+                        additions.setdefault(source_type, []).append(torch.cat(source_parts))
+                for node_type, parts in additions.items():
+                    previous = selected.get(node_type, torch.empty(0, dtype=torch.long))
+                    selected[node_type] = torch.unique(torch.cat([previous, *parts]), sorted=True)
+            # Seed target nodes stay first because task loss is seed-only.
+            task_extra = selected[data.task_entity][~torch.isin(selected[data.task_entity], seeds)]
+            selected[data.task_entity] = torch.cat([seeds, task_extra])
+            maps: dict[str, torch.Tensor] = {}
+            for node_type, ids in selected.items():
+                mapping = torch.full((data.num_nodes_dict[node_type],), -1, dtype=torch.long)
+                mapping[ids] = torch.arange(len(ids))
+                maps[node_type] = mapping
+            local_edges = {}
+            for edge_type, edge_index in data.edge_index_dict.items():
+                source_type, _, target_type = edge_type
+                if source_type not in maps or target_type not in maps:
+                    continue
+                source_local, target_local = maps[source_type][edge_index[0]], maps[target_type][edge_index[1]]
+                keep = (source_local >= 0) & (target_local >= 0)
+                if bool(keep.any()):
+                    local_edges[edge_type] = torch.stack([source_local[keep], target_local[keep]])
+            target_count = len(selected[data.task_entity])
+            empty = torch.zeros(target_count, dtype=torch.bool)
+            local = HeteroGraphData(
+                x_dict={node_type: (None if data.x_dict[node_type] is None else data.x_dict[node_type][ids]) for node_type, ids in selected.items()},
+                num_nodes_dict={node_type: len(ids) for node_type, ids in selected.items()},
+                edge_index_dict=local_edges,
+                task_entity=data.task_entity,
+                y=data.y[selected[data.task_entity]],
+                train_mask=empty, val_mask=empty.clone(), test_mask=empty.clone(),
+                metadata=dict(data.metadata),
+                global_node_id_dict={
+                    node_type: (data.global_node_id_dict[node_type][ids] if data.global_node_id_dict is not None else ids)
+                    for node_type, ids in selected.items()
+                },
+            )
+            yield local, len(seeds), seeds
+
+    @staticmethod
+    def _hetero_batch(batch: Any, template: HeteroGraphData) -> tuple[HeteroGraphData, int, torch.Tensor]:
+        task = template.task_entity
+        count = int(batch[task].batch_size)
+        local = HeteroGraphData(
+            x_dict={node_type: getattr(batch[node_type], "x", None) for node_type in batch.node_types},
+            num_nodes_dict={node_type: int(batch[node_type].num_nodes) for node_type in batch.node_types},
+            edge_index_dict={edge_type: batch[edge_type].edge_index for edge_type in batch.edge_types},
+            task_entity=task,
+            y=batch[task].y,
+            train_mask=torch.zeros(batch[task].num_nodes, dtype=torch.bool),
+            val_mask=torch.zeros(batch[task].num_nodes, dtype=torch.bool),
+            test_mask=torch.zeros(batch[task].num_nodes, dtype=torch.bool),
+            metadata=dict(template.metadata),
+            global_node_id_dict={node_type: batch[node_type].global_node_id for node_type in batch.node_types},
+        )
+        return local, count, batch[task].n_id[:count]
+
+    def _fit_hetero_neighbor(
+        self, data: HeteroGraphData, run_dir: Path, evaluate_test: bool,
+        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
+    ) -> tuple[torch.nn.Module, dict[str, Any]]:
+        model = build_hetero_model(data, self.config.model).to(self.device)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=self.config.train.learning_rate,
+                                      weight_decay=self.config.train.weight_decay)
+        train_indices = torch.nonzero(data.train_mask, as_tuple=False).flatten()
+        val_indices = torch.nonzero(data.val_mask, as_tuple=False).flatten()
+        test_indices = torch.nonzero(data.test_mask, as_tuple=False).flatten()
+        counts = torch.bincount(data.y[train_indices].long(), minlength=data.num_classes).float().clamp_min(1)
+        class_weight = (counts.sum() / (counts * len(counts))).to(self.device)
+        best_state, best_val, best_epoch, stale = copy.deepcopy(model.state_dict()), -float("inf"), -1, 0
+        history: list[dict[str, float]] = []
+        sampled_nodes = sampled_edges = batches_seen = 0
+        started = time.time()
+
+        @torch.no_grad()
+        def predict(indices: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+            model.eval()
+            logits_list, labels_list = [], []
+            for batch in self._hetero_neighbor_loader(data, indices, False):
+                local, seed_count, _ = batch if isinstance(batch, tuple) else self._hetero_batch(batch, data)
+                output = model(local)
+                logits_list.append(output["logits"][:seed_count].detach().cpu())
+                labels_list.append(local.y[:seed_count].detach().cpu())
+            return torch.cat(logits_list), torch.cat(labels_list)
+
+        for epoch in trange(1, self.config.train.epochs + 1, disable=not self.config.train.progress,
+                            desc=f"{self.config.dataset.name}/{self.config.model.name}/sampled", leave=False):
+            model.train()
+            epoch_loss = 0.0
+            for batch in self._hetero_neighbor_loader(data, train_indices, True):
+                local, seed_count, _ = batch if isinstance(batch, tuple) else self._hetero_batch(batch, data)
+                optimizer.zero_grad(set_to_none=True)
+                output = model(local)
+                labels = local.y[:seed_count].to(self.device).long()
+                loss = node_classification_loss(
+                    output["logits"][:seed_count], labels,
+                    self.config.loss.classification_loss, self.config.loss.focal_gamma,
+                    class_weight,
+                )
+                if not torch.isfinite(loss):
+                    raise FloatingPointError(f"Non-finite heterogeneous sampled loss at epoch {epoch}")
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.train.grad_clip)
+                optimizer.step()
+                epoch_loss += float(loss.detach().cpu())
+                sampled_nodes += sum(local.num_nodes_dict.values())
+                sampled_edges += sum(value.shape[1] for value in local.edge_index_dict.values())
+                batches_seen += 1
+            if epoch == 1 or epoch % self.config.train.eval_every == 0 or epoch == self.config.train.epochs:
+                val_logits, val_labels = predict(val_indices)
+                val_prediction = val_logits.argmax(dim=-1)
+                if (data.metadata or {}).get("primary_metric") == "f1":
+                    from sklearn.metrics import f1_score
+                    val = float(f1_score(val_labels.numpy(), val_prediction.numpy(), average="binary", zero_division=0))
+                else:
+                    val = float((val_prediction == val_labels).float().mean())
+                history.append({"epoch": epoch, "loss": epoch_loss, "val_metric": val})
+                if val > best_val + 1e-8:
+                    best_val, best_epoch, stale = val, epoch, 0
+                    best_state = copy.deepcopy(model.state_dict())
+                    _atomic_torch_save(best_state, run_dir / "best.pt")
+                else:
+                    stale += self.config.train.eval_every
+                _atomic_torch_save({"epoch": epoch, "model": model.state_dict(), "optimizer": optimizer.state_dict(),
+                                    "best_val": best_val, "best_epoch": best_epoch, "stale": stale,
+                                    "history": history, "rng_state": _rng_state()}, run_dir / "last.pt")
+                pd.DataFrame(history).to_csv(run_dir / "history.csv", index=False)
+                if on_oracle_evaluation is not None:
+                    test_logits_epoch, test_labels_epoch = predict(test_indices)
+                    test_prediction = test_logits_epoch.argmax(dim=-1)
+                    if (data.metadata or {}).get("primary_metric") == "f1":
+                        from sklearn.metrics import f1_score
+                        test_value = float(f1_score(test_labels_epoch.numpy(), test_prediction.numpy(), average="binary", zero_division=0))
+                    else:
+                        test_value = float((test_prediction == test_labels_epoch).float().mean())
+                    on_oracle_evaluation(
+                        epoch, val, test_value,
+                        int(val_prediction.unique().numel()), int(test_prediction.unique().numel()),
+                    )
+                if stale >= self.config.train.patience:
+                    break
+        model.load_state_dict(best_state)
+        val_logits, val_labels = predict(val_indices)
+        test_logits, test_labels = predict(test_indices) if evaluate_test else (torch.empty(0, data.num_classes), torch.empty(0, dtype=torch.long))
+        from sklearn.metrics import accuracy_score, average_precision_score, f1_score, precision_score, recall_score, roc_auc_score
+
+        def score(logits: torch.Tensor, labels: torch.Tensor) -> dict[str, float]:
+            probability = torch.softmax(logits, dim=-1)
+            prediction = probability.argmax(dim=-1)
+            y, pred = labels.numpy(), prediction.numpy()
+            values = {"accuracy": float(accuracy_score(y, pred)), "macro_f1": float(f1_score(y, pred, average="macro", zero_division=0)),
+                      "micro_f1": float(f1_score(y, pred, average="micro", zero_division=0))}
+            if data.num_classes == 2:
+                positive = probability[:, 1].numpy()
+                values.update({"f1": float(f1_score(y, pred, zero_division=0)), "precision": float(precision_score(y, pred, zero_division=0)),
+                               "recall": float(recall_score(y, pred, zero_division=0)),
+                               "roc_auc": float(roc_auc_score(y, positive)) if len(np.unique(y)) > 1 else float("nan"),
+                               "average_precision": float(average_precision_score(y, positive))})
+            return values
+
+        val_scores = score(val_logits, val_labels)
+        test_scores = score(test_logits, test_labels) if evaluate_test else {}
+        primary = str((data.metadata or {}).get("primary_metric", "accuracy"))
+        metrics: dict[str, Any] = {
+            "dataset": self.config.dataset.name, "task": "node_classification",
+            "model": self.config.model.label or self.config.model.name, "model_family": self.config.model.name,
+            "seed": self.config.train.seed, "split": self.config.dataset.split, "metric_name": primary,
+            "val_metric": val_scores[primary], "test_metric": test_scores.get(primary, float("nan")),
+            "best_epoch": best_epoch, "last_epoch": history[-1]["epoch"], "best_val_metric": best_val,
+            "parameters": count_parameters(model), "runtime_seconds": time.time() - started, "device": str(self.device),
+            "num_nodes": sum(data.num_nodes_dict.values()), "num_edges": sum(value.shape[1] for value in data.edge_index_dict.values()),
+            "native_heterogeneous": True, "homogeneous_projection": False, "neighbor_sampling": True,
+            "batch_size": self.config.train.batch_size, "fanout": self.config.train.neighbor_sizes,
+            "sampled_nodes": sampled_nodes, "sampled_edges": sampled_edges, "sampled_batches": batches_seen,
+            **{f"val_{key}": value for key, value in val_scores.items()}, **{f"test_{key}": value for key, value in test_scores.items()},
+        }
+        save_json(metrics, run_dir / "metrics.json")
+        _atomic_torch_save({"val_logits": val_logits, "val_labels": val_labels,
+                            "test_logits": test_logits, "test_labels": test_labels}, run_dir / "predictions.pt")
+        return model, metrics
+
+    def _fit_heterogeneous(
+        self,
+        data: HeteroGraphData,
+        run_dir: Path,
+        environment: dict[str, Any],
+        evaluate_test: bool,
+        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
+    ) -> tuple[torch.nn.Module, dict[str, Any]]:
+        """Native typed full-batch path; large H2GB presets require hetero_neighbor."""
+        if self.config.train.mode == "hetero_neighbor":
+            return self._fit_hetero_neighbor(data, run_dir, evaluate_test, on_oracle_evaluation)
+        data.validate()
+        moved = data.to(self.device, move_graph=True)
+        model = build_hetero_model(data, self.config.model).to(self.device)
+        optimizer = torch.optim.AdamW(model.parameters(), lr=self.config.train.learning_rate, weight_decay=self.config.train.weight_decay)
+        labels = moved.y.long()
+        train_labels = labels[moved.train_mask]
+        counts = torch.bincount(train_labels, minlength=data.num_classes).float().clamp_min(1)
+        class_weight = counts.sum() / (counts * len(counts))
+        best_state, best_val, best_epoch, stale = copy.deepcopy(model.state_dict()), -float("inf"), -1, 0
+        history: list[dict[str, float]] = []
+        started = time.time()
+        for epoch in trange(1, self.config.train.epochs + 1, disable=not self.config.train.progress,
+                            desc=f"{self.config.dataset.name}/{self.config.model.name}/s{self.config.train.seed}", leave=False):
+            model.train()
+            optimizer.zero_grad(set_to_none=True)
+            output = model(moved)
+            loss = F.cross_entropy(output["logits"][moved.train_mask], labels[moved.train_mask], weight=class_weight)
+            if not torch.isfinite(loss):
+                raise FloatingPointError(f"Non-finite heterogeneous loss at epoch {epoch}")
+            loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), self.config.train.grad_clip)
+            optimizer.step()
+            if epoch == 1 or epoch % self.config.train.eval_every == 0 or epoch == self.config.train.epochs:
+                model.eval()
+                with torch.no_grad():
+                    logits = model(moved)["logits"]
+                val_prediction = logits[moved.val_mask].argmax(dim=-1)
+                val_labels = labels[moved.val_mask]
+                if (data.metadata or {}).get("primary_metric") == "f1":
+                    from sklearn.metrics import f1_score
+                    val = float(f1_score(val_labels.cpu(), val_prediction.cpu(), average="binary", zero_division=0))
+                else:
+                    val = float((val_prediction == val_labels).float().mean().cpu())
+                history.append({"epoch": epoch, "loss": float(loss.detach().cpu()), "val_metric": val})
+                if val > best_val + 1e-8:
+                    best_val, best_epoch, stale = val, epoch, 0
+                    best_state = copy.deepcopy(model.state_dict())
+                    _atomic_torch_save(best_state, run_dir / "best.pt")
+                else:
+                    stale += self.config.train.eval_every
+                _atomic_torch_save({"epoch": epoch, "model": model.state_dict(), "optimizer": optimizer.state_dict(),
+                                    "best_val": best_val, "best_epoch": best_epoch, "stale": stale,
+                                    "history": history, "rng_state": _rng_state()}, run_dir / "last.pt")
+                pd.DataFrame(history).to_csv(run_dir / "history.csv", index=False)
+                if stale >= self.config.train.patience:
+                    break
+        model.load_state_dict(best_state)
+        model.eval()
+        with torch.no_grad():
+            final_output = model(moved)
+        from sklearn.metrics import accuracy_score, average_precision_score, f1_score, precision_score, recall_score, roc_auc_score
+        probabilities = torch.softmax(final_output["logits"], dim=-1)
+
+        def scores(mask: torch.Tensor) -> dict[str, float]:
+            y_true = labels[mask].detach().cpu().numpy()
+            prediction = probabilities[mask].argmax(dim=-1).detach().cpu().numpy()
+            result = {
+                "accuracy": float(accuracy_score(y_true, prediction)),
+                "macro_f1": float(f1_score(y_true, prediction, average="macro", zero_division=0)),
+                "micro_f1": float(f1_score(y_true, prediction, average="micro", zero_division=0)),
+            }
+            if data.num_classes == 2:
+                score = probabilities[mask, 1].detach().cpu().numpy()
+                result.update({
+                    "f1": float(f1_score(y_true, prediction, average="binary", zero_division=0)),
+                    "precision": float(precision_score(y_true, prediction, zero_division=0)),
+                    "recall": float(recall_score(y_true, prediction, zero_division=0)),
+                    "roc_auc": float(roc_auc_score(y_true, score)) if len(np.unique(y_true)) > 1 else float("nan"),
+                    "average_precision": float(average_precision_score(y_true, score)),
+                })
+            return result
+
+        val_scores = scores(moved.val_mask)
+        test_scores = scores(moved.test_mask) if evaluate_test else {}
+        primary = str((data.metadata or {}).get("primary_metric", "accuracy"))
+        metrics: dict[str, Any] = {
+            "dataset": self.config.dataset.name, "task": "node_classification",
+            "model": self.config.model.label or self.config.model.name, "model_family": self.config.model.name,
+            "seed": self.config.train.seed, "split": self.config.dataset.split,
+            "metric_name": primary, "val_metric": val_scores[primary],
+            "test_metric": test_scores.get(primary, float("nan")), "best_val_metric": best_val,
+            "best_epoch": best_epoch, "last_epoch": history[-1]["epoch"],
+            "parameters": count_parameters(model), "runtime_seconds": time.time() - started,
+            "device": str(self.device), "num_nodes": sum(data.num_nodes_dict.values()),
+            "num_edges": sum(value.shape[1] for value in data.edge_index_dict.values()),
+            "homogeneous_projection": self.config.model.name == "gcn_homogeneous_projection",
+            "native_heterogeneous": self.config.model.name != "gcn_homogeneous_projection",
+            "batch_size": self.config.train.batch_size, "fanout": self.config.train.neighbor_sizes,
+            **{f"val_{key}": value for key, value in val_scores.items()},
+            **{f"test_{key}": value for key, value in test_scores.items()},
+        }
+        save_json(metrics, run_dir / "metrics.json")
+        _atomic_torch_save({"logits": final_output["logits"].detach().cpu(), "probabilities": probabilities.detach().cpu(),
+                            "labels": labels.detach().cpu(), "train_mask": data.train_mask,
+                            "val_mask": data.val_mask, "test_mask": data.test_mask}, run_dir / "predictions.pt")
+        return model, metrics
+
     def _fit_neighbor_sampled(
         self,
-        data: GraphData,
+        data: GraphData | HeteroGraphData,
         run_dir: Path,
         environment: dict[str, Any],
         evaluate_test: bool = True,
@@ -240,6 +579,7 @@ class Trainer:
         on_evaluation: Callable[[int, float], None] | None = None,
         evaluate_test: bool = True,
         include_intervention: bool = True,
+        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
     ) -> tuple[torch.nn.Module, dict[str, Any]]:
         run_dir = Path(run_dir)
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -255,6 +595,8 @@ class Trainer:
             "dataset_metadata": data.metadata or {},
         }
         save_json(environment, run_dir / "environment.json")
+        if isinstance(data, HeteroGraphData):
+            return self._fit_heterogeneous(data, run_dir, environment, evaluate_test, on_oracle_evaluation)
         if self._uses_neighbor_sampling(data):
             return self._fit_neighbor_sampled(data, run_dir, environment, evaluate_test=evaluate_test)
         data = data.to(self.device)
@@ -316,7 +658,7 @@ class Trainer:
                 _quarantine_corrupt(last_path)
                 # A checkpoint interrupted before atomic-save support cannot be
                 # trusted. Restart this single run from its deterministic seed.
-                seed_everything(self.config.train.seed)
+                seed_everything(self.config.train.seed, deterministic=self.config.train.deterministic)
 
         resumed_from_epoch = start_epoch - 1
         start_time = time.time()
@@ -395,6 +737,14 @@ class Trainer:
                 )
                 if on_evaluation is not None:
                     on_evaluation(epoch, val_score)
+                if on_oracle_evaluation is not None:
+                    test_score = output_primary_metric(eval_output, data, "test")
+                    if data.is_multilabel:
+                        val_unique = test_unique = 2
+                    else:
+                        val_unique = int(eval_output["logits"][data.val_mask].argmax(dim=-1).unique().numel())
+                        test_unique = int(eval_output["logits"][data.test_mask].argmax(dim=-1).unique().numel())
+                    on_oracle_evaluation(epoch, val_score, test_score, val_unique, test_unique)
                 if stale >= self.config.train.patience:
                     break
 
@@ -405,7 +755,7 @@ class Trainer:
         model.load_state_dict(best_state)
         model.eval()
         with torch.no_grad():
-            if model.__class__.__name__ == "GraphAtlas":
+            if model.__class__.__name__ == "GraphAtlas" and self.config.train.final_diagnostics:
                 final_output = model(data, transport_diagnostics=True)
             else:
                 final_output = model(data)
@@ -417,7 +767,7 @@ class Trainer:
             include_intervention=include_intervention,
             include_test=evaluate_test,
         )
-        if hasattr(model, "config") and model.__class__.__name__ == "GraphAtlas":
+        if self.config.train.final_diagnostics and hasattr(model, "config") and model.__class__.__name__ == "GraphAtlas":
             diagnostic_loss = replace(
                 self.config.loss,
                 cocycle=1.0,

@@ -1,0 +1,23 @@
+{
+  "selection_policy": "validation_selected",
+  "trial": 12,
+  "objective_test_metric": 0.8974359035491943,
+  "validation_metric_at_validation_selected_checkpoint": 0.9047619700431824,
+  "test_metric_at_validation_selected_checkpoint": 0.8974359035491943,
+  "metric_name": "accuracy",
+  "split_protocol": "stratified_48_32_20",
+  "params": {
+    "learning_rate": 0.0007846218138357549,
+    "weight_decay": 0.00013599430914566123,
+    "dropout": 0.2,
+    "hidden_dim": 256,
+    "num_charts": 2,
+    "membership_topk": 2,
+    "transportability_beta": 1.0,
+    "classification_loss": "cross_entropy",
+    "feature_normalization": "layernorm",
+    "seed": 353
+  },
+  "run_dir": "outputs\\oracle_upper_bound\\runs\\hetgb_cornell\\trial_0012",
+  "warning": "Oracle test-selected result; do not report as a validation-selected benchmark."
+}

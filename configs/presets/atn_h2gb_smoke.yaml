@@ -1,0 +1,22 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+train:
+  device: cpu
+  mode: full_batch
+  epochs: 2
+  patience: 2
+  eval_every: 1
+  progress: false
+datasets:
+- name: h2gb_pdns
+  num_charts: 3
+  heterogeneous: true
+  target_node_type: domain_node
+  metric: f1
+models:
+- name: atn
+  label: atn
+  heterogeneous: true

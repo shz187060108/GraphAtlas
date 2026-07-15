@@ -11,7 +11,7 @@ from scipy import stats
 
 
 def resolve_target_model(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> str:
-    """Prefer GraphAtlas-C, retaining legacy GraphAtlas reports without migration."""
+    """Prefer the internal ATN result key, retaining legacy reports without migration."""
     available = set(frame.get("model", pd.Series(dtype=str)).astype(str))
     if target_model in available:
         return target_model
