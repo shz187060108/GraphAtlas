@@ -7,6 +7,10 @@ from typing import Any
 
 MODEL_COLORS = {
     "graphatlas_c": "#176D8A",
+    "graphatlas_c_q_reference": "#176D8A",
+    "graphatlas_c_oracle": "#176D8A",
+    "graphatlas_certified": "#176D8A",
+    "atn": "#176D8A",
     "graphatlas_original": "#475569",
     "graphatlas": "#475569",
     "graphatlas_min_distortion": "#7C5C9E",
@@ -22,6 +26,8 @@ MODEL_COLORS = {
 
 MODEL_DISPLAY_NAMES = {
     "graphatlas_c": "ATN",
+    "graphatlas_c_q_reference": "ATN",
+    "graphatlas_c_oracle": "ATN",
     "graphatlas_certified": "ATN",
     "atn": "ATN",
     "graphatlas_original": "GraphAtlas",

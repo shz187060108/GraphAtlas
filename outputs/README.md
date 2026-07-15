@@ -1,6 +1,13 @@
-# GraphAtlas outputs
+# Output index
 
-- `results/`: small tables intended for reading and comparison. `latest.csv` is the latest completed matrix.
-- `reports/`: figures and statistical summaries for a completed matrix.
-- `manifests/`: only the plans that are still relevant.
-- `.work/`: hidden resumable checkpoints, raw predictions, and live status; safe to delete with this script when no run is active.
+Use these dataset-level files first:
+
+- `results/*.csv`: combined metrics.
+- `reports/`: summaries and figures.
+- `real_best_single/`: selected one-seed real runs.
+- `selected_optuna/`: HPO and promoted configurations.
+- `best_config_search/`: configuration-search summaries, trial tables and diagnostics.
+- `manifests/`: exact materialized job plans.
+- `archive/`: retained runtime logs and legacy smoke outputs; not part of the active result set.
+
+Large `runs/` trees contain checkpoints and per-epoch histories. They are retained for recovery, but are not summary outputs. Cache and runtime folders are disposable and should not be committed.

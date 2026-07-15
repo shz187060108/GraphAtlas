@@ -1,0 +1,75 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c_oracle
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+train:
+  epochs: 120
+  patience: 25
+datasets:
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.05
+  condition_id: overlap=0.100_cross_chart_edge_fraction=0.050_stage=screening
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.3
+  cross_chart_edge_fraction: 0.25
+  condition_id: overlap=0.300_cross_chart_edge_fraction=0.250_stage=screening
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.6
+  cross_chart_edge_fraction: 0.6
+  condition_id: overlap=0.600_cross_chart_edge_fraction=0.600_stage=screening
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.7
+  cross_chart_edge_fraction: 0.75
+  condition_id: overlap=0.700_cross_chart_edge_fraction=0.750_stage=screening
+- name: actor
+  num_charts: 4
+- name: questions
+  num_charts: 4
+  metric: roc_auc
+- name: dblp
+  num_charts: 4
+- name: coauthor_cs
+  num_charts: 4
+models:
+- name: graphatlas_certified
+  label: graphatlas_c_oracle
+  certified_routing_mode: oracle_max_q
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas
+  label: graphatlas_original
+- name: graphatlas_min_distortion
+  label: graphatlas_min_distortion
+- name: graphatlas_no_transport
+  label: graphatlas_no_transport
+- name: graphatlas_free_transition
+  label: graphatlas_free_transition
+- name: graphatlas_certified
+  label: graphatlas_membership_only
+  certified_routing_mode: membership_only
+- name: graphatlas_certified
+  label: graphatlas_q_shuffle_source
+  certified_routing_mode: q_shuffle_source
+- name: graphatlas_certified
+  label: graphatlas_q_shuffle_edge
+  certified_routing_mode: q_shuffle_edge
+- name: graphatlas_certified
+  label: graphatlas_random_routing
+  certified_routing_mode: random
+- name: graphatlas_certified
+  label: graphatlas_beta_zero
+  transportability_beta: 0.0

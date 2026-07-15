@@ -437,7 +437,7 @@ def write_claim_report(frame: pd.DataFrame, output_dir: Path, mechanism: dict[st
 def visualize_results(
     results_path: str | Path,
     output_dir: str | Path | None = None,
-    target_model: str = "graphatlas_c",
+    target_model: str = "graphatlas_c_oracle",
 ) -> dict[str, Any]:
     _configure_matplotlib()
     results_path = Path(results_path)

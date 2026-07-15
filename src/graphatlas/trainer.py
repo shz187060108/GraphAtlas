@@ -201,7 +201,7 @@ class Trainer:
 
     def _fit_hetero_neighbor(
         self, data: HeteroGraphData, run_dir: Path, evaluate_test: bool,
-        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
+        on_search_evaluation: Callable[[int, float, float, int, int], None] | None = None,
     ) -> tuple[torch.nn.Module, dict[str, Any]]:
         model = build_hetero_model(data, self.config.model).to(self.device)
         optimizer = torch.optim.AdamW(model.parameters(), lr=self.config.train.learning_rate,
@@ -269,7 +269,7 @@ class Trainer:
                                     "best_val": best_val, "best_epoch": best_epoch, "stale": stale,
                                     "history": history, "rng_state": _rng_state()}, run_dir / "last.pt")
                 pd.DataFrame(history).to_csv(run_dir / "history.csv", index=False)
-                if on_oracle_evaluation is not None:
+                if on_search_evaluation is not None:
                     test_logits_epoch, test_labels_epoch = predict(test_indices)
                     test_prediction = test_logits_epoch.argmax(dim=-1)
                     if (data.metadata or {}).get("primary_metric") == "f1":
@@ -277,7 +277,7 @@ class Trainer:
                         test_value = float(f1_score(test_labels_epoch.numpy(), test_prediction.numpy(), average="binary", zero_division=0))
                     else:
                         test_value = float((test_prediction == test_labels_epoch).float().mean())
-                    on_oracle_evaluation(
+                    on_search_evaluation(
                         epoch, val, test_value,
                         int(val_prediction.unique().numel()), int(test_prediction.unique().numel()),
                     )
@@ -329,11 +329,11 @@ class Trainer:
         run_dir: Path,
         environment: dict[str, Any],
         evaluate_test: bool,
-        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
+        on_search_evaluation: Callable[[int, float, float, int, int], None] | None = None,
     ) -> tuple[torch.nn.Module, dict[str, Any]]:
         """Native typed full-batch path; large H2GB presets require hetero_neighbor."""
         if self.config.train.mode == "hetero_neighbor":
-            return self._fit_hetero_neighbor(data, run_dir, evaluate_test, on_oracle_evaluation)
+            return self._fit_hetero_neighbor(data, run_dir, evaluate_test, on_search_evaluation)
         data.validate()
         moved = data.to(self.device, move_graph=True)
         model = build_hetero_model(data, self.config.model).to(self.device)
@@ -579,7 +579,7 @@ class Trainer:
         on_evaluation: Callable[[int, float], None] | None = None,
         evaluate_test: bool = True,
         include_intervention: bool = True,
-        on_oracle_evaluation: Callable[[int, float, float, int, int], None] | None = None,
+        on_search_evaluation: Callable[[int, float, float, int, int], None] | None = None,
     ) -> tuple[torch.nn.Module, dict[str, Any]]:
         run_dir = Path(run_dir)
         run_dir.mkdir(parents=True, exist_ok=True)
@@ -596,7 +596,7 @@ class Trainer:
         }
         save_json(environment, run_dir / "environment.json")
         if isinstance(data, HeteroGraphData):
-            return self._fit_heterogeneous(data, run_dir, environment, evaluate_test, on_oracle_evaluation)
+            return self._fit_heterogeneous(data, run_dir, environment, evaluate_test, on_search_evaluation)
         if self._uses_neighbor_sampling(data):
             return self._fit_neighbor_sampled(data, run_dir, environment, evaluate_test=evaluate_test)
         data = data.to(self.device)
@@ -690,9 +690,15 @@ class Trainer:
 
             should_evaluate = epoch == 1 or epoch % self.config.train.eval_every == 0 or epoch == self.config.train.epochs
             if should_evaluate:
+                analysis_interval = self.config.train.analysis_eval_interval
+                analysis_enabled = analysis_interval > 0 and (epoch % analysis_interval == 0 or epoch == self.config.train.epochs)
+                epoch_started = time.time()
                 model.eval()
                 with torch.no_grad():
-                    eval_output = model(data)
+                    if model.__class__.__name__ == "GraphAtlas":
+                        eval_output = model(data, transport_diagnostics=analysis_enabled)
+                    else:
+                        eval_output = model(data)
                 if self.config.dataset.task == "node_classification" and not data.is_multilabel:
                     val_accuracy = accuracy(eval_output["logits"].detach(), data.y, data.val_mask)
                     train_accuracy = accuracy(eval_output["logits"].detach(), data.y, data.train_mask)
@@ -708,7 +714,33 @@ class Trainer:
                     "val_accuracy": val_accuracy,
                     "train_accuracy": train_accuracy,
                     **loss_values,
+                    "learning_rate": float(optimizer.param_groups[0]["lr"]),
+                    "epoch_runtime_seconds": float(time.time() - epoch_started),
                 }
+                # Lightweight analysis fields: layer diagnostics are already
+                # produced by the forward pass; do not request full Jacobian
+                # diagnostics at every evaluation interval.
+                layer_diagnostics = eval_output.get("layer_diagnostics", []) if analysis_enabled else []
+                if layer_diagnostics:
+                    latest = layer_diagnostics[-1]
+                    for output_name, source_name in (
+                        ("routing_entropy", "routing_entropy_mean"),
+                        ("q_spread_mean", "q_route_spread_mean"),
+                        ("q_spread_p90", "q_route_spread_p90"),
+                        ("transport_risk_mean", "irreducible_transport_risk"),
+                        ("transport_risk_p90", "node_transport_risk"),
+                        ("cross_chart_mass_mean", "cross_chart_mass"),
+                    ):
+                        value = latest.get(source_name)
+                        if isinstance(value, torch.Tensor):
+                            if output_name.endswith("_p90") and value.numel() > 1:
+                                row[output_name] = float(torch.quantile(value.detach().flatten().float(), 0.90).cpu())
+                            elif value.numel() == 1:
+                                row[output_name] = float(value.detach().cpu())
+                membership = eval_output.get("membership") if analysis_enabled else None
+                if isinstance(membership, torch.Tensor) and membership.numel():
+                    entropy = -(membership.clamp_min(1e-12) * membership.clamp_min(1e-12).log()).sum(dim=-1)
+                    row["membership_entropy_mean"] = float(entropy.mean().detach().cpu())
                 history.append(row)
                 iterator.set_postfix(loss=f"{loss_values['total']:.3f}", val=f"{val_score:.3f}")
                 if val_score > best_val + 1e-8:
@@ -737,14 +769,14 @@ class Trainer:
                 )
                 if on_evaluation is not None:
                     on_evaluation(epoch, val_score)
-                if on_oracle_evaluation is not None:
+                if on_search_evaluation is not None:
                     test_score = output_primary_metric(eval_output, data, "test")
                     if data.is_multilabel:
                         val_unique = test_unique = 2
                     else:
                         val_unique = int(eval_output["logits"][data.val_mask].argmax(dim=-1).unique().numel())
                         test_unique = int(eval_output["logits"][data.test_mask].argmax(dim=-1).unique().numel())
-                    on_oracle_evaluation(epoch, val_score, test_score, val_unique, test_unique)
+                    on_search_evaluation(epoch, val_score, test_score, val_unique, test_unique)
                 if stale >= self.config.train.patience:
                     break
 
@@ -844,7 +876,7 @@ class Trainer:
             "active_target_chart_count", "fraction_edges_with_multiple_target_charts",
             "q_route_spread_median", "q_route_spread_max",
             "q_delta_closure_error", "routing_opportunity", "irreducible_transport_risk",
-            "cross_chart_mass", "oracle_agreement",
+            "cross_chart_mass", "q_reference_agreement",
         )
         layer_diagnostics = final_output.get("layer_diagnostics", [])
         for name in transport_names:

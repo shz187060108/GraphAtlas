@@ -27,7 +27,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Create publication-ready GraphAtlas result figures.")
     parser.add_argument("--results", default="outputs/results/complete.csv")
     parser.add_argument("--output-dir", default=None)
-    parser.add_argument("--target-model", default="graphatlas_c")
+    parser.add_argument("--target-model", default="graphatlas_c_oracle")
     args = parser.parse_args()
     manifest = visualize_results(Path(args.results), args.output_dir, target_model=args.target_model)
     print(json.dumps(manifest, indent=2, ensure_ascii=False))

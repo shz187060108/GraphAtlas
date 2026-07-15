@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="517.911578pt" height="400.608918pt" viewBox="0 0 517.911578 400.608918" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-16T01:38:51.389021</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.9, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 400.608918 
+L 517.911578 400.608918 
+L 517.911578 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="8.242031" transform="rotate(-0 1.8 8.242031)">a</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(51.242359 68.995813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(9.225015 75.341938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="132.3" y="8.242031" transform="rotate(-0 132.3 8.242031)">b</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(181.742359 68.995813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(139.725015 75.341938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_3">
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="262.8" y="8.242031" transform="rotate(-0 262.8 8.242031)">c</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(312.242359 68.995813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(270.225015 75.341938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_4">
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="393.3" y="8.242031" transform="rotate(-0 393.3 8.242031)">d</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(442.742359 68.995813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(400.725015 75.341938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_5">
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="142.642031" transform="rotate(-0 1.8 142.642031)">e</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(51.242359 203.395813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(9.225015 209.741938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_6">
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="132.3" y="142.642031" transform="rotate(-0 132.3 142.642031)">f</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(181.742359 203.395813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(139.725015 209.741938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_7">
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="262.8" y="142.523906" transform="rotate(-0 262.8 142.523906)">g</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(312.242359 203.395813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(270.225015 209.741938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_8">
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="393.3" y="142.642031" transform="rotate(-0 393.3 142.642031)">h</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(442.742359 203.395813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(400.725015 209.741938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_9">
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="277.042031" transform="rotate(-0 1.8 277.042031)">i</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(51.242359 337.795813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(9.225015 344.141938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_10">
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="132.3" y="277.042031" transform="rotate(-0 132.3 277.042031)">j</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(181.742359 337.795813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(139.725015 344.141938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_11">
+   <g id="text_21">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="262.8" y="277.042031" transform="rotate(-0 262.8 277.042031)">k</text>
+   </g>
+   <g id="text_22">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(312.242359 337.795813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(270.225015 344.141938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+  <g id="axes_12">
+   <g id="text_23">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="393.3" y="277.042031" transform="rotate(-0 393.3 277.042031)">l</text>
+   </g>
+   <g id="text_24">
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(442.742359 337.795813)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(400.725015 344.141938)">phase conditions or paired contrast missing</text>
+   </g>
+  </g>
+ </g>
+</svg>

@@ -1,0 +1,27 @@
+{
+  "generated": [
+    "figure1_coordinate_stress",
+    "figure2_regime_atlas",
+    "figure3_routing_causality",
+    "figure4_real_benchmarks",
+    "figure5_local_case_atlas",
+    "figure6_scaling_dynamics"
+  ],
+  "built_figures": [
+    "figure1_coordinate_stress",
+    "figure2_regime_atlas",
+    "figure3_routing_causality",
+    "figure4_real_benchmarks",
+    "figure5_local_case_atlas",
+    "figure6_scaling_dynamics"
+  ],
+  "partially_built_figures": [],
+  "failed": [],
+  "failed_figures": [],
+  "unavailable_panels": [],
+  "warnings": [],
+  "formal_source": "outputs/results/all.csv",
+  "upper_bound_source": null,
+  "formal_rows": 525,
+  "excluded_test_selected_rows": 0
+}

@@ -9,6 +9,10 @@ dist/
 # Rebuildable caches and interrupted downloads
 outputs/cache/
 outputs/.work/
+outputs/archive/
+outputs/logs/
+outputs/.mplconfig/
+outputs/best_config_search/runs/
 data/_pyg_cache/
 data/_ogb_cache/
 *.part

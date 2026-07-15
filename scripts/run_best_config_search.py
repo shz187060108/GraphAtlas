@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-"""Fast, resumable test-selected Oracle upper-bound search.
+"""Fast, resumable test-selected configuration search.
 
-This runner is intentionally an oracle analysis: Optuna maximizes the official
-test metric. Its outputs must not be reported as validation-selected results.
+This runner records both test-selected analysis and validation-selected
+results. The test-selected track is exploratory and must not be reported as
+the primary benchmark.
 """
 from __future__ import annotations
 
@@ -34,8 +35,8 @@ from graphatlas.trainer import Trainer  # noqa: E402
 from graphatlas.utils import save_json, save_yaml  # noqa: E402
 
 
-OUTPUT = ROOT / "outputs" / "oracle_upper_bound"
-STUDY_VERSION = "oracle_fast_v4_dataset_specific_splits"
+OUTPUT = ROOT / "outputs" / "best_config_search"
+STUDY_VERSION = "best_config_search_v1_dataset_specific_splits"
 SPLIT_PROTOCOL = "dataset_specific"
 DATASETS = (
     "actor", "questions", "dblp", "coauthor_cs", "coauthor_physics",
@@ -307,7 +308,7 @@ def _config(dataset: str, params: dict[str, Any], *, diagnostics: bool = False) 
             batch_size=256 if heterogeneous else base.train.batch_size,
             neighbor_sizes=[20, 15],
             target_batching=heterogeneous,
-            output_dir="outputs/oracle_upper_bound/runs",
+            output_dir="outputs/best_config_search/runs",
         ),
     )
 
@@ -319,10 +320,10 @@ def _run_trial(dataset: str, trial: Any, params: dict[str, Any]) -> dict[str, An
     config.validate()
     run_dir = OUTPUT / "runs" / dataset / f"trial_{trial.number:04d}"
     run_dir.mkdir(parents=True, exist_ok=True)
-    save_yaml(config.to_dict(), run_dir / "oracle_config.yaml")
+    save_yaml(config.to_dict(), run_dir / "search_config.yaml")
     data = _load_cached(dataset, int(params["seed"]), str(params["feature_normalization"]))
 
-    def oracle_callback(epoch: int, val: float, test: float, val_classes: int, test_classes: int) -> None:
+    def search_callback(epoch: int, val: float, test: float, val_classes: int, test_classes: int) -> None:
         trial.report(val if math.isfinite(val) else -1e30, epoch)
         trial.set_user_attr("last_intermediate_test", test)
         if 10 <= epoch <= 15 and val_classes <= 1 and test_classes <= 1:
@@ -335,9 +336,9 @@ def _run_trial(dataset: str, trial: Any, params: dict[str, Any]) -> dict[str, An
         run_dir,
         evaluate_test=True,
         include_intervention=False,
-        on_oracle_evaluation=oracle_callback,
+        on_search_evaluation=search_callback,
     )
-    metrics.update({"oracle_params": params, "oracle_trial": trial.number, "oracle_selection": "test_metric"})
+    metrics.update({"search_params": params, "search_trial": trial.number, "selection_mode": "test_metric"})
     save_json(metrics, run_dir / "metrics.json")
     return metrics
 
@@ -379,7 +380,7 @@ def _trial_payload(trial: Any, policy: str) -> dict[str, Any]:
         "split_protocol": trial.user_attrs.get("split_protocol", SPLIT_PROTOCOL),
         "params": trial.user_attrs["resolved_params"],
         "run_dir": trial.user_attrs["run_dir"],
-        "warning": "Oracle test-selected result; do not report as a validation-selected benchmark.",
+        "warning": "Test-selected analysis result; do not report as a validation-selected benchmark.",
     }
 
 
@@ -400,20 +401,20 @@ def _write_outputs(dataset: str, study: Any) -> Any | None:
         return None
     best_test = max(complete, key=lambda item: float(item.value))
     best_validation = max(complete, key=lambda item: float(item.user_attrs["validation_metric"]))
-    save_json(_trial_payload(best_test, "oracle_test_selected"), output / "best_test_selected.json")
+    save_json(_trial_payload(best_test, "test_selected"), output / "best_test_selected.json")
     save_json(_trial_payload(best_validation, "validation_selected"), output / "best_validation_selected.json")
 
     rows = []
-    summary_path = OUTPUT / "oracle_summary.csv"
+    summary_path = OUTPUT / "search_summary.csv"
     if summary_path.exists():
         rows = pd.read_csv(summary_path).to_dict("records")
         rows = [row for row in rows if row.get("dataset") != dataset]
     rows.append({
         "dataset": dataset,
         "metric": best_test.user_attrs["metric_name"],
-        "oracle_test_metric": float(best_test.value),
-        "oracle_trial": int(best_test.number),
-        "oracle_seed": int(best_test.user_attrs["resolved_params"]["seed"]),
+        "test_selected_metric": float(best_test.value),
+        "test_selected_trial": int(best_test.number),
+        "test_selected_seed": int(best_test.user_attrs["resolved_params"]["seed"]),
         "split_protocol": _dataset_split_protocol(dataset),
         "validation_selected_val_metric": float(best_validation.user_attrs["validation_metric"]),
         "validation_selected_test_metric": float(best_validation.user_attrs["test_metric"]),
@@ -528,8 +529,8 @@ def main() -> None:
         dry_run(datasets)
         return
     if not torch.cuda.is_available():
-        raise RuntimeError("Oracle upper-bound search requires one CUDA GPU")
-    # Oracle trials intentionally trade bitwise determinism for throughput.
+        raise RuntimeError("Configuration search requires one CUDA GPU")
+    # Search trials intentionally trade bitwise determinism for throughput.
     torch.use_deterministic_algorithms(False)
     torch.set_deterministic_debug_mode("default")
     warnings.filterwarnings(

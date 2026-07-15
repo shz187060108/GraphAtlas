@@ -1,0 +1,126 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c_oracle
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+train:
+  epochs: 200
+  patience: 40
+datasets:
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.05
+  cross_chart_edge_fraction: 0.0
+  condition_id: ov0.05_cross0.000_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.05
+  condition_id: ov0.10_cross0.050_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.15
+  cross_chart_edge_fraction: 0.175
+  condition_id: ov0.15_cross0.175_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.225
+  cross_chart_edge_fraction: 0.25
+  condition_id: ov0.23_cross0.250_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.3
+  cross_chart_edge_fraction: 0.1
+  condition_id: ov0.30_cross0.100_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.3
+  cross_chart_edge_fraction: 0.35
+  condition_id: ov0.30_cross0.350_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.4
+  cross_chart_edge_fraction: 0.45
+  condition_id: ov0.40_cross0.450_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.5
+  cross_chart_edge_fraction: 0.25
+  condition_id: ov0.50_cross0.250_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.5
+  cross_chart_edge_fraction: 0.6
+  condition_id: ov0.50_cross0.600_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.6
+  cross_chart_edge_fraction: 0.05
+  condition_id: ov0.60_cross0.050_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.6
+  cross_chart_edge_fraction: 0.6
+  condition_id: ov0.60_cross0.600_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.7
+  cross_chart_edge_fraction: 0.1
+  condition_id: ov0.70_cross0.100_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.7
+  cross_chart_edge_fraction: 0.75
+  condition_id: ov0.70_cross0.750_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.05
+  cross_chart_edge_fraction: 0.6
+  condition_id: ov0.05_cross0.600_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.75
+  condition_id: ov0.10_cross0.750_stage=confirmatory
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.15
+  cross_chart_edge_fraction: 0.45
+  condition_id: ov0.15_cross0.450_stage=confirmatory
+models:
+- name: graphatlas_certified
+  label: graphatlas_c_oracle
+  certified_routing_mode: oracle_max_q
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas
+  label: graphatlas_original
+- name: graphatlas_free_transition
+  label: graphatlas_free_transition
+- name: graphatlas_no_transport
+  label: graphatlas_no_transport

@@ -104,7 +104,8 @@ def validate_config(config: ExperimentConfig) -> None:
     if m.transportability_pinv_rtol <= 0:
         errors.append("model.transportability_pinv_rtol must be positive")
     if m.certified_routing_mode not in {
-        "certificate", "membership_only", "q_shuffle_edge", "q_shuffle_source", "random", "oracle_max_q",
+        "certificate", "membership_only", "q_shuffle_edge", "q_shuffle_source", "random",
+        "q_reference_max", "oracle_max_q",
     }:
         errors.append("model.certified_routing_mode is invalid")
     if m.routing_control_max_edges < 1:
@@ -127,6 +128,8 @@ def validate_config(config: ExperimentConfig) -> None:
         errors.append("model.propagation_steps must be positive")
     if m.attention_heads < 1:
         errors.append("model.attention_heads must be positive")
+    if train.analysis_eval_interval < 0:
+        errors.append("train.analysis_eval_interval must be non-negative")
     if not 0.0 <= m.alpha <= 1.0:
         errors.append("model.alpha must be in [0, 1]")
     if m.theta <= 0:

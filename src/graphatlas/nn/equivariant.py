@@ -100,7 +100,7 @@ class AtlasEquivariantLayer(nn.Module):
             # Stateless deterministic pseudo-random scores, independent of chunking/global RNG.
             q_used = torch.frac(torch.sin((edge_ids + 1) * 12.9898 + (target_ids + 1) * 78.233 + (source_ids + 1) * 37.719 + self.routing_control_seed) * 43758.5453)
             logits = log_membership[:, None, :] + self.transportability_beta * q_used
-        elif mode == "oracle_max_q":
+        elif mode in {"q_reference_max", "oracle_max_q"}:
             masked = q.masked_fill(~active[:, None, :], -torch.inf)
             chosen = masked.argmax(dim=-1)
             routing = torch.zeros_like(q).scatter_(-1, chosen[..., None], 1.0)
@@ -210,7 +210,7 @@ class AtlasEquivariantLayer(nn.Module):
                 "target_multiple": tangent.new_zeros(()),
                 "opportunity_sum": tangent.new_zeros(()),
                 "cross_chart_sum": tangent.new_zeros(()),
-                "oracle_agreement_sum": tangent.new_zeros(()),
+                "q_reference_agreement_sum": tangent.new_zeros(()),
                 "node_weight": None,
                 "node_cross": None,
                 "node_spread": None,
@@ -299,9 +299,9 @@ class AtlasEquivariantLayer(nn.Module):
                     best_q = (q_max_active * target_weights).sum(dim=-1)
                     detailed["opportunity_sum"] += (cross_mass * (spread_per_target * target_weights).sum(dim=-1)).detach().sum()
                     detailed["cross_chart_sum"] += cross_mass.detach().sum()
-                    oracle_choice = active_q.argmax(dim=-1)
+                    reference_choice = active_q.argmax(dim=-1)
                     routed_choice = routing.argmax(dim=-1)
-                    detailed["oracle_agreement_sum"] += (oracle_choice == routed_choice).to(tangent.dtype).detach().sum()
+                    detailed["q_reference_agreement_sum"] += (reference_choice == routed_choice).to(tangent.dtype).detach().sum()
                     edge_weight = alpha[start:stop].detach()
                     detailed["node_weight"].index_add_(0, chunk_dst, edge_weight)
                     detailed["node_cross"].index_add_(0, chunk_dst, edge_weight * cross_mass.detach())
@@ -350,7 +350,7 @@ class AtlasEquivariantLayer(nn.Module):
                     "q_route_spread_max": spread_values.max(),
                     "routing_opportunity": detailed["opportunity_sum"] / edge_count,
                     "cross_chart_mass": detailed["cross_chart_sum"] / edge_count,
-                    "oracle_agreement": detailed["oracle_agreement_sum"] / kl_count,
+                    "q_reference_agreement": detailed["q_reference_agreement_sum"] / kl_count,
                     "node_cross_chart_mass": detailed["node_cross"] / detailed["node_weight"].clamp_min(self.transportability_eps),
                     "node_q_spread": detailed["node_spread"] / detailed["node_weight"].clamp_min(self.transportability_eps),
                     "node_transport_risk": detailed["node_risk"] / detailed["node_weight"].clamp_min(self.transportability_eps),

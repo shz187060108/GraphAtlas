@@ -9,15 +9,32 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
+from .figure_data import is_formal_result
 
-def resolve_target_model(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> str:
+
+def resolve_target_model(frame: pd.DataFrame, target_model: str = "graphatlas_c_oracle") -> str:
     """Prefer the internal ATN result key, retaining legacy reports without migration."""
     available = set(frame.get("model", pd.Series(dtype=str)).astype(str))
-    if target_model in available:
-        return target_model
+    aliases = [target_model]
+    if target_model in {"graphatlas_c", "graphatlas_c_q_reference", "graphatlas_c_oracle"}:
+        aliases.extend(["graphatlas_c", "graphatlas_c_q_reference", "graphatlas_c_oracle", "graphatlas_certified", "atn"])
+    for candidate in aliases:
+        if candidate in available:
+            return candidate
     if "graphatlas" in available:
         return "graphatlas"
     return target_model
+
+
+def formal_result_frame(frame: pd.DataFrame) -> pd.DataFrame:
+    """Remove only explicitly test-selected/upper-bound rows.
+
+    Formal model keys such as ``graphatlas_c_oracle`` remain eligible; model
+    names are not used as a provenance filter.
+    """
+    if "is_formal_result" in frame:
+        return frame[frame["is_formal_result"].fillna(True).astype(bool)].copy()
+    return frame[frame.apply(is_formal_result, axis=1)].copy()
 
 
 def _target_view(frame: pd.DataFrame, target_model: str) -> pd.DataFrame:
@@ -67,7 +84,8 @@ def _holm_adjust(p_values: list[float]) -> list[float]:
     return adjusted
 
 
-def paired_tests(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> pd.DataFrame:
+def paired_tests(frame: pd.DataFrame, target_model: str = "graphatlas_c_oracle") -> pd.DataFrame:
+    frame = formal_result_frame(frame)
     target_model = resolve_target_model(frame, target_model)
     rows: list[dict[str, object]] = []
     keys = [column for column in ["seed", "split"] if column in frame]
@@ -127,6 +145,7 @@ def paired_tests(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> pd.
 
 
 def model_ranks(frame: pd.DataFrame) -> pd.DataFrame:
+    frame = formal_result_frame(frame)
     keys = [column for column in ["dataset", "task", "seed", "split"] if column in frame]
     if not keys or "model" not in frame or "test_metric" not in frame:
         return pd.DataFrame()
@@ -143,7 +162,7 @@ def model_ranks(frame: pd.DataFrame) -> pd.DataFrame:
     return result.sort_values(sort_columns).reset_index(drop=True)
 
 
-def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02, target_model: str = "graphatlas_c") -> dict[str, Any]:
+def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02, target_model: str = "graphatlas_c_oracle") -> dict[str, Any]:
     frame = _target_view(frame, target_model)
     synthetic = (
         frame[frame["dataset"].astype(str).str.startswith("atlas_het")].copy()
@@ -219,7 +238,7 @@ def scientific_gates(frame: pd.DataFrame, boundary_margin: float = 0.02, target_
     }
 
 
-def submission_readiness_gates(frame: pd.DataFrame, target_model: str = "graphatlas_c") -> dict[str, Any]:
+def submission_readiness_gates(frame: pd.DataFrame, target_model: str = "graphatlas_c_oracle") -> dict[str, Any]:
     frame = _target_view(frame, target_model)
     gates: list[dict[str, Any]] = []
 
@@ -396,7 +415,7 @@ def summarize_results(
     results_path: str | Path,
     plots: bool = True,
     output_dir: str | Path | None = None,
-    target_model: str = "graphatlas_c",
+    target_model: str = "graphatlas_c_oracle",
 ) -> tuple[pd.DataFrame, pd.DataFrame, dict[str, Any]]:
     path = Path(results_path)
     if not path.exists():
