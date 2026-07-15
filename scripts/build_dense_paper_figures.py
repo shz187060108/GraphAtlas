@@ -13,10 +13,12 @@ from graphatlas.paper_figures_dense import build_dense_paper_figures
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--results", default="outputs/results/all.csv")
-    parser.add_argument("--output-dir", default="outputs/reports/paper_dense")
+    parser.add_argument("--output-dir", default="outputs/reports/paper_atlas")
     parser.add_argument("--target-model", default="graphatlas_c_oracle")
     parser.add_argument("--stress-csv", "--coordinate-stress", dest="stress_csv", default="outputs/results/coordinate_stress.csv")
     parser.add_argument("--cases-csv", "--case-studies", dest="cases_csv", default=None)
+    parser.add_argument("--cases-dir", default=None, help="Case-study output root containing tensors/")
+    parser.add_argument("--calibration-csv", default=None, help="Optional node-level risk/error table")
     parser.add_argument("--figures", nargs="*", default=None)
     parser.add_argument("--formal-only", action="store_true")
     parser.add_argument("--include-screening", action="store_true")
@@ -29,7 +31,7 @@ def main() -> None:
     parser.add_argument("--include-upper-bound", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
-    report = build_dense_paper_figures(args.results, args.output_dir, target_model=args.target_model, stress_csv=args.stress_csv, cases_csv=args.cases_csv, upper_bound_results=args.upper_bound_results, include_upper_bound=args.include_upper_bound, bootstrap_reps=args.bootstrap_reps, bootstrap_seed=args.bootstrap_seed, formats=args.formats.split(","), dpi=args.dpi, figures=args.figures)
+    report = build_dense_paper_figures(args.results, args.output_dir, target_model=args.target_model, stress_csv=args.stress_csv, cases_csv=args.cases_csv, cases_dir=args.cases_dir, calibration_csv=args.calibration_csv, include_upper_bound=args.include_upper_bound, bootstrap_reps=args.bootstrap_reps, bootstrap_seed=args.bootstrap_seed, formats=args.formats.split(","), dpi=args.dpi, figures=args.figures)
     print(json.dumps(report, indent=2, ensure_ascii=False))
 
 

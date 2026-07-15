@@ -4,6 +4,7 @@ Use these dataset-level files first:
 
 - `results/*.csv`: combined metrics.
 - `reports/`: summaries and figures.
+- `reports/paper_atlas/`: current homogeneous main/supplementary paper-figure atlases; each figure has plotting data and an explicit manifest.
 - `real_best_single/`: selected one-seed real runs.
 - `selected_optuna/`: HPO and promoted configurations.
 - `best_config_search/`: configuration-search summaries, trial tables and diagnostics.

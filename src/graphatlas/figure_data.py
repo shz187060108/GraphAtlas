@@ -180,15 +180,15 @@ def build_phase_diagram_frame(results: str | Path | pd.DataFrame, target_model: 
         if paired.empty:
             continue
         paired = _condition_coordinates(paired)
-        aggregate = _summary(paired, ["condition_id", "overlap", "cross_chart_edge_fraction"], "delta").rename(columns={"mean": "mean_delta"})
+        aggregate = _summary(paired, ["dataset", "condition_id", "overlap", "cross_chart_edge_fraction"], "delta").rename(columns={"mean": "mean_delta"})
         aggregate["mean"] = aggregate["mean_delta"]
         aggregate["contrast"] = label
         for source, name in (("boundary_accuracy", "boundary_gain"), ("routing_opportunity", "routing_opportunity"), ("irreducible_transport_risk", "irreducible_transport_risk")):
             if source in frame:
                 metric_pair = paired_effect(frame, target_model, baseline, source)
                 metric_pair = _condition_coordinates(metric_pair)
-                metric_summary = _summary(metric_pair, ["condition_id", "overlap", "cross_chart_edge_fraction"], "delta").rename(columns={"mean": name})
-                merge_keys = [key for key in ("condition_id", "overlap", "cross_chart_edge_fraction") if key in aggregate and key in metric_summary]
+                metric_summary = _summary(metric_pair, ["dataset", "condition_id", "overlap", "cross_chart_edge_fraction"], "delta").rename(columns={"mean": name})
+                merge_keys = [key for key in ("dataset", "condition_id", "overlap", "cross_chart_edge_fraction") if key in aggregate and key in metric_summary]
                 aggregate = aggregate.merge(metric_summary[merge_keys + [name]], on=merge_keys, how="left")
         rows.append(aggregate)
     return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
@@ -331,6 +331,62 @@ def build_rank_summary_frame(results: str | Path | pd.DataFrame) -> pd.DataFrame
     ranks = frame.groupby(keys + ["model"], as_index=False)["test_metric"].mean()
     ranks["rank"] = ranks.groupby(keys)["test_metric"].rank(ascending=False, method="average")
     return _summary(ranks, ["model"], "rank")
+
+
+def build_seed_level_slope_frame(results: str | Path | pd.DataFrame, target_model: str = "graphatlas_c_oracle", baseline: str = "graphatlas_original") -> pd.DataFrame:
+    """Return paired seed-level values for a uniform slope graph."""
+    frame = _formal_view(load_results_frame(results))
+    keys = [key for key in ("dataset", "task", "condition_id", "seed", "split", "experiment_stage") if key in frame]
+    if not keys or "test_metric" not in frame:
+        return pd.DataFrame(columns=[*keys, "baseline", "target", "delta"])
+    left = frame[frame["model"].eq(baseline)][keys + ["test_metric"]].rename(columns={"test_metric": "baseline"})
+    right = frame[frame["model"].eq(target_model)][keys + ["test_metric"]].rename(columns={"test_metric": "target"})
+    return left.merge(right, on=keys, how="inner").assign(delta=lambda x: x["target"] - x["baseline"])
+
+
+def build_routing_intervention_frame(results: str | Path | pd.DataFrame) -> pd.DataFrame:
+    """Keep paired rows for routing controls; plotting decides the panel layout."""
+    frame = _formal_view(load_results_frame(results))
+    if "test_metric" not in frame:
+        return pd.DataFrame()
+    mode = frame.get("certified_routing_mode", pd.Series("certificate", index=frame.index)).fillna("certificate").astype(str)
+    out = frame[[key for key in ("dataset", "task", "condition_id", "seed", "split", "model", "test_metric") if key in frame]].copy()
+    out["routing_mode"] = mode.values
+    out.loc[out["model"].astype(str).str.contains("oracle|q_reference", case=False, regex=True), "routing_mode"] = "oracle"
+    out.loc[out["model"].astype(str).str.contains("shuffle_source", case=False, regex=True), "routing_mode"] = "q_shuffle_source"
+    out.loc[out["model"].astype(str).str.contains("shuffle_edge", case=False, regex=True), "routing_mode"] = "q_shuffle_edge"
+    out.loc[out["model"].astype(str).str.contains("membership", case=False, regex=True), "routing_mode"] = "membership_only"
+    return out
+
+
+def build_risk_calibration_frame(results: str | Path | pd.DataFrame, *, risk_column: str = "node_transport_risk", error_column: str = "node_error", bins: int = 10) -> pd.DataFrame:
+    """Build reliability points only when node-level risk and error are present."""
+    frame = load_results_frame(results)
+    if risk_column not in frame or error_column not in frame:
+        return pd.DataFrame(columns=["dataset", "model", "risk_bin", "predicted_risk", "error_rate", "n"])
+    work = frame[[key for key in ("dataset", "model", risk_column, error_column) if key in frame]].copy()
+    work["predicted_risk"] = pd.to_numeric(work[risk_column], errors="coerce")
+    work["observed_error"] = pd.to_numeric(work[error_column], errors="coerce")
+    work = work.dropna(subset=["predicted_risk", "observed_error"])
+    if work.empty:
+        return pd.DataFrame(columns=["dataset", "model", "risk_bin", "predicted_risk", "error_rate", "n"])
+    work["risk_bin"] = work.groupby(["dataset", "model"], dropna=False)["predicted_risk"].transform(lambda s: pd.qcut(s.rank(method="first"), min(bins, max(1, s.nunique())), labels=False, duplicates="drop"))
+    return work.groupby(["dataset", "model", "risk_bin"], dropna=False).agg(predicted_risk=("predicted_risk", "mean"), error_rate=("observed_error", "mean"), n=("observed_error", "size")).reset_index()
+
+
+def build_decile_response_frame(results: str | Path | pd.DataFrame, *, x_column: str, gain_column: str = "gain", bins: int = 10) -> pd.DataFrame:
+    """Build per-dataset decile response curves from node-level analysis columns."""
+    frame = load_results_frame(results)
+    if x_column not in frame or gain_column not in frame:
+        return pd.DataFrame(columns=["dataset", "model", "decile", "x_mean", "gain_mean", "n"])
+    keys = [key for key in ("dataset", "model") if key in frame]
+    work = frame[keys + [x_column, gain_column]].copy()
+    work[x_column] = pd.to_numeric(work[x_column], errors="coerce"); work[gain_column] = pd.to_numeric(work[gain_column], errors="coerce")
+    work = work.dropna()
+    if work.empty:
+        return pd.DataFrame(columns=["dataset", "model", "decile", "x_mean", "gain_mean", "n"])
+    work["decile"] = work.groupby(keys, dropna=False)[x_column].transform(lambda s: pd.qcut(s.rank(method="first"), min(bins, max(1, s.nunique())), labels=False, duplicates="drop") + 1)
+    return work.groupby(keys + ["decile"], dropna=False).agg(x_mean=(x_column, "mean"), gain_mean=(gain_column, "mean"), n=(gain_column, "size")).reset_index()
 
 
 def export_plot_data(frame: pd.DataFrame, path: str | Path) -> Path:

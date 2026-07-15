@@ -1,0 +1,2174 @@
+{
+  "target_model": "graphatlas_c_oracle",
+  "formal_rows": 525,
+  "excluded_test_selected_rows": 0,
+  "bootstrap_resamples": 10000,
+  "bootstrap_seed": 2026,
+  "outputs": [
+    "svg",
+    "pdf",
+    "png"
+  ],
+  "figures": [
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\coordinate_metric_drop_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\coordinate_metric_drop_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\coordinate_metric_drop_atlas.png"
+      ],
+      "question": "Coordinate strength and task metric drop",
+      "name": "coordinate_metric_drop_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\coordinate_metric_drop_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Coordinate strength and task metric drop",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\mechanism_gain_phase_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\mechanism_gain_phase_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\mechanism_gain_phase_atlas.png"
+      ],
+      "question": "ATN gain across overlap and cross-chart fraction",
+      "name": "mechanism_gain_phase_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\mechanism_gain_phase_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "ATN gain across overlap and cross-chart fraction",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\certificate_calibration_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\certificate_calibration_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\certificate_calibration_atlas.png"
+      ],
+      "question": "Transport risk calibration against observed error",
+      "name": "certificate_calibration_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\certificate_calibration_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Transport risk calibration against observed error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\routing_intervention_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\routing_intervention_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\routing_intervention_atlas.png"
+      ],
+      "question": "Paired performance under routing interventions",
+      "name": "routing_intervention_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\routing_intervention_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Paired performance under routing interventions",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\real_benchmark_slope_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\real_benchmark_slope_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\real_benchmark_slope_atlas.png"
+      ],
+      "question": "Seed-level Original to ATN change",
+      "name": "real_benchmark_slope_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\real_benchmark_slope_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Seed-level Original to ATN change",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\opportunity_response_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\opportunity_response_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\opportunity_response_atlas.png"
+      ],
+      "question": "Performance gain by routing-opportunity decile",
+      "name": "opportunity_response_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\opportunity_response_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Performance gain by routing-opportunity decile",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\rescued_failed_ego_graph_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\rescued_failed_ego_graph_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\rescued_failed_ego_graph_atlas.png"
+      ],
+      "question": "Rescued and failed local ego graphs",
+      "name": "rescued_failed_ego_graph_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\rescued_failed_ego_graph_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Rescued and failed local ego graphs",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\main\\runtime_scaling_atlas.svg",
+        "outputs\\reports\\paper_atlas\\main\\runtime_scaling_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\main\\runtime_scaling_atlas.png"
+      ],
+      "question": "Runtime scaling with graph size",
+      "name": "runtime_scaling_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\runtime_scaling_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Runtime scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_logit_stability_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_logit_stability_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_logit_stability_atlas.png"
+      ],
+      "question": "Coordinate strength and maximum logit error",
+      "name": "coordinate_logit_stability_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\coordinate_logit_stability_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Coordinate strength and maximum logit error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_probability_stability_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_probability_stability_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_probability_stability_atlas.png"
+      ],
+      "question": "Coordinate strength and probability error",
+      "name": "coordinate_probability_stability_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\coordinate_probability_stability_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Coordinate strength and probability error",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_flip_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_flip_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\coordinate_flip_atlas.png"
+      ],
+      "question": "Coordinate strength and prediction flip rate",
+      "name": "coordinate_flip_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\coordinate_flip_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Coordinate strength and prediction flip rate",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 36,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_risk_phase_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_risk_phase_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_risk_phase_atlas.png"
+      ],
+      "question": "Irreducible transport risk phase atlas",
+      "name": "transport_risk_phase_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\transport_risk_phase_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Irreducible transport risk phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_opportunity_phase_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_opportunity_phase_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_opportunity_phase_atlas.png"
+      ],
+      "question": "Routing opportunity phase atlas",
+      "name": "routing_opportunity_phase_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\routing_opportunity_phase_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Routing opportunity phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_agreement_phase_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_agreement_phase_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\routing_agreement_phase_atlas.png"
+      ],
+      "question": "Route agreement phase atlas",
+      "name": "routing_agreement_phase_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\routing_agreement_phase_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Route agreement phase atlas",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 0,
+          "missing_reason": "required source columns or rows unavailable"
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\model_rank_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\model_rank_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\model_rank_atlas.png"
+      ],
+      "question": "Mean model rank",
+      "name": "model_rank_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\model_rank_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Mean model rank",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 18,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\depth_performance_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\depth_performance_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\depth_performance_atlas.png"
+      ],
+      "question": "Depth and task performance",
+      "name": "depth_performance_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\depth_performance_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Depth and task performance",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\memory_scaling_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\memory_scaling_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\memory_scaling_atlas.png"
+      ],
+      "question": "Memory scaling with graph size",
+      "name": "memory_scaling_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\memory_scaling_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Memory scaling with graph size",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        }
+      ]
+    },
+    {
+      "files": [
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_diagnostics_atlas.svg",
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_diagnostics_atlas.pdf",
+        "outputs\\reports\\paper_atlas\\supplementary\\transport_diagnostics_atlas.png"
+      ],
+      "question": "Transport diagnostics by dataset",
+      "name": "transport_diagnostics_atlas",
+      "data": "outputs\\reports\\paper_atlas\\data\\transport_diagnostics_atlas.csv",
+      "panels": [
+        {
+          "panel_id": "a",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "b",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "c",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "d",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "e",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "f",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "g",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "h",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "i",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "j",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "k",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        },
+        {
+          "panel_id": "l",
+          "scientific_question": "Transport diagnostics by dataset",
+          "input_files": [
+            "outputs/results/all.csv"
+          ],
+          "input_row_count": 525,
+          "missing_reason": null
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "generated": [
+    "coordinate_metric_drop_atlas",
+    "mechanism_gain_phase_atlas",
+    "certificate_calibration_atlas",
+    "routing_intervention_atlas",
+    "real_benchmark_slope_atlas",
+    "opportunity_response_atlas",
+    "rescued_failed_ego_graph_atlas",
+    "runtime_scaling_atlas",
+    "coordinate_logit_stability_atlas",
+    "coordinate_probability_stability_atlas",
+    "coordinate_flip_atlas",
+    "transport_risk_phase_atlas",
+    "routing_opportunity_phase_atlas",
+    "routing_agreement_phase_atlas",
+    "model_rank_atlas",
+    "depth_performance_atlas",
+    "memory_scaling_atlas",
+    "transport_diagnostics_atlas"
+  ],
+  "failed": [],
+  "formal_source": "outputs/results/all.csv",
+  "formal_rows": 525,
+  "excluded_test_selected_rows": 0,
+  "unavailable": []
+}
