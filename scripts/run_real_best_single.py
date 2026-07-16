@@ -149,7 +149,7 @@ def _preset(dataset: str, params: dict[str, Any], seed: int) -> dict[str, Any]:
         dataset_entry["metric"] = "roc_auc"
     return {
         "base_config": "configs/base.yaml",
-        "reporting": {"target_model": "graphatlas_c"},
+        "reporting": {"target_model": "graphatlas_c_oracle"},
         "seeds": [seed],
         "train": {
             "device": "cuda",
@@ -166,7 +166,8 @@ def _preset(dataset: str, params: dict[str, Any], seed: int) -> dict[str, Any]:
         "datasets": [dataset_entry],
         "models": [{
             "name": "graphatlas_certified",
-            "label": "graphatlas_c",
+            "label": "graphatlas_c_oracle",
+            "certified_routing_mode": "oracle_max_q",
             "hidden_dim": int(params["hidden_dim"]),
             "dropout": float(params["dropout"]),
             "observation_dim": 24,

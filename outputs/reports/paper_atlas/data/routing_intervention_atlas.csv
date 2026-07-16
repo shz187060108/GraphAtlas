@@ -1,0 +1,12 @@
+dataset,task,condition_id,seed,split,model,test_metric,routing_mode
+actor,node_classification,best_config_search,56,,graphatlas_c_oracle,0.4388158023357391,oracle
+coauthor_cs,node_classification,best_config_search,437,,graphatlas_c_oracle,0.9806328415870668,oracle
+coauthor_physics,node_classification,best_config_search,232,,graphatlas_c_oracle,0.9707204103469848,oracle
+dblp,node_classification,best_config_search,232,,graphatlas_c_oracle,0.9609643816947936,oracle
+hetgb_actor,node_classification,best_config_search,19,,graphatlas_c_oracle,0.7734994292259216,oracle
+hetgb_amazon,node_classification,best_config_search,507,,graphatlas_c_oracle,0.4705041944980621,oracle
+hetgb_cornell,node_classification,best_config_search,353,,graphatlas_c_oracle,0.9047619700431824,oracle
+hetgb_wisconsin,node_classification,best_config_search,426,,graphatlas_c_oracle,0.9056603908538818,oracle
+questions,node_classification,best_config_search,425,,graphatlas_c_oracle,0.7680860667093846,oracle
+roman_empire,node_classification,best_config_search,468,,graphatlas_c_oracle,0.7736598253250122,oracle
+tolokers,node_classification,best_config_search,66,,graphatlas_c_oracle,0.8282957408626394,oracle

@@ -156,6 +156,7 @@ class TrainConfig:
     execution_tag: str | None = None
     deterministic: bool = True
     final_diagnostics: bool = True
+    analysis_eval_interval: int = 0
 
 
 @dataclass

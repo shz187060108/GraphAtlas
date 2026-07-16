@@ -1,6 +1,6 @@
 base_config: configs/base.yaml
 reporting:
-  target_model: graphatlas_c
+  target_model: graphatlas_c_oracle
 seeds:
 - 0
 train:

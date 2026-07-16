@@ -1,6 +1,6 @@
 base_config: configs/base.yaml
 reporting:
-  target_model: graphatlas_c
+  target_model: graphatlas_c_oracle
 seeds:
 - 0
 train:
@@ -28,8 +28,8 @@ models:
   label: graphatlas_c_q_shuffle_source
   certified_routing_mode: q_shuffle_source
 - name: graphatlas_certified
-  label: graphatlas_c_oracle
-  certified_routing_mode: oracle_max_q
+  label: graphatlas_c_q_reference
+  certified_routing_mode: q_reference_max
 - name: graphatlas_certified
   label: graphatlas_c_coordinate_relu
   coordinate_activation: relu

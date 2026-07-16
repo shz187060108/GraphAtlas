@@ -1,0 +1,12 @@
+dataset,condition_id,model,seed,split
+actor,best_config_search,graphatlas_c_oracle,56,
+coauthor_cs,best_config_search,graphatlas_c_oracle,437,
+coauthor_physics,best_config_search,graphatlas_c_oracle,232,
+dblp,best_config_search,graphatlas_c_oracle,232,
+hetgb_actor,best_config_search,graphatlas_c_oracle,19,
+hetgb_amazon,best_config_search,graphatlas_c_oracle,507,
+hetgb_cornell,best_config_search,graphatlas_c_oracle,353,
+hetgb_wisconsin,best_config_search,graphatlas_c_oracle,426,
+questions,best_config_search,graphatlas_c_oracle,425,
+roman_empire,best_config_search,graphatlas_c_oracle,468,
+tolokers,best_config_search,graphatlas_c_oracle,66,

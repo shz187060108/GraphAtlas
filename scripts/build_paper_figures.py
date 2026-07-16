@@ -12,9 +12,9 @@ from graphatlas.paper_figures import build_paper_figures
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build high-density Atlas Transport Network paper figures (SVG only).")
-    parser.add_argument("--results", default="outputs/results/latest.csv")
+    parser.add_argument("--results", default="outputs/best_config_search/search_summary.csv")
     parser.add_argument("--output-dir", default="outputs/reports/paper_figures")
-    parser.add_argument("--target-model", default="graphatlas_c")
+    parser.add_argument("--target-model", default="graphatlas_c_oracle")
     parser.add_argument("--style", choices=["nature"], default="nature")
     parser.add_argument("--main-only", action="store_true")
     parser.add_argument("--supplementary-only", action="store_true")
@@ -22,6 +22,7 @@ def main() -> None:
     parser.add_argument("--include-hetgb", action="store_true")
     parser.add_argument("--include-link", action="store_true")
     parser.add_argument("--include-ogb", action="store_true")
+    parser.add_argument("--include-upper-bound", action="store_true", help="Include explicitly test-selected/upper-bound rows in this exploratory report.")
     parser.add_argument("--overwrite", action="store_true")
     args = parser.parse_args()
     if args.main_only and args.supplementary_only:
@@ -30,6 +31,7 @@ def main() -> None:
         Path(args.results), args.output_dir, args.target_model,
         main_only=args.main_only, supplementary_only=args.supplementary_only,
         include_hetgb=args.include_hetgb, include_link=args.include_link, include_ogb=args.include_ogb,
+        include_upper_bound=args.include_upper_bound,
     )
     if args.include_case_studies:
         report["case_studies"] = {"generated": False, "reason": "case tensors were not requested from run artifacts"}

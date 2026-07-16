@@ -74,8 +74,12 @@ def figure1_mechanism(frame: pd.DataFrame, target: str, main_dir: Path, data_dir
         nature_panel_label(ax, label)
     for model, group in invariance.groupby("model") if not invariance.empty else []:
         for family, item in group.groupby("transform_family"):
-            axes[0, 0].plot(item["strength"], item["mean"].clip(lower=1e-12), marker="o", color=model_color(model), label=model_display_name(model))
-            axes[0, 1].plot(item["strength"], item["mean"] if "flip" in family else item["mean"] * 0, marker="o", color=model_color(model), label=model_display_name(model))
+            logit = item[item["metric"].eq("max_logit_error")] if "metric" in item else item.iloc[0:0]
+            flip = item[item["metric"].eq("prediction_flip_rate")] if "metric" in item else item.iloc[0:0]
+            if not logit.empty:
+                axes[0, 0].plot(logit["strength"], logit["mean"].clip(lower=1e-12), marker="o", color=model_color(model), label=model_display_name(model))
+            if not flip.empty:
+                axes[0, 1].plot(flip["strength"], flip["mean"], marker="o", color=model_color(model), label=model_display_name(model))
     axes[0, 0].set_yscale("log"); finalize_axes(axes[0, 0], "Transformation strength", "Max logit error", "Coordinate invariance")
     finalize_axes(axes[0, 1], "Transformation strength", "Prediction flip rate", "Flip invariance")
     if not boundary.empty:
@@ -216,10 +220,10 @@ def supplementary_figures(frame: pd.DataFrame, target: str, directory: Path, dat
     return results
 
 
-def build_paper_figures(results: str | Path | pd.DataFrame, output_dir: str | Path, target_model: str = "graphatlas_c", *, main_only: bool = False, supplementary_only: bool = False, include_hetgb: bool = False, include_link: bool = False, include_ogb: bool = False) -> dict[str, Any]:
-    configure_nature_style(); frame=load_results_frame(results); target=resolve_target_model(frame,target_model); root=Path(output_dir); main=root/"main"; supplementary=root/"supplementary"; data=root/"data"; manifests=root/"manifests"
+def build_paper_figures(results: str | Path | pd.DataFrame, output_dir: str | Path, target_model: str = "graphatlas_c_oracle", *, main_only: bool = False, supplementary_only: bool = False, include_hetgb: bool = False, include_link: bool = False, include_ogb: bool = False, include_upper_bound: bool = False) -> dict[str, Any]:
+    configure_nature_style(); frame=load_results_frame(results, include_upper_bound=include_upper_bound); target=resolve_target_model(frame,target_model); root=Path(output_dir); main=root/"main"; supplementary=root/"supplementary"; data=root/"data"; manifests=root/"manifests"
     for path in (main,supplementary,data,manifests): path.mkdir(parents=True,exist_ok=True)
-    report: dict[str,Any]={"target_model":target,"main":{},"supplementary":{},"svg_only":True}
+    report: dict[str,Any]={"target_model":target,"main":{},"supplementary":{},"results_source":str(results),"include_upper_bound":include_upper_bound,"svg_only":True}
     if not supplementary_only:
         for name, builder in (("figure1_mechanism_overview",figure1_mechanism),("figure2_phase_diagram_gain",figure2_phase),("figure3_beta_sweep",figure3_beta),("figure4_counterfactual",figure4_counterfactual),("figure5_real_benchmarks",figure5_real),("figure6_pareto",figure6_pareto)):
             report["main"][name]=builder(frame,target,main,data)

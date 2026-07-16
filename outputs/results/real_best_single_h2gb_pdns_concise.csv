@@ -1,0 +1,2 @@
+dataset,task,model,model_family,seed,split,metric_name,val_metric,test_metric,best_epoch,last_epoch,runtime_seconds,parameters,device,num_nodes,num_edges,neighbor_sampling,batch_size
+h2gb_pdns,node_classification,atn,atn,0,0,f1,0.8843036754720287,0.8821542836829008,30,70,409.35939264297485,24829,cuda,1173558,41501735,True,256

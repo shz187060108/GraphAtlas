@@ -506,9 +506,9 @@ def final_dataset(dataset: str) -> None:
         "test_max": float(np.nanmax(test)),
         "best_seed": int(runs[best_validation_index]["model_seed"]),
         "best_seed_test": float(test[best_validation_index]),
-        "oracle_test_seed": int(runs[best_test_index]["model_seed"]),
-        "oracle_test_max": float(test[best_test_index]),
-        "oracle_test_is_supplemental": True,
+        "test_max_seed": int(runs[best_test_index]["model_seed"]),
+        "test_max_metric": float(test[best_test_index]),
+        "test_max_is_supplemental": True,
         "completed_seeds": json.dumps(sorted(int(run["model_seed"]) for run in runs)),
     }
     _update_summary(row)
@@ -683,7 +683,7 @@ def seed_promote_dataset(dataset: str, promote_count: int) -> None:
     if not rows:
         raise RuntimeError(f"No completed promoted seeds for {dataset}")
     by_validation = max(rows, key=lambda row: (row["best_val_metric"], -row["seed"]))
-    oracle = max(rows, key=lambda row: (row["test_metric_at_best_val_checkpoint"], -row["seed"]))
+    test_max = max(rows, key=lambda row: (row["test_metric_at_best_val_checkpoint"], -row["seed"]))
     output_dir = OUTPUT / "seed_ceiling" / dataset
     pd.DataFrame(rows).sort_values("seed").to_csv(output_dir / "promoted_results.csv", index=False)
     save_json(
@@ -697,9 +697,9 @@ def seed_promote_dataset(dataset: str, promote_count: int) -> None:
             "promoted_seed_count": len(rows),
             "validation_selected_seed": int(by_validation["seed"]),
             "validation_selected_test_metric": float(by_validation["test_metric_at_best_val_checkpoint"]),
-            "oracle_test_seed": int(oracle["seed"]),
-            "oracle_test_max": float(oracle["test_metric_at_best_val_checkpoint"]),
-            "oracle_policy": "Internal analysis only; never use as a paper main result.",
+            "test_max_seed": int(test_max["seed"]),
+            "test_max_metric": float(test_max["test_metric_at_best_val_checkpoint"]),
+            "test_max_policy": "Internal analysis only; never use as a paper main result.",
             "runs": rows,
         },
         output_dir / "seed_ceiling_summary.json",
