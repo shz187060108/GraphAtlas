@@ -6,7 +6,7 @@
   <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
    <cc:Work>
     <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
-    <dc:date>2026-07-16T01:58:26.836873</dc:date>
+    <dc:date>2026-07-16T23:05:03.801453</dc:date>
     <dc:format>image/svg+xml</dc:format>
     <dc:creator>
      <cc:Agent>
@@ -105,8 +105,8 @@ z
     <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="281.842031" transform="rotate(-0 1.8 281.842031)">i</text>
    </g>
    <g id="text_18">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(55.751789 343.917662)">Unavailable</text>
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(33.400382 350.263787)">no additional panel condition</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(55.751789 343.882505)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(30.58132 350.22863)">required analysis rows missing</text>
    </g>
   </g>
   <g id="axes_10">
@@ -114,8 +114,8 @@ z
     <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="132.3" y="281.842031" transform="rotate(-0 132.3 281.842031)">j</text>
    </g>
    <g id="text_20">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(186.251789 343.917662)">Unavailable</text>
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(163.900382 350.263787)">no additional panel condition</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(186.251789 343.882505)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(161.08132 350.22863)">required analysis rows missing</text>
    </g>
   </g>
   <g id="axes_11">
@@ -123,8 +123,8 @@ z
     <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="262.8" y="281.842031" transform="rotate(-0 262.8 281.842031)">k</text>
    </g>
    <g id="text_22">
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(316.751789 343.917662)">Unavailable</text>
-    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(294.400382 350.263787)">no additional panel condition</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(316.751789 343.882505)">Unavailable</text>
+    <text style="font-size: 6px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; fill: #64748b" transform="translate(291.58132 350.22863)">required analysis rows missing</text>
    </g>
   </g>
   <g id="axes_12">

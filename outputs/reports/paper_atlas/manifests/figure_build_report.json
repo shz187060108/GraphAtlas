@@ -20,8 +20,8 @@
     "transport_diagnostics_atlas"
   ],
   "failed": [],
-  "formal_source": "outputs/results/all.csv",
-  "formal_rows": 525,
+  "formal_source": "outputs/best_config_search/search_summary.csv",
+  "formal_rows": 11,
   "excluded_test_selected_rows": 0,
   "unavailable": []
 }

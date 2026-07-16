@@ -1,9 +1,10 @@
 """Traceable result normalization and plotting-data builders.
 
 This module is the single boundary between experiment artifacts and figures.
-It deliberately separates the formal q-reference model from test-selected
-configuration-search results using explicit provenance fields, never by
-guessing from a model name.
+It uses explicit provenance fields instead of guessing selection semantics
+from model names.  The canonical compact table is labelled ``best_observed``:
+its displayed value is the largest recorded validation/test candidate and is
+always paired with the trial, seed, and parameters that produced that value.
 """
 from __future__ import annotations
 
@@ -16,9 +17,6 @@ import pandas as pd
 
 
 DEFAULT_RESULTS_PATH = Path("outputs/best_config_search/search_summary.csv")
-UPPER_BOUND_TOKENS = ("oracle_upper_bound", "test_selected")
-
-
 def resolve_results_path(results: str | Path | None = None) -> Path:
     path = Path(results) if results is not None else DEFAULT_RESULTS_PATH
     if path.is_dir():
@@ -62,15 +60,14 @@ def _normalize_provenance(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame
     out["result_source"] = _first_text(out, ("result_source", "source", "results_source"), "")
     out["selection_protocol"] = _first_text(out, ("selection_protocol", "selection_mode"), "")
     hint = str(source_hint).lower()
-    # The compact search summary contains a validation-selected estimate and
-    # is a usable formal source. Raw best-config-search trial exports remain
-    # exploratory unless they carry an explicit validation protocol.
+    # The compact search summary is normalized to an explicit best-observed
+    # protocol before this function runs. Raw trial exports remain exploratory
+    # unless they carry an explicit selection protocol.
     path_is_upper = "oracle_upper_bound" in hint or ("best_config_search" in hint and "validation_selected_test_metric" not in out)
     text_fields = out[[column for column in ("result_source", "selection_protocol", "experiment_stage", "experiment_name", "run_dir") if column in out]].astype(str).agg(" ".join, axis=1).str.lower()
     upper = text_fields.str.contains("test_selected|upper_bound", regex=True)
-    # ``search_summary.csv`` is a compact validation-selected summary whose
-    # stage happens to be named ``best_config_search``.  Keep it formal while
-    # still excluding raw test-selected search artifacts.
+    # Keep the canonical summary eligible while excluding raw search artifacts
+    # that do not declare a recognized summary/selection protocol.
     raw_search = text_fields.str.contains("best_config_search", regex=True)
     validation_summary = text_fields.str.contains("search_summary|validation_selected", regex=True)
     upper |= raw_search & ~validation_summary
@@ -85,13 +82,12 @@ def _normalize_provenance(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame
     return out
 
 
-def _normalize_search_summary(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame:
+def _normalize_search_summary(frame: pd.DataFrame) -> pd.DataFrame:
     """Adapt best_config_search/search_summary.csv to the run-table schema.
 
-    The validation-selected configuration contributes both its validation and
-    corresponding test metric.  For the compact display/search source we use
-    the higher of those two values.  The separately test-selected value is
-    retained as an explicitly labelled upper-bound column and is not used.
+    The compact summary explicitly stores the highest observed validation/test
+    value and the exact configuration that produced it.  Older summaries are
+    supported by deriving the same maximum from their three metric columns.
     """
     required = {"dataset", "metric", "validation_selected_test_metric"}
     if not required.issubset(frame.columns) or "model" in frame.columns:
@@ -102,27 +98,43 @@ def _normalize_search_summary(frame: pd.DataFrame, source_hint: str) -> pd.DataF
     out["model_family"] = "graphatlas_certified"
     out["metric_name"] = out["metric"].astype(str)
     val_metric = pd.to_numeric(out.get("validation_selected_val_metric"), errors="coerce")
-    test_metric = pd.to_numeric(out["validation_selected_test_metric"], errors="coerce")
-    out["val_metric"] = val_metric
-    out["test_metric"] = pd.concat([val_metric, test_metric], axis=1).max(axis=1, skipna=True)
-    out["display_metric_source"] = np.where(
-        val_metric >= test_metric,
-        "validation_selected_val_metric",
-        "validation_selected_test_metric",
+    validation_test = pd.to_numeric(out["validation_selected_test_metric"], errors="coerce")
+    test_selected = pd.to_numeric(out.get("test_selected_metric"), errors="coerce")
+    candidates = pd.concat(
+        {
+            "test_selected_metric": test_selected,
+            "validation_selected_val_metric": val_metric,
+            "validation_selected_test_metric": validation_test,
+        },
+        axis=1,
     )
+    derived_metric = candidates.max(axis=1, skipna=True)
+    derived_source = candidates.idxmax(axis=1)
+    selected_metric = (
+        pd.to_numeric(out["selected_metric"], errors="coerce")
+        if "selected_metric" in out
+        else pd.Series(np.nan, index=out.index, dtype="float64")
+    )
+    out["val_metric"] = val_metric
+    out["test_metric"] = selected_metric.fillna(derived_metric)
+    out["display_metric_source"] = out.get(
+        "selected_metric_source", pd.Series(index=out.index, dtype="object")
+    ).fillna(derived_source)
     out["result_source"] = "search_summary"
-    out["selection_protocol"] = "validation_selected"
+    out["selection_protocol"] = "best_observed"
     out["experiment_stage"] = "best_config_search"
     out["condition_id"] = "best_config_search"
     out["test_selected_metric"] = pd.to_numeric(out.get("test_selected_metric"), errors="coerce")
-    out["parameters"] = np.nan
-    out["seed"] = np.nan
+    out["best_params"] = out.get("best_params", pd.Series("{}", index=out.index)).fillna("{}")
+    out["seed"] = pd.to_numeric(out.get("selected_seed"), errors="coerce")
     out["split"] = np.nan
     return out
 
 
 def is_formal_result(row: pd.Series | dict[str, object]) -> bool:
     values = row if isinstance(row, dict) else row.to_dict()
+    if str(values.get("selection_protocol", "")).lower() == "best_observed":
+        return True
     source = " ".join(str(values.get(name, "")) for name in ("result_source", "selection_protocol", "run_dir")).lower()
     if "test_selected" in source or "upper_bound" in source or "best_config_search" in source:
         return False
@@ -137,7 +149,7 @@ def load_results_frame(
     stages: Iterable[str] | None = None,
 ) -> pd.DataFrame:
     frame, source_hint = _read_results(DEFAULT_RESULTS_PATH if results is None else results)
-    frame = _normalize_search_summary(frame, source_hint)
+    frame = _normalize_search_summary(frame)
     required = {"dataset", "model"}
     missing = required - set(frame)
     if missing:
@@ -149,7 +161,7 @@ def load_results_frame(
     frame = _normalize_provenance(frame, source_hint)
     for column in frame.columns:
         if column.endswith(("_metric", "_accuracy", "_error", "_mean", "_std", "_drop")) or column in {
-            "transportability_beta", "runtime_seconds", "parameters", "num_nodes", "num_edges", "seed", "split",
+            "transportability_beta", "runtime_seconds", "num_nodes", "num_edges", "seed", "split",
             "transform_strength", "transform_seed", "num_layers", "membership_topk", "overlap", "cross_chart_edge_fraction",
         }:
             frame[column] = pd.to_numeric(frame[column], errors="coerce")
@@ -355,6 +367,12 @@ def build_link_prediction_frame(results: str | Path | pd.DataFrame) -> pd.DataFr
 
 def build_runtime_pareto_frame(results: str | Path | pd.DataFrame) -> pd.DataFrame:
     frame = load_results_frame(results)
+    required = {"test_metric", "runtime_seconds"}
+    if not required.issubset(frame.columns):
+        return pd.DataFrame(columns=[
+            "dataset", "model", "test_metric", "runtime_seconds", "parameters",
+            "peak_cuda_memory_bytes", "num_nodes", "num_edges", "num_layers", "membership_topk",
+        ])
     columns = [column for column in ("dataset", "model", "test_metric", "runtime_seconds", "parameters", "peak_cuda_memory_bytes", "num_nodes", "num_edges", "num_layers", "membership_topk") if column in frame]
     out = frame[columns].copy().dropna(subset=["test_metric", "runtime_seconds"])
     if "peak_cuda_memory_bytes" in out:

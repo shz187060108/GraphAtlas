@@ -1,1 +1,1 @@
-Each row is one dataset/model/seed result. Full diagnostic tensors and checkpoints are intentionally kept out of this directory.
+Mechanism and retained benchmark tables live here. The canonical tuned result-and-parameter table is `../best_config_search/search_summary.csv`; full tensors and checkpoints stay outside this directory.

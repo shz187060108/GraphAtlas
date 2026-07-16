@@ -1,2 +1,0 @@
-run_id,config_hash,source_hash,dataset,task,model,model_family,seed,split,num_threads,run_dir,job_config
-coauthor_physics__node_classification__graphatlas_c__split0__seed0__e69dca4de883,e69dca4de883,e7bb87803961c332,coauthor_physics,node_classification,graphatlas_c,graphatlas_certified,0,0,1,outputs\.work\runs_real_best_single\coauthor_physics\graphatlas_c\split-0\seed-0\config-e69dca4d,outputs\.work\runs_real_best_single\coauthor_physics\graphatlas_c\split-0\seed-0\config-e69dca4d\job_config.yaml

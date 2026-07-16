@@ -13,8 +13,23 @@ outputs/archive/
 outputs/logs/
 outputs/.mplconfig/
 outputs/best_config_search/runs/
+outputs/best_config_search/**
+!outputs/best_config_search/search_summary.csv
+outputs/selected_optuna/**
 data/_pyg_cache/
 data/_ogb_cache/
+data/_downloads/
+data/h2gb/
+data/h2gb_official/
+data/heterophilous_graphs/
+data/hetgb_actor/
+data/hetgb_amazon/
+data/hetgb_cornell/
+data/hetgb_official/
+data/hetgb_texas/
+data/hetgb_wisconsin/
+data_protocol/
+external/
 *.part
 *.tmp
 

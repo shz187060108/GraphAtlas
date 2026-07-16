@@ -1,2 +1,0 @@
-run_id,config_hash,source_hash,dataset,task,model,model_family,seed,split,num_threads,run_dir,job_config
-h2gb_ieee_cis__node_classification__atn__split0__seed0__e6faa1362aa9,e6faa1362aa9,735f66d2bcfd6f3a,h2gb_ieee_cis,node_classification,atn,atn,0,0,1,outputs\.work\runs_real_best_single\h2gb_ieee_cis\atn\split-0\seed-0\config-e6faa136,outputs\.work\runs_real_best_single\h2gb_ieee_cis\atn\split-0\seed-0\config-e6faa136\job_config.yaml

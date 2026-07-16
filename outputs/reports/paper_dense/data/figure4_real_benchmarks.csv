@@ -1,8 +1,0 @@
-dataset,model,metric_name,mean,std,n,ci95,dataset_z
-actor,graphatlas_c,accuracy,0.3736842274665832,,1,0.0,0.0
-h2gb_ieee_cis,atn,f1,0.4845650140318054,,1,0.0,0.0
-h2gb_pdns,atn,f1,0.8821542836829008,,1,0.0,0.0
-hetgb_actor,graphatlas_c,accuracy,0.4870641231536865,,1,0.0,0.0
-hetgb_amazon,graphatlas_c,accuracy,0.3679568767547607,,1,0.0,0.0
-hetgb_texas,graphatlas_c,accuracy,0.5,,1,0.0,0.0
-questions,graphatlas_c,roc_auc,0.7560377410767267,,1,0.0,0.0

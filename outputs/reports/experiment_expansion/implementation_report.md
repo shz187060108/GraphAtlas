@@ -2,8 +2,8 @@
 
 ## Completed
 
-- Added provenance-aware result loading. Formal rows are retained by default; only explicit `test_selected`, upper-bound, or best-config-search provenance is excluded from formal ranks and paired comparisons. The formal `graphatlas_c_oracle` key is not filtered by its name.
-- The compact `best_config_search/search_summary.csv` source uses the higher of the validation-selected validation metric and its corresponding test metric for display; the separately test-selected value remains an upper-bound field.
+- Added provenance-aware result loading. Raw trial exports remain separated from canonical summary rows by explicit protocol fields rather than model-name matching.
+- The canonical `best_config_search/search_summary.csv` source takes the maximum of `test_selected_metric`, `validation_selected_val_metric`, and `validation_selected_test_metric`, then records the exact producing trial, seed, split, run directory, and parameter JSON. The three component measurements remain available for auditability.
 - Added checkpoint-only coordinate stress evaluation for affine, asinh-affine, triangular-coupling, and radial transforms with continuous strengths and repeated transform seeds.
 - Added deterministic local case selection and compact two-hop ego exports from existing prediction artifacts.
 - Added homogeneous main and supplementary atlases with shared chart grammars, panel labels, explicit unavailable panels, plotting-data CSVs, and SVG/PDF/PNG bundles. No training is performed by the figure builder.
@@ -40,4 +40,4 @@
 
 ## Not run
 
-No new training matrix, full scaling sweep, dataset download, commit, or push was performed. Coordinate stress and local case scripts are ready but were not run against every historical checkpoint; missing artifacts are recorded as skipped/unavailable rather than synthesized.
+No new training matrix, full scaling sweep, or dataset download was performed. Coordinate stress and local case scripts are ready but were not run against every historical checkpoint; missing artifacts are recorded as skipped/unavailable rather than synthesized.

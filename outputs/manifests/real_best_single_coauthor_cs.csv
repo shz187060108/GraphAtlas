@@ -1,2 +1,0 @@
-run_id,config_hash,source_hash,dataset,task,model,model_family,seed,split,num_threads,run_dir,job_config
-coauthor_cs__node_classification__graphatlas_c__split0__seed0__ef27e4e77a16,ef27e4e77a16,e7bb87803961c332,coauthor_cs,node_classification,graphatlas_c,graphatlas_certified,0,0,1,outputs\.work\runs_real_best_single\coauthor_cs\graphatlas_c\split-0\seed-0\config-ef27e4e7,outputs\.work\runs_real_best_single\coauthor_cs\graphatlas_c\split-0\seed-0\config-ef27e4e7\job_config.yaml

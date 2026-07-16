@@ -1,9 +1,10 @@
 #!/usr/bin/env python
-"""Fast, resumable test-selected configuration search.
+"""Fast, resumable best-configuration search.
 
-This runner records both test-selected analysis and validation-selected
-results. The test-selected track is exploratory and must not be reported as
-the primary benchmark.
+The summary keeps validation-selected and test-selected measurements separate,
+then records the highest observed value together with its exact trial, seed and
+parameters.  This makes downstream reports reproducible without reopening the
+Optuna database.
 """
 from __future__ import annotations
 
@@ -32,7 +33,7 @@ from graphatlas.config import ExperimentConfig  # noqa: E402
 from graphatlas.data import GraphData, HeteroGraphData  # noqa: E402
 from graphatlas.datasets import load_dataset  # noqa: E402
 from graphatlas.trainer import Trainer  # noqa: E402
-from graphatlas.utils import save_json, save_yaml  # noqa: E402
+from graphatlas.utils import load_yaml, save_json, save_yaml  # noqa: E402
 
 
 OUTPUT = ROOT / "outputs" / "best_config_search"
@@ -370,6 +371,11 @@ def _study(dataset: str, resume: bool):
 
 
 def _trial_payload(trial: Any, policy: str) -> dict[str, Any]:
+    warning = (
+        "Test-selected analysis result; use only when explicitly requesting the best observed value."
+        if policy == "test_selected"
+        else "Validation-selected configuration and its corresponding test measurement."
+    )
     return {
         "selection_policy": policy,
         "trial": int(trial.number),
@@ -380,8 +386,90 @@ def _trial_payload(trial: Any, policy: str) -> dict[str, Any]:
         "split_protocol": trial.user_attrs.get("split_protocol", SPLIT_PROTOCOL),
         "params": trial.user_attrs["resolved_params"],
         "run_dir": trial.user_attrs["run_dir"],
-        "warning": "Test-selected analysis result; do not report as a validation-selected benchmark.",
+        "warning": warning,
     }
+
+
+def _params_from_trial_artifacts(dataset: str, trial_number: int, policy: str) -> tuple[dict[str, Any], str]:
+    """Recover the exact resolved parameters without loading an Optuna study."""
+    preferred = "best_test_selected.json" if policy == "test_selected" else "best_validation_selected.json"
+    for name in (preferred, "best_test_selected.json", "best_validation_selected.json"):
+        path = OUTPUT / dataset / name
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        if int(payload.get("trial", -1)) == int(trial_number):
+            return dict(payload.get("params", {})), str(payload.get("run_dir", ""))
+
+    run_dir = OUTPUT / "runs" / dataset / f"trial_{int(trial_number):04d}"
+    config_path = run_dir / "config.yaml"
+    if not config_path.exists():
+        return {}, str(run_dir.relative_to(ROOT))
+    config = load_yaml(config_path)
+    train = config.get("train", {})
+    model = config.get("model", {})
+    loss = config.get("loss", {})
+    data = config.get("dataset", {})
+    params = {
+        "learning_rate": train.get("learning_rate"),
+        "weight_decay": train.get("weight_decay"),
+        "dropout": model.get("dropout"),
+        "hidden_dim": model.get("hidden_dim"),
+        "num_charts": model.get("num_charts"),
+        "membership_topk": model.get("membership_topk"),
+        "transportability_beta": model.get("transportability_beta"),
+        "classification_loss": loss.get("classification_loss"),
+        "feature_normalization": data.get("feature_normalization"),
+        "seed": train.get("seed"),
+    }
+    return {key: value for key, value in params.items() if value is not None}, str(run_dir.relative_to(ROOT))
+
+
+def _augment_summary_row(row: dict[str, Any]) -> dict[str, Any]:
+    """Bind the highest observed validation/test value to its producing configuration."""
+    candidates = []
+    for source in (
+        "test_selected_metric",
+        "validation_selected_val_metric",
+        "validation_selected_test_metric",
+    ):
+        value = pd.to_numeric(row.get(source), errors="coerce")
+        if pd.notna(value) and math.isfinite(float(value)):
+            candidates.append((source, float(value)))
+    if not candidates:
+        return row
+    source, value = max(candidates, key=lambda item: item[1])
+    uses_test_selected = source == "test_selected_metric"
+    policy = "test_selected" if uses_test_selected else "validation_selected"
+    trial_key = "test_selected_trial" if uses_test_selected else "validation_selected_trial"
+    trial_number = int(row[trial_key])
+    params, run_dir = _params_from_trial_artifacts(str(row["dataset"]), trial_number, policy)
+    seed = params.get("seed", row.get("test_selected_seed") if uses_test_selected else None)
+    return {
+        **row,
+        "selected_metric": value,
+        "selected_metric_source": source,
+        "selected_metric_split": "validation" if source == "validation_selected_val_metric" else "test",
+        "selected_selection_policy": policy,
+        "selected_trial": trial_number,
+        "selected_seed": int(seed) if seed is not None and pd.notna(seed) else None,
+        "best_params": json.dumps(params, ensure_ascii=False, sort_keys=True),
+        "selected_run_dir": run_dir,
+    }
+
+
+def refresh_search_summary() -> None:
+    """Refresh derived best-value columns from existing summaries and artifacts."""
+    path = OUTPUT / "search_summary.csv"
+    if not path.exists():
+        raise FileNotFoundError(f"Missing search summary: {path}")
+    rows = [_augment_summary_row(row) for row in pd.read_csv(path).to_dict("records")]
+    frame = pd.DataFrame(rows).sort_values("dataset")
+    frame.to_csv(path, index=False)
+    print(frame[[
+        "dataset", "metric", "selected_metric", "selected_metric_source",
+        "selected_trial", "selected_seed",
+    ]].to_string(index=False))
 
 
 def _write_outputs(dataset: str, study: Any) -> Any | None:
@@ -409,7 +497,7 @@ def _write_outputs(dataset: str, study: Any) -> Any | None:
     if summary_path.exists():
         rows = pd.read_csv(summary_path).to_dict("records")
         rows = [row for row in rows if row.get("dataset") != dataset]
-    rows.append({
+    summary_row = {
         "dataset": dataset,
         "metric": best_test.user_attrs["metric_name"],
         "test_selected_metric": float(best_test.value),
@@ -420,7 +508,8 @@ def _write_outputs(dataset: str, study: Any) -> Any | None:
         "validation_selected_test_metric": float(best_validation.user_attrs["test_metric"]),
         "validation_selected_trial": int(best_validation.number),
         "completed_trials": len(complete),
-    })
+    }
+    rows.append(_augment_summary_row(summary_row))
     pd.DataFrame(rows).sort_values("dataset").to_csv(summary_path, index=False)
     return best_test
 
@@ -520,10 +609,14 @@ def main() -> None:
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument("--all", action="store_true")
     selection.add_argument("--dataset", choices=DATASETS)
+    selection.add_argument("--refresh-summary", action="store_true")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--profile", choices=["fast"], default="fast")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
+    if args.refresh_summary:
+        refresh_search_summary()
+        return
     datasets = list(DATASETS) if args.all else [args.dataset]
     if args.dry_run:
         dry_run(datasets)

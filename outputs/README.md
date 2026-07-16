@@ -2,12 +2,12 @@
 
 Use these dataset-level files first:
 
-- `results/*.csv`: combined metrics.
+- `best_config_search/search_summary.csv`: canonical best-observed dataset summary, including the producing trial, seed and parameter JSON.
+- `results/`: mechanism tables and the retained H2GB PDNS result; transient `latest.csv` files are not canonical.
 - `reports/`: summaries and figures.
 - `reports/paper_atlas/`: current homogeneous main/supplementary paper-figure atlases; each figure has plotting data and an explicit manifest.
-- `real_best_single/`: selected one-seed real runs.
-- `selected_optuna/`: HPO and promoted configurations.
-- `best_config_search/`: configuration-search summaries, trial tables and diagnostics.
+- `selected_optuna/`: legacy HPO checkpoints retained locally for recovery and excluded from new commits.
+- `best_config_search/`: the canonical summary plus local trial artifacts and studies.
 - `manifests/`: exact materialized job plans.
 - `archive/`: retained runtime logs and legacy smoke outputs; not part of the active result set.
 

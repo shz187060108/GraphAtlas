@@ -8,9 +8,10 @@ Run commands from the project root with the intended Python environment.
 run_pipeline.py                 Run a materialized preset.
 run_all.py                      Train one preset through the standard trainer.
 run_graphatlasc_suite.py        Run the GraphAtlas-C suite stages.
-run_selected_hpo.py             Run selected HPO tune/promote/final stages.
-run_best_config_search.py       Run the exploratory test-selected configuration search.
+run_selected_hpo.py             Legacy tune/promote/final runner retained for checkpoint recovery.
+run_best_config_search.py       Run or refresh the canonical best-configuration search.
 run_real_best_single.py         Run one selected real-data configuration.
+clean_outputs.py                Dry-run/apply removal of superseded reports and low-value summaries.
 ```
 
 ## Data preparation

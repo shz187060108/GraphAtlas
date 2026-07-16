@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 
-from .figure_data import is_formal_result
+from .figure_data import is_formal_result, load_results_frame
 
 
 def resolve_target_model(frame: pd.DataFrame, target_model: str = "graphatlas_c_oracle") -> str:
@@ -420,7 +420,7 @@ def summarize_results(
     path = Path(results_path)
     if not path.exists():
         raise FileNotFoundError(path)
-    frame = pd.read_csv(path)
+    frame = load_results_frame(path)
     if frame.empty:
         raise ValueError(f"Result table is empty: {path}")
     if "test_metric" not in frame:

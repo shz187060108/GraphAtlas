@@ -1,2 +1,0 @@
-run_id,config_hash,source_hash,dataset,task,model,model_family,seed,split,num_threads,run_dir,job_config
-hetgb_amazon__node_classification__graphatlas_c__split0__seed0__43e195189704,43e195189704,e7bb87803961c332,hetgb_amazon,node_classification,graphatlas_c,graphatlas_certified,0,0,1,outputs\.work\runs_real_best_single\hetgb_amazon\graphatlas_c\split-0\seed-0\config-43e19518,outputs\.work\runs_real_best_single\hetgb_amazon\graphatlas_c\split-0\seed-0\config-43e19518\job_config.yaml

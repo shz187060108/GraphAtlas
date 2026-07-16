@@ -1,4 +1,0 @@
-routing_mode,condition_id,mean,std,n,ci95
-certificate,smoke,0.304347813129425,0.0,3,0.0
-q_reference_max,smoke,0.304347813129425,,1,0.0
-q_shuffle_source,smoke,0.304347813129425,,1,0.0

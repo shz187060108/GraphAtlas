@@ -1,8 +1,0 @@
-dataset,model,test_metric,runtime_seconds,parameters,peak_cuda_memory_bytes,num_nodes
-atlas_het,graphatlas_c,0.304347813129425,0.6214604377746582,64834,0,96
-atlas_het,graphatlas_c_beta_minus_1,0.304347813129425,0.6205317974090576,64834,0,96
-atlas_het,graphatlas_c_coordinate_relu,0.304347813129425,0.5476040840148926,64834,0,96
-atlas_het,graphatlas_c_q_reference,0.304347813129425,0.5580666065216064,64834,0,96
-atlas_het,graphatlas_c_q_shuffle_source,0.304347813129425,0.7000041007995605,64834,0,96
-atlas_het,graphatlas_min_distortion,0.304347813129425,0.490333080291748,64834,0,96
-atlas_het,graphatlas_original,0.304347813129425,0.4935371875762939,64834,0,96

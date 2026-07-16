@@ -6,20 +6,20 @@ Use the following paths as the canonical project interface.
 
 - `src/graphatlas/`: library code, models, datasets, training and reporting.
 - `configs/base.yaml`: shared defaults.
-- `configs/presets/`: runnable experiment presets. Prefer the GraphAtlas-C, real, H2GB and OGB presets; older one-off presets are retained for reproducibility.
+- `configs/presets/`: reusable experiment presets. One-off best-result presets are generated on demand by `scripts/run_real_best_single.py` instead of being retained as stale static files.
 - `scripts/`: command-line entry points. See `scripts/README.md`.
 
 ## Results
 
-- `outputs/results/`: combined result tables.
+- `outputs/best_config_search/search_summary.csv`: canonical best-observed result and parameter table.
+- `outputs/results/`: mechanism tables and retained non-search benchmark summaries.
 - `outputs/reports/`: summaries, gates and paper figures.
-- `outputs/real_best_single/`: one-seed real-data runs.
-- `outputs/selected_optuna/`: selected HPO studies and promoted runs.
-- `outputs/best_config_search/`: test-selected configuration-search analysis and its validation-selected counterparts.
+- `outputs/selected_optuna/`: legacy studies retained locally for recovery, not a reporting source.
+- `outputs/best_config_search/`: canonical summary plus local resumable search artifacts.
 - `outputs/manifests/`: reproducible job manifests.
 
 Runtime caches and logs are not part of the paper result interface. Do not use checkpoint directories as summary tables; use the CSV and JSON files at the dataset level instead.
 
 ## Reproducibility rule
 
-Every reported result should identify its preset, dataset split, model seed and configuration hash. Test-selected analysis is exploratory; the validation-selected result is the appropriate benchmark record.
+Every best-observed row records the metric source, producing trial, seed, split protocol and exact parameter JSON. Validation-selected and test-selected component metrics remain separate columns for auditability.
