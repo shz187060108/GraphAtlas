@@ -1,0 +1,53 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+- 1
+- 2
+- 3
+- 4
+train:
+  epochs: 120
+  patience: 25
+datasets:
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.0
+  condition_id: ov0.10_cross0.00
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.15
+  condition_id: ov0.10_cross0.15
+- name: atlas_het
+  num_nodes: 480
+  num_charts: 3
+  overlap: 0.1
+  cross_chart_edge_fraction: 0.3
+  condition_id: ov0.10_cross0.30
+models:
+- name: graphatlas_certified
+  label: graphatlas_c_beta_-2
+  transportability_beta: -2
+- name: graphatlas_certified
+  label: graphatlas_c_beta_-1
+  transportability_beta: -1
+- name: graphatlas_certified
+  label: graphatlas_c_beta_0
+  transportability_beta: 0
+- name: graphatlas_certified
+  label: graphatlas_c_beta_0.5
+  transportability_beta: 0.5
+- name: graphatlas_certified
+  label: graphatlas_c_beta_1
+  transportability_beta: 1
+- name: graphatlas_certified
+  label: graphatlas_c_beta_2
+  transportability_beta: 2
+- name: graphatlas_certified
+  label: graphatlas_c_beta_4
+  transportability_beta: 4

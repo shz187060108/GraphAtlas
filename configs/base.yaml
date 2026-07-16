@@ -63,5 +63,4 @@ train:
   light_regularization_nodes: 32
   light_metric_probes: 2
   output_dir: outputs/.work/runs
-  output_dir: outputs/runs
   num_threads: 1

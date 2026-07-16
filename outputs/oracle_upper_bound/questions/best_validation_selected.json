@@ -1,0 +1,23 @@
+{
+  "selection_policy": "validation_selected",
+  "trial": 19,
+  "objective_test_metric": 0.750962857996303,
+  "validation_metric_at_validation_selected_checkpoint": 0.7680860667093846,
+  "test_metric_at_validation_selected_checkpoint": 0.750962857996303,
+  "metric_name": "roc_auc",
+  "split_protocol": "stratified_60_20_20",
+  "params": {
+    "learning_rate": 0.004144624146297539,
+    "weight_decay": 0.0021794015505530507,
+    "dropout": 0.1,
+    "hidden_dim": 128,
+    "num_charts": 3,
+    "membership_topk": 2,
+    "transportability_beta": 0.5,
+    "classification_loss": "weighted_ce",
+    "feature_normalization": "none",
+    "seed": 425
+  },
+  "run_dir": "outputs\\oracle_upper_bound\\runs\\questions\\trial_0019",
+  "warning": "Oracle test-selected result; do not report as a validation-selected benchmark."
+}

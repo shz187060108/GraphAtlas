@@ -203,6 +203,7 @@ def main() -> None:
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--limit", type=int, default=None, help="Limit jobs per experiment preset for debugging.")
+    parser.add_argument("--sync-github", action="store_true", help="Explicitly synchronize only after a successful pipeline.")
     args = parser.parse_args()
 
     _require_requested_cuda(args.preset)
@@ -250,12 +251,11 @@ def main() -> None:
     if failures:
         print(f"Completed with {len(failures)} failed stage(s).")
         raise SystemExit(2)
-    subprocess.run(
-        [sys.executable, "-u", "scripts/sync_github.py", "--message", f"Complete {status_name} pipeline"],
-        cwd=ROOT,
-        env=os.environ.copy(),
-        check=True,
-    )
+    if args.sync_github:
+        subprocess.run(
+            [sys.executable, "-u", "scripts/sync_github.py", "--message", f"Complete {status_name} pipeline"],
+            cwd=ROOT, env=os.environ.copy(), check=True,
+        )
     print("Pipeline completed successfully.")
 
 

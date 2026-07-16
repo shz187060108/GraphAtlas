@@ -1,0 +1,14 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+train:
+  device: cuda
+  execution_tag: gpu_20260714
+datasets:
+- name: ogbn_arxiv
+  num_charts: 4
+models:
+- name: graphatlas_certified
+  label: graphatlas_c

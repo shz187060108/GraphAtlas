@@ -7,6 +7,137 @@ import numpy as np
 import torch
 
 
+EdgeType = tuple[str, str, str]
+
+
+@dataclass
+class HeteroGraphData:
+    """Native typed graph with reversible packed IDs and target-only labels."""
+
+    x_dict: dict[str, torch.Tensor | None]
+    num_nodes_dict: dict[str, int]
+    edge_index_dict: dict[EdgeType, torch.Tensor]
+    task_entity: str
+    y: torch.Tensor
+    train_mask: torch.Tensor
+    val_mask: torch.Tensor
+    test_mask: torch.Tensor
+    metadata: dict[str, Any]
+    global_node_id_dict: dict[str, torch.Tensor] | None = None
+
+    @property
+    def node_types(self) -> list[str]:
+        return sorted(self.num_nodes_dict)
+
+    @property
+    def edge_types(self) -> list[EdgeType]:
+        return sorted(self.edge_index_dict)
+
+    @property
+    def num_classes(self) -> int:
+        if self.y.ndim == 2:
+            return int(self.y.shape[1])
+        labeled = self.y[self.y >= 0]
+        return int(labeled.max().item()) + 1 if labeled.numel() else 0
+
+    def packed_offsets(self) -> dict[str, int]:
+        offset = 0
+        result: dict[str, int] = {}
+        for node_type in self.node_types:
+            result[node_type] = offset
+            offset += int(self.num_nodes_dict[node_type])
+        return result
+
+    def pack_ids(self, node_type: str, local_ids: torch.Tensor) -> torch.Tensor:
+        return local_ids + self.packed_offsets()[node_type]
+
+    def unpack_ids(self, packed_ids: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        types = self.node_types
+        offsets = self.packed_offsets()
+        boundaries = torch.tensor(
+            [offsets[name] for name in types] + [sum(self.num_nodes_dict.values())],
+            device=packed_ids.device,
+            dtype=packed_ids.dtype,
+        )
+        type_ids = torch.bucketize(packed_ids, boundaries[1:], right=False)
+        local = packed_ids - boundaries[type_ids]
+        return type_ids, local
+
+    def validate(self) -> None:
+        errors: list[str] = []
+        if self.task_entity not in self.num_nodes_dict:
+            errors.append(f"unknown task_entity={self.task_entity!r}")
+        if set(self.x_dict) != set(self.num_nodes_dict):
+            errors.append("x_dict and num_nodes_dict must contain identical node types")
+        for node_type, count in self.num_nodes_dict.items():
+            if not isinstance(count, int) or count < 1:
+                errors.append(f"num_nodes_dict[{node_type!r}] must be positive")
+            x = self.x_dict.get(node_type)
+            if x is not None and (x.ndim != 2 or x.shape[0] != count or not torch.isfinite(x).all()):
+                errors.append(f"x_dict[{node_type!r}] must be finite [N_type,F_type]")
+        for edge_type, edge_index in self.edge_index_dict.items():
+            if len(edge_type) != 3 or edge_type[0] not in self.num_nodes_dict or edge_type[2] not in self.num_nodes_dict:
+                errors.append(f"invalid edge type {edge_type!r}")
+                continue
+            if edge_index.dtype != torch.long or edge_index.ndim != 2 or edge_index.shape[0] != 2:
+                errors.append(f"edge_index_dict[{edge_type!r}] must be long [2,E]")
+                continue
+            if edge_index.numel() and (
+                int(edge_index[0].min()) < 0
+                or int(edge_index[0].max()) >= self.num_nodes_dict[edge_type[0]]
+                or int(edge_index[1].min()) < 0
+                or int(edge_index[1].max()) >= self.num_nodes_dict[edge_type[2]]
+            ):
+                errors.append(f"edge_index_dict[{edge_type!r}] contains out-of-range IDs")
+        target_count = self.num_nodes_dict.get(self.task_entity, -1)
+        if self.y.ndim not in {1, 2} or self.y.shape[0] != target_count:
+            errors.append("target y must have shape [N_task] or [N_task,C]")
+        for name in ("train_mask", "val_mask", "test_mask"):
+            mask = getattr(self, name)
+            if mask.dtype != torch.bool or mask.ndim != 1 or mask.shape[0] != target_count:
+                errors.append(f"{name} must be a boolean length-N_task vector")
+        if target_count >= 0:
+            overlap = self.train_mask.int() + self.val_mask.int() + self.test_mask.int()
+            if bool((overlap > 1).any()):
+                errors.append("train, validation, and test masks must be disjoint")
+            if any(int(getattr(self, name).sum()) == 0 for name in ("train_mask", "val_mask", "test_mask")):
+                errors.append("train, validation, and test masks must all be non-empty")
+        if self.y.ndim == 1:
+            labeled = self.train_mask | self.val_mask | self.test_mask
+            if bool((self.y[labeled] < 0).any()):
+                errors.append("split nodes must have non-negative class labels")
+        if self.global_node_id_dict is not None:
+            if set(self.global_node_id_dict) != set(self.num_nodes_dict):
+                errors.append("global_node_id_dict must cover every node type")
+            elif any(
+                ids.dtype != torch.long or ids.shape != (self.num_nodes_dict[node_type],)
+                for node_type, ids in self.global_node_id_dict.items()
+            ):
+                errors.append("global_node_id_dict values must be long length-N_type vectors")
+        if errors:
+            raise ValueError("Invalid HeteroGraphData:\n- " + "\n- ".join(errors))
+
+    def to(self, device: torch.device | str, *, move_graph: bool = False) -> "HeteroGraphData":
+        """Move target tensors by default; opt in before moving a complete large graph."""
+        x_dict = {key: (value.to(device) if move_graph and value is not None else value) for key, value in self.x_dict.items()}
+        edges = {key: (value.to(device) if move_graph else value) for key, value in self.edge_index_dict.items()}
+        globals_ = None if self.global_node_id_dict is None else {
+            key: (value.to(device) if move_graph else value) for key, value in self.global_node_id_dict.items()
+        }
+        return HeteroGraphData(
+            x_dict=x_dict,
+            num_nodes_dict=dict(self.num_nodes_dict),
+            edge_index_dict=edges,
+            task_entity=self.task_entity,
+            y=self.y.to(device),
+            train_mask=self.train_mask.to(device),
+            val_mask=self.val_mask.to(device),
+            test_mask=self.test_mask.to(device),
+            metadata=dict(self.metadata),
+            global_node_id_dict=globals_,
+        )
+
+
 @dataclass
 class LinkPredictionSplit:
     train_pos: torch.Tensor

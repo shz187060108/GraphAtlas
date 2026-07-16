@@ -1,0 +1,40 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+- 1
+- 2
+train:
+  device: cuda
+  execution_tag: gpu_20260714
+  epochs: 200
+  patience: 40
+datasets:
+- name: actor
+  num_charts: 4
+- name: questions
+  num_charts: 4
+  metric: roc_auc
+- name: dblp
+  num_charts: 4
+- name: coauthor_cs
+  num_charts: 4
+- name: coauthor_physics
+  num_charts: 4
+- name: hetgb_texas
+  num_charts: 4
+- name: hetgb_actor
+  num_charts: 4
+- name: hetgb_amazon
+  num_charts: 4
+models:
+- name: graphatlas
+  label: graphatlas_original
+- name: graphatlas_min_distortion
+  label: graphatlas_min_distortion
+- name: graphatlas_certified
+  label: graphatlas_c
+- name: graphatlas_certified
+  label: graphatlas_c_beta_minus_1
+  transportability_beta: -1.0

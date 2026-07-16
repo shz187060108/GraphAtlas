@@ -29,6 +29,7 @@ from .baselines import (
 from .charts import ChartLinearization, LocalChart, SmoothDiffeomorphism
 from .equivariant import AtlasEquivariantLayer
 from .functional import MLP, cached_graph_signature, channel_jvp, restrict_topk, sparsemax
+from .link_decoders import LinkPredictionModel
 
 
 class GraphAtlas(nn.Module):
@@ -86,6 +87,11 @@ class GraphAtlas(nn.Module):
                     transportability_beta=config.transportability_beta,
                     transportability_eps=config.transportability_eps,
                     transportability_stop_gradient=config.transportability_stop_gradient,
+                    certified_routing_mode=config.certified_routing_mode,
+                    routing_control_seed=config.routing_control_seed,
+                    routing_control_max_edges=config.routing_control_max_edges,
+                    coordinate_activation=config.coordinate_activation,
+                    coordinate_left_linear=config.coordinate_left_linear,
                     edge_chunk_size=config.edge_chunk_size,
                     edge_chunk_threshold=config.edge_chunk_threshold,
                     dropout=config.dropout,
@@ -93,7 +99,12 @@ class GraphAtlas(nn.Module):
                 for _ in range(config.num_layers)
             ]
         )
-        readout_dim = config.observation_dim * config.vector_channels + config.observation_dim
+        if config.readout_mode == "observation_only":
+            readout_dim = config.observation_dim
+        elif config.readout_mode == "atlas_only":
+            readout_dim = config.observation_dim * config.vector_channels
+        else:
+            readout_dim = config.observation_dim * config.vector_channels + config.observation_dim
         self.classifier = MLP(readout_dim, config.hidden_dim, num_classes, layers=3, dropout=config.dropout)
 
     def chart_functions(
@@ -192,7 +203,7 @@ class GraphAtlas(nn.Module):
 
         decoder_jacobians = None
         decoder_pinv = None
-        if self.transport_mode in {"min_distortion", "certified"} and all(
+        if (self.transport_mode in {"min_distortion", "certified"} or transport_diagnostics) and all(
             layer.mode == "transport" for layer in self.layers
         ):
             basis = torch.eye(
@@ -235,7 +246,13 @@ class GraphAtlas(nn.Module):
 
         pushed = torch.stack([push(chart, tangent[:, chart]) for chart in range(self.config.num_charts)], dim=1)
         observation_vectors = (pushed * membership[:, :, None, None]).sum(dim=1)
-        readout = torch.cat([h, observation_vectors.flatten(start_dim=1)], dim=-1)
+        atlas_readout = observation_vectors.flatten(start_dim=1)
+        if self.config.readout_mode == "observation_only":
+            readout = h
+        elif self.config.readout_mode == "atlas_only":
+            readout = atlas_readout
+        else:
+            readout = torch.cat([h, atlas_readout], dim=-1)
         logits = self.classifier(readout)
         if compact:
             return {"logits": logits, "embedding": readout}
@@ -309,3 +326,11 @@ def build_model(input_dim: int, num_classes: int, config: ModelConfig, num_nodes
     if name.startswith("graphatlas"):
         return GraphAtlas(input_dim, num_classes, config)
     raise ValueError(f"Unknown model: {name}")
+
+
+def wrap_link_prediction_model(model: nn.Module, data: GraphData, config: ModelConfig) -> nn.Module:
+    """Infer the encoder embedding width once before optimizer construction."""
+    model.eval()
+    with torch.no_grad():
+        embedding = model(data, compact=True)["embedding"]
+    return LinkPredictionModel(model, int(embedding.shape[-1]), config.link_decoder, config.link_decoder_hidden_dim).to(embedding.device)

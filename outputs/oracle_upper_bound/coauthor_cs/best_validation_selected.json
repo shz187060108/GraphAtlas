@@ -1,0 +1,23 @@
+{
+  "selection_policy": "validation_selected",
+  "trial": 14,
+  "objective_test_metric": 0.9806328415870667,
+  "validation_metric_at_validation_selected_checkpoint": 0.9792746305465698,
+  "test_metric_at_validation_selected_checkpoint": 0.9806328415870667,
+  "metric_name": "accuracy",
+  "split_protocol": "random_60_20_20",
+  "params": {
+    "learning_rate": 0.00177994047547668,
+    "weight_decay": 4.2175457522372115e-05,
+    "dropout": 0.4,
+    "hidden_dim": 128,
+    "num_charts": 2,
+    "membership_topk": 1,
+    "transportability_beta": 1.0,
+    "classification_loss": "cross_entropy",
+    "feature_normalization": "layernorm",
+    "seed": 437
+  },
+  "run_dir": "outputs\\oracle_upper_bound\\runs\\coauthor_cs\\trial_0014",
+  "warning": "Oracle test-selected result; do not report as a validation-selected benchmark."
+}

@@ -1,0 +1,23 @@
+{
+  "selection_policy": "oracle_test_selected",
+  "trial": 38,
+  "objective_test_metric": 0.47050419449806213,
+  "validation_metric_at_validation_selected_checkpoint": 0.4537660777568817,
+  "test_metric_at_validation_selected_checkpoint": 0.47050419449806213,
+  "metric_name": "accuracy",
+  "split_protocol": "stratified_60_20_20",
+  "params": {
+    "learning_rate": 0.0022067720830933365,
+    "weight_decay": 5.799459670334357e-05,
+    "dropout": 0.0,
+    "hidden_dim": 128,
+    "num_charts": 2,
+    "membership_topk": 1,
+    "transportability_beta": 4.0,
+    "classification_loss": "weighted_ce",
+    "feature_normalization": "layernorm",
+    "seed": 507
+  },
+  "run_dir": "outputs\\oracle_upper_bound\\runs\\hetgb_amazon\\trial_0038",
+  "warning": "Oracle test-selected result; do not report as a validation-selected benchmark."
+}

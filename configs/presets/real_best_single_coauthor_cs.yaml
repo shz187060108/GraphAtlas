@@ -1,0 +1,43 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+train:
+  device: cuda
+  epochs: 200
+  patience: 40
+  eval_every: 5
+  progress: true
+  resume: true
+  learning_rate: 0.002561075096107793
+  weight_decay: 0.00013076762306504588
+  output_dir: outputs/.work/runs_real_best_single
+loss:
+  reconstruction: 0.069704423050725
+  cocycle: 0.013940884610145
+  inverse_cycle: 0.013940884610145
+  path_consistency: 0.02788176922029
+  metric: 0.02788176922029
+  chart_rank: 0.013940884610145
+  cover: 0.013940884610145
+  balance: 0.0069704423050725
+  sparsity: 0.0069704423050725
+  geometry: 0.0
+datasets:
+- name: coauthor_cs
+  num_charts: 4
+  split: 0
+models:
+- name: graphatlas_certified
+  label: graphatlas_c
+  hidden_dim: 96
+  dropout: 0.2849688405427283
+  observation_dim: 24
+  chart_dim: 4
+  vector_channels: 6
+  num_charts: 4
+  num_layers: 1
+  membership_topk: 2
+  edge_chunk_size: 100000
+  edge_chunk_threshold: 2000000

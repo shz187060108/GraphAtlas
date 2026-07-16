@@ -11,7 +11,7 @@ import pytest
 
 
 @pytest.mark.visualization
-def test_visualization_writes_vector_and_raster_figures(tmp_path):
+def test_visualization_writes_svg_figures(tmp_path):
     rows: list[dict[str, object]] = []
     for seed in [0, 1]:
         rows.extend(
@@ -78,11 +78,10 @@ def test_visualization_writes_vector_and_raster_figures(tmp_path):
         text=True,
     )
     assert completed.returncode == 0, completed.stderr
-    assert (figures / "mechanism_diagnostics.pdf").exists()
-    assert (figures / "mechanism_diagnostics.png").exists()
-    assert (figures / "boundary_node_pairs.pdf").exists()
-    assert (figures / "transition_pairs.pdf").exists()
-    assert (figures / "graphatlas_mechanism_group.pdf").exists()
+    assert (figures / "mechanism_diagnostics.svg").exists()
+    assert (figures / "boundary_node_pairs.svg").exists()
+    assert (figures / "transition_pairs.svg").exists()
+    assert (figures / "graphatlas_mechanism_group.svg").exists()
     parsed = json.loads((figures / "figure_manifest.json").read_text())
     assert parsed["mechanism_diagnostics"]["generated"]
     assert parsed["mechanism_diagnostics"]["no_transport_to_full_ratio"] >= 10

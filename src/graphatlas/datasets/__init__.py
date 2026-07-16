@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from graphatlas.config import DatasetConfig
-from graphatlas.data import GraphData, prepare_link_prediction_data
+from graphatlas.data import GraphData, HeteroGraphData, prepare_link_prediction_data
+from .h2gb import is_h2gb_name, load_h2gb_dataset
 from .real import download_dataset, load_real_dataset
 from .synthetic import generate_atlas_het
 from .names import is_atlas_het_name
@@ -40,8 +41,13 @@ def _append_type_relation_features(data: GraphData, include_relation: bool) -> G
     return data
 
 
-def load_dataset(config: DatasetConfig, seed: int) -> GraphData:
+def load_dataset(config: DatasetConfig, seed: int) -> GraphData | HeteroGraphData:
     name = config.name.lower().replace("-", "_")
+    if is_h2gb_name(name):
+        data = load_h2gb_dataset(name, config.root)
+        if config.task != "node_classification":
+            raise ValueError("Native H2GB integration currently supports node classification only")
+        return data
     if is_atlas_het_name(name):
         data = generate_atlas_het(config, seed)
     else:
@@ -87,4 +93,4 @@ def load_dataset(config: DatasetConfig, seed: int) -> GraphData:
     return data
 
 
-__all__ = ["GraphData", "load_dataset", "download_dataset", "generate_atlas_het", "is_atlas_het_name"]
+__all__ = ["GraphData", "HeteroGraphData", "load_dataset", "download_dataset", "generate_atlas_het", "is_atlas_het_name", "is_h2gb_name"]

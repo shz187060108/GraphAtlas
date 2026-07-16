@@ -1,0 +1,42 @@
+base_config: configs/base.yaml
+reporting:
+  target_model: graphatlas_c
+seeds:
+- 0
+- 1
+- 2
+train:
+  mode: hetero_neighbor
+  batch_size: 256
+  neighbor_sizes:
+  - 20
+  - 15
+  target_batching: true
+datasets:
+- name: h2gb_pdns
+  num_charts: 4
+  heterogeneous: true
+  target_node_type: domain_node
+  metric: f1
+- name: h2gb_mag_year
+  num_charts: 4
+  heterogeneous: true
+  target_node_type: paper
+- name: h2gb_ieee_cis
+  num_charts: 4
+  heterogeneous: true
+  target_node_type: transaction
+  metric: f1
+models:
+- name: mlp_typed
+  label: mlp_typed
+  heterogeneous: true
+- name: rgcn
+  label: rgcn
+  heterogeneous: true
+- name: hgt
+  label: hgt
+  heterogeneous: true
+- name: atn
+  label: atn
+  heterogeneous: true

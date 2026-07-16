@@ -22,6 +22,11 @@ class AtlasEquivariantLayer(nn.Module):
         transportability_beta: float = 1.0,
         transportability_eps: float = 1e-8,
         transportability_stop_gradient: bool = True,
+        certified_routing_mode: str = "certificate",
+        routing_control_seed: int = 1729,
+        routing_control_max_edges: int = 200000,
+        coordinate_activation: str = "none",
+        coordinate_left_linear: bool = False,
         edge_chunk_size: int = 2048,
         edge_chunk_threshold: int = 2_000_000,
         dropout: float = 0.0,
@@ -36,12 +41,20 @@ class AtlasEquivariantLayer(nn.Module):
         self.transportability_beta = float(transportability_beta)
         self.transportability_eps = float(transportability_eps)
         self.transportability_stop_gradient = bool(transportability_stop_gradient)
+        self.certified_routing_mode = certified_routing_mode
+        self.routing_control_seed = int(routing_control_seed)
+        self.routing_control_max_edges = int(routing_control_max_edges)
+        self.coordinate_activation = coordinate_activation
         self.edge_chunk_size = int(edge_chunk_size)
         self.edge_chunk_threshold = int(edge_chunk_threshold)
         self.dropout_probability = float(dropout)
         self.self_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
         self.message_mix = nn.Parameter(torch.eye(channels) + 0.02 * torch.randn(channels, channels))
         self.residual_mix = nn.Parameter(0.1 * torch.eye(channels))
+        if coordinate_left_linear:
+            self.coordinate_left_linear = nn.Parameter(torch.eye(chart_dim) + 1e-3 * torch.randn(chart_dim, chart_dim))
+        else:
+            self.register_parameter("coordinate_left_linear", None)
         self.query = nn.Linear(observation_dim, hidden_dim, bias=False)
         self.key = nn.Linear(observation_dim, hidden_dim, bias=False)
         self.gates = nn.ModuleList(
@@ -52,6 +65,55 @@ class AtlasEquivariantLayer(nn.Module):
             self.free_transition = nn.Parameter(matrices + 0.02 * torch.randn_like(matrices))
         else:
             self.register_parameter("free_transition", None)
+
+    def _routing(
+        self,
+        q: torch.Tensor,
+        membership: torch.Tensor,
+        edge_offset: int,
+        q_shuffle_edge: torch.Tensor | None = None,
+        zero_energy: torch.Tensor | None = None,
+    ) -> torch.Tensor:
+        """Source-chart routing only; all controls leave messages and attention intact."""
+        mode = self.certified_routing_mode
+        active = membership > 0
+        log_membership = torch.where(
+            active,
+            membership.clamp_min(torch.finfo(membership.dtype).tiny).log(),
+            torch.full_like(membership, -torch.inf),
+        )
+        q_used = q_shuffle_edge if q_shuffle_edge is not None else q
+        if mode == "membership_only":
+            logits = log_membership[:, None, :]
+        elif mode == "q_shuffle_source":
+            # Per-edge/target cyclic source-chart permutation; global indices make it chunk-invariant.
+            edge_ids = torch.arange(edge_offset, edge_offset + q.shape[0], device=q.device)[:, None]
+            target_ids = torch.arange(q.shape[1], device=q.device)[None, :]
+            shift = (edge_ids + target_ids + self.routing_control_seed).remainder(q.shape[-1])
+            source_ids = torch.arange(q.shape[-1], device=q.device)[None, None, :]
+            q_used = q.gather(-1, (source_ids + shift[:, :, None]).remainder(q.shape[-1]))
+            logits = log_membership[:, None, :] + self.transportability_beta * q_used
+        elif mode == "random":
+            edge_ids = torch.arange(edge_offset, edge_offset + q.shape[0], device=q.device, dtype=q.dtype)[:, None, None]
+            target_ids = torch.arange(q.shape[1], device=q.device, dtype=q.dtype)[None, :, None]
+            source_ids = torch.arange(q.shape[-1], device=q.device, dtype=q.dtype)[None, None, :]
+            # Stateless deterministic pseudo-random scores, independent of chunking/global RNG.
+            q_used = torch.frac(torch.sin((edge_ids + 1) * 12.9898 + (target_ids + 1) * 78.233 + (source_ids + 1) * 37.719 + self.routing_control_seed) * 43758.5453)
+            logits = log_membership[:, None, :] + self.transportability_beta * q_used
+        elif mode == "oracle_max_q":
+            masked = q.masked_fill(~active[:, None, :], -torch.inf)
+            chosen = masked.argmax(dim=-1)
+            routing = torch.zeros_like(q).scatter_(-1, chosen[..., None], 1.0)
+            if zero_energy is not None:
+                fallback = active.to(q.dtype)
+                fallback = fallback / fallback.sum(dim=-1, keepdim=True).clamp_min(1.0)
+                routing = torch.where(zero_energy[..., None], fallback[:, None, :], routing)
+            return routing
+        else:  # certificate and q_shuffle_edge
+            if self.transportability_stop_gradient:
+                q_used = q_used.detach()
+            logits = log_membership[:, None, :] + self.transportability_beta * q_used
+        return torch.softmax(logits, dim=-1)
 
     def forward(
         self,
@@ -91,6 +153,34 @@ class AtlasEquivariantLayer(nn.Module):
             semantic_values = (source_ambient * membership[:, :, None, None]).sum(dim=1)
             aggregated_observation, alpha = attention_aggregate(semantic_values, edge_index, queries, keys, self.edge_chunk_size, self.edge_chunk_threshold)
 
+            q_shuffle_edge_all = None
+            if self.certified_routing_mode == "q_shuffle_edge":
+                if src.numel() > self.routing_control_max_edges:
+                    raise RuntimeError(
+                        "q_shuffle_edge requires num_edges <= routing_control_max_edges; "
+                        f"got {src.numel()} > {self.routing_control_max_edges}"
+                    )
+                # This is intentionally the only control allowed to retain edge-pair q values.
+                q_chunks: list[torch.Tensor] = []
+                for start in range(0, src.numel(), max(1, self.edge_chunk_size)):
+                    stop = min(start + max(1, self.edge_chunk_size), src.numel())
+                    edge_source = source_ambient[src[start:stop]]
+                    target_pinv = decoder_pinv[dst[start:stop]]
+                    target_jacobian = decoder_jacobians[dst[start:stop]]
+                    transported = torch.einsum("bkdp,blpc->bkldc", target_pinv, edge_source)
+                    projected = torch.einsum("bkpd,bkldc->bklpc", target_jacobian, transported)
+                    source_energy = edge_source[:, None].square().sum(dim=(-2, -1)).expand(-1, self.num_charts, -1)
+                    denominator = source_energy.clamp_min(self.transportability_eps)
+                    q_chunks.append(torch.where(
+                        source_energy > self.transportability_eps,
+                        projected.square().sum(dim=(-2, -1)) / denominator,
+                        torch.zeros_like(source_energy),
+                    ).clamp(0.0, 1.0).detach())
+                q_all = torch.cat(q_chunks, dim=0)
+                generator = torch.Generator(device="cpu").manual_seed(self.routing_control_seed)
+                permutation = torch.randperm(src.numel(), generator=generator, device="cpu").to(src.device)
+                q_shuffle_edge_all = q_all[permutation]
+
             pulled = torch.zeros(
                 tangent.shape[0], self.num_charts, self.chart_dim, self.channels,
                 device=tangent.device, dtype=tangent.dtype,
@@ -104,6 +194,8 @@ class AtlasEquivariantLayer(nn.Module):
                 "delta_sum": tangent.new_zeros(()),
                 "below": tangent.new_zeros(()),
                 "above": tangent.new_zeros(()),
+                "closure_sum": tangent.new_zeros(()),
+                "risk_sum": tangent.new_zeros(()),
             }
             detailed = {
                 "active_sum": tangent.new_zeros(()),
@@ -116,7 +208,17 @@ class AtlasEquivariantLayer(nn.Module):
                 "tv_sum": tangent.new_zeros(()),
                 "target_active_sum": tangent.new_zeros(()),
                 "target_multiple": tangent.new_zeros(()),
+                "opportunity_sum": tangent.new_zeros(()),
+                "cross_chart_sum": tangent.new_zeros(()),
+                "oracle_agreement_sum": tangent.new_zeros(()),
+                "node_weight": None,
+                "node_cross": None,
+                "node_spread": None,
+                "node_risk": None,
             }
+            if detailed_transport_diagnostics:
+                for key in ("node_weight", "node_cross", "node_spread", "node_risk"):
+                    detailed[key] = torch.zeros(tangent.shape[0], device=tangent.device, dtype=tangent.dtype)
             chunk_size = max(1, self.edge_chunk_size)
             for start in range(0, src.numel(), chunk_size):
                 stop = min(start + chunk_size, src.numel())
@@ -139,18 +241,10 @@ class AtlasEquivariantLayer(nn.Module):
                 delta = torch.where(nonzero, residual_energy / denominator, torch.zeros_like(residual_energy)).clamp(0.0, 1.0)
 
                 source_membership = membership[chunk_src]
-                q_for_routing = q.detach() if self.transportability_stop_gradient else q
-                finite_log_membership = source_membership.clamp_min(
-                    torch.finfo(source_membership.dtype).tiny
-                ).log()
-                log_membership = torch.where(
-                    source_membership > 0,
-                    finite_log_membership,
-                    torch.full_like(source_membership, -torch.inf),
-                )
-                routing = torch.softmax(
-                    log_membership[:, None, :] + self.transportability_beta * q_for_routing,
-                    dim=-1,
+                routing = self._routing(
+                    q, source_membership, start,
+                    None if q_shuffle_edge_all is None else q_shuffle_edge_all[start:stop],
+                    zero_energy=~nonzero.any(dim=-1),
                 )
                 edge_target_message = (routing[:, :, :, None, None] * u_star).sum(dim=2)
                 pulled.index_add_(
@@ -170,6 +264,8 @@ class AtlasEquivariantLayer(nn.Module):
                     statistics["delta_sum"] += valid_delta.sum()
                     statistics["below"] += (valid_q < 0.25).to(valid_q.dtype).sum()
                     statistics["above"] += (valid_q > 0.75).to(valid_q.dtype).sum()
+                    statistics["closure_sum"] += (q[valid] + delta[valid] - 1.0).abs().detach().sum()
+                    statistics["risk_sum"] += (1.0 - q[valid]).detach().sum()
                 if detailed_transport_diagnostics:
                     active_mask = source_membership > 0
                     active_count = active_mask.sum(dim=-1)
@@ -194,6 +290,23 @@ class AtlasEquivariantLayer(nn.Module):
                     target_count = (membership[chunk_dst] > 0).sum(dim=-1)
                     detailed["target_active_sum"] += target_count.to(tangent.dtype).sum()
                     detailed["target_multiple"] += (target_count > 1).to(tangent.dtype).sum()
+                    target_weights = membership[chunk_dst]
+                    cross_mass = 1.0 - (source_membership * target_weights).sum(dim=-1)
+                    active_q = q.masked_fill(~active_mask[:, None, :], -torch.inf)
+                    q_max_active = active_q.max(dim=-1).values
+                    q_min_active = q.masked_fill(~active_mask[:, None, :], torch.inf).min(dim=-1).values
+                    spread_per_target = torch.where(active_count[:, None] > 1, q_max_active - q_min_active, torch.zeros_like(q_max_active))
+                    best_q = (q_max_active * target_weights).sum(dim=-1)
+                    detailed["opportunity_sum"] += (cross_mass * (spread_per_target * target_weights).sum(dim=-1)).detach().sum()
+                    detailed["cross_chart_sum"] += cross_mass.detach().sum()
+                    oracle_choice = active_q.argmax(dim=-1)
+                    routed_choice = routing.argmax(dim=-1)
+                    detailed["oracle_agreement_sum"] += (oracle_choice == routed_choice).to(tangent.dtype).detach().sum()
+                    edge_weight = alpha[start:stop].detach()
+                    detailed["node_weight"].index_add_(0, chunk_dst, edge_weight)
+                    detailed["node_cross"].index_add_(0, chunk_dst, edge_weight * cross_mass.detach())
+                    detailed["node_spread"].index_add_(0, chunk_dst, edge_weight * (spread_per_target * target_weights).sum(dim=-1).detach())
+                    detailed["node_risk"].index_add_(0, chunk_dst, edge_weight * (1.0 - best_q).detach())
                     if (active_count > 1).any():
                         expanded_mask = active_mask[:, None, :].expand_as(q)
                         q_max = q.masked_fill(~expanded_mask, -torch.inf).max(dim=-1).values
@@ -212,6 +325,8 @@ class AtlasEquivariantLayer(nn.Module):
                 "distortion_mean": statistics["delta_sum"] / count,
                 "fraction_q_below_025": statistics["below"] / count,
                 "fraction_q_above_075": statistics["above"] / count,
+                "q_delta_closure_error": statistics["closure_sum"] / count,
+                "irreducible_transport_risk": statistics["risk_sum"] / count,
             }
             if detailed_transport_diagnostics:
                 edge_count = max(int(detailed["edge_count"]), 1)
@@ -233,8 +348,14 @@ class AtlasEquivariantLayer(nn.Module):
                     "fraction_edges_with_multiple_target_charts": detailed["target_multiple"] / edge_count,
                     "q_route_spread_median": spread_values.median(),
                     "q_route_spread_max": spread_values.max(),
+                    "routing_opportunity": detailed["opportunity_sum"] / edge_count,
+                    "cross_chart_mass": detailed["cross_chart_sum"] / edge_count,
+                    "oracle_agreement": detailed["oracle_agreement_sum"] / kl_count,
+                    "node_cross_chart_mass": detailed["node_cross"] / detailed["node_weight"].clamp_min(self.transportability_eps),
+                    "node_q_spread": detailed["node_spread"] / detailed["node_weight"].clamp_min(self.transportability_eps),
+                    "node_transport_risk": detailed["node_risk"] / detailed["node_weight"].clamp_min(self.transportability_eps),
                 })
-            if self.transportability_beta == 0.0:
+            if self.certified_routing_mode == "membership_only" or self.transportability_beta == 0.0:
                 # Preserve the exact minimum-distortion accumulation order for
                 # the beta-zero equivalence diagnostic and ablation.
                 pulled = torch.einsum("nkdp,npc->nkdc", decoder_pinv, aggregated_observation)
@@ -260,6 +381,12 @@ class AtlasEquivariantLayer(nn.Module):
 
         self_term = torch.einsum("nkdc,ce->nkde", tangent, self.self_mix)
         preactivation = self_term + pulled
+        if self.coordinate_left_linear is not None:
+            preactivation = torch.einsum("nkdc,de->nkec", preactivation, self.coordinate_left_linear)
+        if self.coordinate_activation == "relu":
+            preactivation = F.relu(preactivation)
+        elif self.coordinate_activation == "gelu":
+            preactivation = F.gelu(preactivation)
         pushed = torch.stack([push(chart, preactivation[:, chart]) for chart in range(self.num_charts)], dim=1)
         norms = torch.sqrt(pushed.square().sum(dim=2) + 1e-10)
         updated = []
