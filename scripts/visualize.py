@@ -25,7 +25,7 @@ from graphatlas.visualization import visualize_results
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Create publication-ready GraphAtlas result figures.")
-    parser.add_argument("--results", default="outputs/results/complete.csv")
+    parser.add_argument("--results", default="outputs/best_config_search/search_summary.csv")
     parser.add_argument("--output-dir", default=None)
     parser.add_argument("--target-model", default="graphatlas_c_oracle")
     args = parser.parse_args()

@@ -12,7 +12,7 @@ from graphatlas.paper_figures_dense import build_dense_paper_figures
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--results", default="outputs/results/all.csv")
+    parser.add_argument("--results", default="outputs/best_config_search/search_summary.csv")
     parser.add_argument("--output-dir", default="outputs/reports/paper_atlas")
     parser.add_argument("--target-model", default="graphatlas_c_oracle")
     parser.add_argument("--stress-csv", "--coordinate-stress", dest="stress_csv", default="outputs/results/coordinate_stress.csv")

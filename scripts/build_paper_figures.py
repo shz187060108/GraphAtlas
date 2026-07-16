@@ -12,7 +12,7 @@ from graphatlas.paper_figures import build_paper_figures
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build high-density Atlas Transport Network paper figures (SVG only).")
-    parser.add_argument("--results", default="outputs/results/all.csv")
+    parser.add_argument("--results", default="outputs/best_config_search/search_summary.csv")
     parser.add_argument("--output-dir", default="outputs/reports/paper_figures")
     parser.add_argument("--target-model", default="graphatlas_c_oracle")
     parser.add_argument("--style", choices=["nature"], default="nature")

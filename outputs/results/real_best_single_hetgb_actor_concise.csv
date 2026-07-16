@@ -1,0 +1,2 @@
+dataset,task,model,model_family,seed,split,metric_name,train_metric,val_metric,test_metric,best_epoch,last_epoch,runtime_seconds,parameters,device,num_nodes,num_edges,peak_cuda_memory_bytes
+hetgb_actor,node_classification,graphatlas_c,graphatlas_certified,0,0,accuracy,0.48960304260253906,0.4897235929965973,0.4870641231536865,5,45,41.04568147659302,1855653,cuda,4416,24292,2006124032

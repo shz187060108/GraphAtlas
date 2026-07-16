@@ -36,7 +36,7 @@ def main() -> None:
     parser.add_argument("--paper-figures-only", action="store_true")
     args = parser.parse_args()
     if args.paper_figures_only:
-        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/results/all.csv"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/best_config_search/search_summary.csv"], cwd=ROOT, check=False)
         return
     stages = list(STAGES) if args.stage == "all" else [args.stage]
     for stage in stages:
@@ -50,11 +50,11 @@ def main() -> None:
             command.append("--sync-github")
         subprocess.run(command, cwd=ROOT, check=True)
     if args.build_paper_figures:
-        subprocess.run([sys.executable, "-u", "scripts/summarize.py", "--results", "outputs/results/all.csv", "--no-plots"], cwd=ROOT, check=False)
-        subprocess.run([sys.executable, "-u", "scripts/visualize.py", "--results", "outputs/results/all.csv", "--output-dir", "outputs/reports/latest/figures"], cwd=ROOT, check=False)
-        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/results/all.csv"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/summarize.py", "--results", "outputs/best_config_search/search_summary.csv", "--no-plots"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/visualize.py", "--results", "outputs/best_config_search/search_summary.csv", "--output-dir", "outputs/reports/latest/figures"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/build_paper_figures.py", "--results", "outputs/best_config_search/search_summary.csv"], cwd=ROOT, check=False)
     if args.build_dense_paper_figures:
-        subprocess.run([sys.executable, "-u", "scripts/build_dense_paper_figures.py", "--results", "outputs/results/all.csv"], cwd=ROOT, check=False)
+        subprocess.run([sys.executable, "-u", "scripts/build_dense_paper_figures.py", "--results", "outputs/best_config_search/search_summary.csv"], cwd=ROOT, check=False)
 
 
 if __name__ == "__main__":

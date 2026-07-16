@@ -13,7 +13,7 @@ from graphatlas.reporting import submission_readiness_gates, summarize_results
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Summarize GraphAtlas experiment results.")
-    parser.add_argument("--results", default="outputs/results/all.csv")
+    parser.add_argument("--results", default="outputs/best_config_search/search_summary.csv")
     parser.add_argument("--no-plots", action="store_true")
     parser.add_argument("--output-dir", default=None)
     parser.add_argument("--strict-gates", action="store_true")

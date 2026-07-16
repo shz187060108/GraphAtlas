@@ -107,7 +107,7 @@ try {
     Invoke-Logged "real" @("-X", "utf8", "-u", "scripts\run_graphatlasc_suite.py", "--stage", "real") "real"
     Invoke-Logged "confirmatory" @("-X", "utf8", "-u", "scripts\run_graphatlasc_suite.py", "--stage", "confirmatory") "confirmatory"
     Invoke-Logged "ogb" @("-X", "utf8", "-u", "scripts\run_graphatlasc_suite.py", "--stage", "ogb") "ogb"
-    Invoke-Logged "figures" @("-u", "scripts\build_paper_figures.py", "--results", "outputs\results\all.csv", "--output-dir", "outputs\reports\paper_figures", "--target-model", "graphatlas_c_oracle") "figures"
+    Invoke-Logged "figures" @("-u", "scripts\build_paper_figures.py", "--results", "outputs\best_config_search\search_summary.csv", "--output-dir", "outputs\reports\paper_figures", "--target-model", "graphatlas_c_oracle") "figures"
     $script:CurrentStage = "done"
     Write-Status "completed"
 }

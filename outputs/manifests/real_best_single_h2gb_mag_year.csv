@@ -1,0 +1,2 @@
+run_id,config_hash,source_hash,dataset,task,model,model_family,seed,split,num_threads,run_dir,job_config
+h2gb_mag_year__node_classification__atn__split0__seed0__2316da453b01,2316da453b01,e7bb87803961c332,h2gb_mag_year,node_classification,atn,atn,0,0,1,outputs\.work\runs_real_best_single\h2gb_mag_year\atn\split-0\seed-0\config-2316da45,outputs\.work\runs_real_best_single\h2gb_mag_year\atn\split-0\seed-0\config-2316da45\job_config.yaml

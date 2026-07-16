@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="518.965337pt" height="328.579322pt" viewBox="0 0 518.965337 328.579322" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-07-13T22:30:31.898185</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 328.579322 
+L 518.965337 328.579322 
+L 518.965337 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="8.242031" transform="rotate(-0 1.8 8.242031)">a</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="95.759487" y="89.203849" transform="rotate(-0 95.759487 89.203849)">Insufficient matching runs</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="175.8" y="8.242031" transform="rotate(-0 175.8 8.242031)">b</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="269.759487" y="89.203849" transform="rotate(-0 269.759487 89.203849)">Insufficient matching runs</text>
+   </g>
+  </g>
+  <g id="axes_3">
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="349.8" y="8.242031" transform="rotate(-0 349.8 8.242031)">c</text>
+   </g>
+   <g id="text_6">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="443.759487" y="89.202208" transform="rotate(-0 443.759487 89.202208)">Condition coordinates unavailable</text>
+   </g>
+  </g>
+  <g id="axes_4">
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="1.8" y="173.842031" transform="rotate(-0 1.8 173.842031)">d</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="95.759487" y="254.803849" transform="rotate(-0 95.759487 254.803849)">Insufficient matching runs</text>
+   </g>
+  </g>
+  <g id="axes_5">
+   <g id="text_9">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="175.8" y="173.842031" transform="rotate(-0 175.8 173.842031)">e</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="269.759487" y="254.803849" transform="rotate(-0 269.759487 254.803849)">Insufficient matching runs</text>
+   </g>
+  </g>
+  <g id="axes_6">
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 9px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: start" x="349.8" y="173.842031" transform="rotate(-0 349.8 173.842031)">f</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 7px; font-family: 'Arial', 'Helvetica', 'DejaVu Sans', sans-serif; text-anchor: middle; fill: #64748b" x="443.759487" y="254.803849" transform="rotate(-0 443.759487 254.803849)">Insufficient matching runs</text>
+   </g>
+  </g>
+ </g>
+</svg>

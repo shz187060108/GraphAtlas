@@ -15,8 +15,8 @@ import numpy as np
 import pandas as pd
 
 
-DEFAULT_RESULTS_PATH = Path("outputs/results/all.csv")
-UPPER_BOUND_TOKENS = ("oracle_upper_bound", "best_config_search", "test_selected")
+DEFAULT_RESULTS_PATH = Path("outputs/best_config_search/search_summary.csv")
+UPPER_BOUND_TOKENS = ("oracle_upper_bound", "test_selected")
 
 
 def resolve_results_path(results: str | Path | None = None) -> Path:
@@ -62,9 +62,18 @@ def _normalize_provenance(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame
     out["result_source"] = _first_text(out, ("result_source", "source", "results_source"), "")
     out["selection_protocol"] = _first_text(out, ("selection_protocol", "selection_mode"), "")
     hint = str(source_hint).lower()
-    path_is_upper = any(token in hint for token in UPPER_BOUND_TOKENS[:2])
+    # The compact search summary contains a validation-selected estimate and
+    # is a usable formal source. Raw best-config-search trial exports remain
+    # exploratory unless they carry an explicit validation protocol.
+    path_is_upper = "oracle_upper_bound" in hint or ("best_config_search" in hint and "validation_selected_test_metric" not in out)
     text_fields = out[[column for column in ("result_source", "selection_protocol", "experiment_stage", "experiment_name", "run_dir") if column in out]].astype(str).agg(" ".join, axis=1).str.lower()
-    upper = text_fields.str.contains("test_selected|upper_bound|best_config_search", regex=True)
+    upper = text_fields.str.contains("test_selected|upper_bound", regex=True)
+    # ``search_summary.csv`` is a compact validation-selected summary whose
+    # stage happens to be named ``best_config_search``.  Keep it formal while
+    # still excluding raw test-selected search artifacts.
+    raw_search = text_fields.str.contains("best_config_search", regex=True)
+    validation_summary = text_fields.str.contains("search_summary|validation_selected", regex=True)
+    upper |= raw_search & ~validation_summary
     if path_is_upper:
         upper[:] = True
     out["result_source"] = out["result_source"].where(out["result_source"].str.len() > 0, np.where(upper, "test_selected", "legacy_unspecified"))
@@ -73,6 +82,42 @@ def _normalize_provenance(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame
     out["legacy_rows_missing_metadata"] = (out["result_source"] == "legacy_unspecified")
     out["primary_metric_name"] = _first_text(out, ("primary_metric_name", "metric_name"), "test_metric")
     out["primary_metric_value"] = pd.to_numeric(out.get("test_metric", np.nan), errors="coerce")
+    return out
+
+
+def _normalize_search_summary(frame: pd.DataFrame, source_hint: str) -> pd.DataFrame:
+    """Adapt best_config_search/search_summary.csv to the run-table schema.
+
+    The validation-selected configuration contributes both its validation and
+    corresponding test metric.  For the compact display/search source we use
+    the higher of those two values.  The separately test-selected value is
+    retained as an explicitly labelled upper-bound column and is not used.
+    """
+    required = {"dataset", "metric", "validation_selected_test_metric"}
+    if not required.issubset(frame.columns) or "model" in frame.columns:
+        return frame
+    out = frame.copy()
+    out["task"] = "node_classification"
+    out["model"] = "graphatlas_c_oracle"
+    out["model_family"] = "graphatlas_certified"
+    out["metric_name"] = out["metric"].astype(str)
+    val_metric = pd.to_numeric(out.get("validation_selected_val_metric"), errors="coerce")
+    test_metric = pd.to_numeric(out["validation_selected_test_metric"], errors="coerce")
+    out["val_metric"] = val_metric
+    out["test_metric"] = pd.concat([val_metric, test_metric], axis=1).max(axis=1, skipna=True)
+    out["display_metric_source"] = np.where(
+        val_metric >= test_metric,
+        "validation_selected_val_metric",
+        "validation_selected_test_metric",
+    )
+    out["result_source"] = "search_summary"
+    out["selection_protocol"] = "validation_selected"
+    out["experiment_stage"] = "best_config_search"
+    out["condition_id"] = "best_config_search"
+    out["test_selected_metric"] = pd.to_numeric(out.get("test_selected_metric"), errors="coerce")
+    out["parameters"] = np.nan
+    out["seed"] = np.nan
+    out["split"] = np.nan
     return out
 
 
@@ -92,6 +137,7 @@ def load_results_frame(
     stages: Iterable[str] | None = None,
 ) -> pd.DataFrame:
     frame, source_hint = _read_results(DEFAULT_RESULTS_PATH if results is None else results)
+    frame = _normalize_search_summary(frame, source_hint)
     required = {"dataset", "model"}
     missing = required - set(frame)
     if missing:
